@@ -1,0 +1,271 @@
+"use client";
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import type {
+  User, Pet, Gasto, ClaseEntrenamiento, TareaEntrenamiento,
+  TaskStatus, ActiveModule, Vacuna, ItinerarioItem, RegistroItinerario, Notificacion,
+} from "@/types";
+
+function uid() {
+  return Math.random().toString(36).slice(2) + Date.now().toString(36);
+}
+
+const DEFAULT_CONCEPTOS = ["Comida", "Baño", "Juguetes", "Salud", "Entrenamiento", "Veterinario", "Otros"];
+const DEFAULT_PERSONAS  = ["Yo", "Mi pareja", "Familiar"];
+
+interface PawStore {
+  // Auth
+  users: User[];
+  currentUser: User | null;
+  register: (name: string, email: string, password: string) => { ok: boolean; error?: string };
+  login: (email: string, password: string) => { ok: boolean; error?: string };
+  logout: () => void;
+
+  // Pets
+  pets: Pet[];
+  selectedPetId: string | null;
+  addPet: (p: Omit<Pet, "id" | "ownerId" | "sharedWith" | "photos" | "createdAt">) => void;
+  addPetPhoto: (petId: string, dataUrl: string) => void;
+  deletePetPhoto: (petId: string, index: number) => void;
+  updatePet: (id: string, p: Partial<Pet>) => void;
+  deletePet: (id: string) => void;
+  selectPet: (id: string | null) => void;
+  sharePet: (petId: string, email: string) => { ok: boolean; error?: string };
+  unsharePet: (petId: string, userId: string) => void;
+
+  // Navigation
+  activeModule: ActiveModule;
+  setActiveModule: (m: ActiveModule) => void;
+
+  // Gastos
+  gastos: Gasto[];
+  conceptos: string[];
+  personas: string[];
+  addGasto: (g: Omit<Gasto, "id" | "petId" | "createdAt">) => void;
+  updateGasto: (id: string, g: Partial<Gasto>) => void;
+  deleteGasto: (id: string) => void;
+  addConcepto: (c: string) => void;
+  addPersona: (p: string) => void;
+
+  // Entrenamiento
+  clases: ClaseEntrenamiento[];
+  addClass: (c: Omit<ClaseEntrenamiento, "id" | "petId" | "createdAt">) => void;
+  updateClass: (id: string, c: Partial<ClaseEntrenamiento>) => void;
+  deleteClass: (id: string) => void;
+  updateTarea: (claseId: string, tareaId: string, estado: TaskStatus) => void;
+
+  // Vacunas
+  vacunas: Vacuna[];
+  addVacuna: (v: Omit<Vacuna, "id" | "petId" | "createdAt">) => void;
+  updateVacuna: (id: string, v: Partial<Vacuna>) => void;
+  deleteVacuna: (id: string) => void;
+
+  // Itinerario
+  itinerario: ItinerarioItem[];
+  registros: RegistroItinerario[];
+  addItinerarioItem: (i: Omit<ItinerarioItem, "id" | "petId" | "createdAt">) => void;
+  updateItinerarioItem: (id: string, i: Partial<ItinerarioItem>) => void;
+  deleteItinerarioItem: (id: string) => void;
+  toggleRegistro: (itemId: string, fecha: string) => void;
+
+  // Notificaciones
+  notificaciones: Notificacion[];
+  addNotificacion: (n: Omit<Notificacion, "id" | "petId" | "autorId" | "leida" | "createdAt">) => void;
+  marcarLeida: (id: string) => void;
+  deleteNotificacion: (id: string) => void;
+  marcarTodasLeidas: () => void;
+}
+
+export const useStore = create<PawStore>()(
+  persist(
+    (set, get) => ({
+      // ── Auth ──────────────────────────────────────────────
+      users: [],
+      currentUser: null,
+
+      register: (name, email, password) => {
+        const { users } = get();
+        if (users.find((u) => u.email.toLowerCase() === email.toLowerCase()))
+          return { ok: false, error: "Este email ya está registrado" };
+        const user: User = { id: uid(), name, email: email.toLowerCase(), password, createdAt: new Date().toISOString() };
+        set((s) => ({ users: [...s.users, user], currentUser: user, selectedPetId: null }));
+        return { ok: true };
+      },
+
+      login: (email, password) => {
+        const user = get().users.find(
+          (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+        );
+        if (!user) return { ok: false, error: "Email o contraseña incorrectos" };
+        set({ currentUser: user, selectedPetId: null });
+        return { ok: true };
+      },
+
+      logout: () => set({ currentUser: null, selectedPetId: null, activeModule: "dashboard" }),
+
+      // ── Pets ──────────────────────────────────────────────
+      pets: [],
+      selectedPetId: null,
+
+      addPet: (p) => {
+        const { currentUser } = get();
+        if (!currentUser) return;
+        const pet: Pet = { ...p, id: uid(), ownerId: currentUser.id, sharedWith: [], photos: [], createdAt: new Date().toISOString() };
+        set((s) => ({ pets: [...s.pets, pet], selectedPetId: pet.id }));
+      },
+
+      updatePet: (id, p) => set((s) => ({ pets: s.pets.map((x) => x.id === id ? { ...x, ...p } : x) })),
+
+      deletePet: (id) =>
+        set((s) => ({
+          pets: s.pets.filter((x) => x.id !== id),
+          gastos: s.gastos.filter((x) => x.petId !== id),
+          clases: s.clases.filter((x) => x.petId !== id),
+          vacunas: s.vacunas.filter((x) => x.petId !== id),
+          itinerario: s.itinerario.filter((x) => x.petId !== id),
+          registros: s.registros.filter((x) => x.petId !== id),
+          notificaciones: s.notificaciones.filter((x) => x.petId !== id),
+          selectedPetId: s.selectedPetId === id ? null : s.selectedPetId,
+        })),
+
+      selectPet: (id) => set({ selectedPetId: id, activeModule: "dashboard" }),
+
+      sharePet: (petId, email) => {
+        const { users, pets, currentUser } = get();
+        const pet = pets.find((p) => p.id === petId);
+        if (!pet) return { ok: false, error: "Mascota no encontrada" };
+        if (pet.ownerId !== currentUser?.id) return { ok: false, error: "Solo el dueño puede compartir" };
+        const target = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+        if (!target) return { ok: false, error: "No existe ningún usuario con ese email" };
+        if (target.id === currentUser?.id) return { ok: false, error: "No puedes compartir contigo mismo" };
+        if ((pet.sharedWith ?? []).includes(target.id)) return { ok: false, error: "Ya tiene acceso a esta mascota" };
+        set((s) => ({
+          pets: s.pets.map((p) => p.id === petId ? { ...p, sharedWith: [...(p.sharedWith ?? []), target.id] } : p),
+        }));
+        return { ok: true };
+      },
+
+      addPetPhoto: (petId, dataUrl) =>
+        set((s) => ({
+          pets: s.pets.map((p) => p.id === petId ? { ...p, photos: [...(p.photos ?? []), dataUrl] } : p),
+        })),
+
+      deletePetPhoto: (petId, index) =>
+        set((s) => ({
+          pets: s.pets.map((p) => p.id === petId ? { ...p, photos: (p.photos ?? []).filter((_, i) => i !== index) } : p),
+        })),
+
+      unsharePet: (petId, userId) =>
+        set((s) => ({
+          pets: s.pets.map((p) => p.id === petId ? { ...p, sharedWith: (p.sharedWith ?? []).filter((id) => id !== userId) } : p),
+        })),
+
+      // ── Navigation ───────────────────────────────────────
+      activeModule: "dashboard",
+      setActiveModule: (m) => set({ activeModule: m }),
+
+      // ── Gastos ───────────────────────────────────────────
+      gastos: [],
+      conceptos: DEFAULT_CONCEPTOS,
+      personas: DEFAULT_PERSONAS,
+
+      addGasto: (g) => {
+        const { selectedPetId } = get();
+        if (!selectedPetId) return;
+        set((s) => ({ gastos: [...s.gastos, { ...g, id: uid(), petId: selectedPetId, createdAt: new Date().toISOString() }] }));
+      },
+      updateGasto: (id, g) => set((s) => ({ gastos: s.gastos.map((x) => x.id === id ? { ...x, ...g } : x) })),
+      deleteGasto: (id) => set((s) => ({ gastos: s.gastos.filter((x) => x.id !== id) })),
+      addConcepto: (c) => set((s) => ({ conceptos: s.conceptos.includes(c) ? s.conceptos : [...s.conceptos, c] })),
+      addPersona: (p) => set((s) => ({ personas: s.personas.includes(p) ? s.personas : [...s.personas, p] })),
+
+      // ── Entrenamiento ────────────────────────────────────
+      clases: [],
+      addClass: (c) => {
+        const { selectedPetId } = get();
+        if (!selectedPetId) return;
+        set((s) => ({ clases: [...s.clases, { ...c, id: uid(), petId: selectedPetId, createdAt: new Date().toISOString() }] }));
+      },
+      updateClass: (id, c) => set((s) => ({ clases: s.clases.map((x) => x.id === id ? { ...x, ...c } : x) })),
+      deleteClass: (id) => set((s) => ({ clases: s.clases.filter((x) => x.id !== id) })),
+      updateTarea: (claseId, tareaId, estado) =>
+        set((s) => ({
+          clases: s.clases.map((c) =>
+            c.id === claseId
+              ? { ...c, tareas: c.tareas.map((t) => t.id === tareaId ? { ...t, estado } : t) }
+              : c
+          ),
+        })),
+
+      // ── Vacunas ──────────────────────────────────────────
+      vacunas: [],
+      addVacuna: (v) => {
+        const { selectedPetId } = get();
+        if (!selectedPetId) return;
+        set((s) => ({ vacunas: [...s.vacunas, { ...v, id: uid(), petId: selectedPetId, createdAt: new Date().toISOString() }] }));
+      },
+      updateVacuna: (id, v) => set((s) => ({ vacunas: s.vacunas.map((x) => x.id === id ? { ...x, ...v } : x) })),
+      deleteVacuna: (id) => set((s) => ({ vacunas: s.vacunas.filter((x) => x.id !== id) })),
+
+      // ── Itinerario ───────────────────────────────────────
+      itinerario: [],
+      registros: [],
+
+      addItinerarioItem: (i) => {
+        const { selectedPetId } = get();
+        if (!selectedPetId) return;
+        set((s) => ({
+          itinerario: [...s.itinerario, { ...i, id: uid(), petId: selectedPetId, createdAt: new Date().toISOString() }],
+        }));
+      },
+      updateItinerarioItem: (id, i) =>
+        set((s) => ({ itinerario: s.itinerario.map((x) => x.id === id ? { ...x, ...i } : x) })),
+      deleteItinerarioItem: (id) =>
+        set((s) => ({
+          itinerario: s.itinerario.filter((x) => x.id !== id),
+          registros: s.registros.filter((x) => x.itemId !== id),
+        })),
+
+      toggleRegistro: (itemId, fecha) => {
+        const { registros, selectedPetId, currentUser } = get();
+        const existing = registros.find((r) => r.itemId === itemId && r.fecha === fecha);
+        if (existing) {
+          set((s) => ({
+            registros: s.registros.map((r) =>
+              r.id === existing.id ? { ...r, completado: !r.completado } : r
+            ),
+          }));
+        } else {
+          set((s) => ({
+            registros: [...s.registros, {
+              id: uid(), petId: selectedPetId!, itemId, fecha,
+              completado: true, completadoPor: currentUser?.id,
+              createdAt: new Date().toISOString(),
+            }],
+          }));
+        }
+      },
+
+      // ── Notificaciones ───────────────────────────────────
+      notificaciones: [],
+
+      addNotificacion: (n) => {
+        const { selectedPetId, currentUser } = get();
+        if (!selectedPetId || !currentUser) return;
+        set((s) => ({
+          notificaciones: [{
+            ...n, id: uid(), petId: selectedPetId, autorId: currentUser.id,
+            leida: false, createdAt: new Date().toISOString(),
+          }, ...s.notificaciones],
+        }));
+      },
+      marcarLeida: (id) =>
+        set((s) => ({ notificaciones: s.notificaciones.map((n) => n.id === id ? { ...n, leida: true } : n) })),
+      deleteNotificacion: (id) =>
+        set((s) => ({ notificaciones: s.notificaciones.filter((n) => n.id !== id) })),
+      marcarTodasLeidas: () =>
+        set((s) => ({ notificaciones: s.notificaciones.map((n) => ({ ...n, leida: true })) })),
+    }),
+    { name: "paw-store-v3" }
+  )
+);
