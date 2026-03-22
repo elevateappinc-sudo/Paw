@@ -1,9 +1,12 @@
 "use client";
+import { useEffect, useState } from "react";
 import { useStore } from "@/store";
 import type { ActiveModule } from "@/types";
-import { LayoutDashboard, Wallet, Dumbbell, Syringe, Info, PawPrint, Clock, Bell, Pill } from "lucide-react";
+import { LayoutDashboard, Wallet, Dumbbell, Syringe, Info, PawPrint, Clock, Bell, Pill, Building2 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { useAuthContext } from "@/contexts/AuthContext";
 
-const NAV: { id: ActiveModule; label: string; icon: React.ReactNode }[] = [
+const BASE_NAV: { id: ActiveModule; label: string; icon: React.ReactNode }[] = [
   { id: "dashboard",       label: "Inicio",   icon: <LayoutDashboard size={19} /> },
   { id: "gastos",          label: "Gastos",   icon: <Wallet size={19} /> },
   { id: "entrenamiento",   label: "Entrena",  icon: <Dumbbell size={19} /> },
@@ -16,10 +19,27 @@ const NAV: { id: ActiveModule; label: string; icon: React.ReactNode }[] = [
 
 export default function Sidebar() {
   const { activeModule, setActiveModule, notificaciones, selectedPetId, pets, selectPet } = useStore();
+  const { user } = useAuthContext();
+  const [hasBusiness, setHasBusiness] = useState(false);
   const pet = pets.find((p) => p.id === selectedPetId);
   const accentColor = pet?.color ?? "#0a84ff";
 
   const unread = notificaciones.filter((n) => n.petId === selectedPetId && !n.leida).length;
+
+  useEffect(() => {
+    if (!user) return;
+    const supabase = createClient();
+    void supabase
+      .from("businesses")
+      .select("id")
+      .eq("owner_id", user.id)
+      .limit(1)
+      .then(({ data }) => setHasBusiness((data ?? []).length > 0));
+  }, [user]);
+
+  const NAV: { id: ActiveModule; label: string; icon: React.ReactNode }[] = hasBusiness
+    ? [...BASE_NAV, { id: "admin", label: "Negocio", icon: <Building2 size={19} /> }]
+    : BASE_NAV;
 
   return (
     <>
