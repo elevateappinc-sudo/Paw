@@ -7,6 +7,7 @@ import { PetPhotos } from "./PetPhotos";
 import { PetForm } from "./PetForm";
 import { formatDate } from "@/lib/utils";
 import { NotificationSettings } from "@/components/notifications/NotificationSettings";
+import PetMembersPanel from "./PetMembersPanel";
 
 const FONT = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
 
@@ -210,6 +211,13 @@ export function PetInfoModule() {
 
         {/* Notification Settings */}
         <NotificationSettings />
+
+        {/* Personas con acceso */}
+        {isOwner && (
+          <div style={{ marginTop: 16, background: "rgba(255,255,255,0.04)", borderRadius: 16, overflow: "hidden" }}>
+            <PetMembersPanel petId={pet.id} />
+          </div>
+        )}
 
         {/* Actions */}
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 24 }}>

@@ -106,6 +106,7 @@ export type ActiveModule =
   | "itinerario"
   | "notificaciones"
   | "medicamentos"
-  | "info";
+  | "info"
+  | "admin";
 
 export type AppScreen = "auth" | "pets" | "app";
