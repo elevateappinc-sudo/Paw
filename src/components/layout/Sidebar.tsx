@@ -1,7 +1,7 @@
 "use client";
 import { useStore } from "@/store";
 import type { ActiveModule } from "@/types";
-import { LayoutDashboard, Wallet, Dumbbell, Syringe, Info, PawPrint, Clock, Bell } from "lucide-react";
+import { LayoutDashboard, Wallet, Dumbbell, Syringe, Info, PawPrint, Clock, Bell, ShoppingBag } from "lucide-react";
 import { PetAvatar } from "@/components/pets/PetAvatar";
 
 const NAV: { id: ActiveModule; label: string; icon: React.ReactNode }[] = [
@@ -12,6 +12,7 @@ const NAV: { id: ActiveModule; label: string; icon: React.ReactNode }[] = [
   { id: "itinerario",      label: "Horario",  icon: <Clock size={19} /> },
   { id: "notificaciones",  label: "Avisos",   icon: <Bell size={19} /> },
   { id: "medicamentos",    label: "Medicam.", icon: <Pill size={19} /> },
+  { id: "marketplace",     label: "Market",   icon: <ShoppingBag size={19} /> },
   { id: "info",            label: "Info",     icon: <Info size={19} /> },
 ];
 
