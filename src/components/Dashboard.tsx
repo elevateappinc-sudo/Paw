@@ -1,12 +1,14 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useStore } from "@/store";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useAuth } from "@/hooks/useAuth";
 import { InfoCell } from "@/components/ui/Card";
 import { PetForm } from "@/components/pets/PetForm";
 import { formatCurrency, formatDate, getMonthKey, today } from "@/lib/utils";
-import { Plus, Wallet, Dumbbell, Syringe, ChevronRight, LogOut, RefreshCw } from "lucide-react";
+import { Plus, Wallet, Dumbbell, Syringe, ChevronRight, LogOut, RefreshCw, Pill } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import type { MedicationData, MedicationLogData } from "@/components/medications/MedicationCard";
 
 const FONT = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
 
@@ -16,6 +18,45 @@ export function Dashboard() {
   const { signOut } = useAuth();
   const displayName = (user?.user_metadata?.full_name as string | undefined) ?? user?.email?.split("@")[0] ?? "";
   const [showPetForm, setShowPetForm] = useState(false);
+
+  // Medications state
+  const [activeMeds, setActiveMeds] = useState<MedicationData[]>([]);
+  const [medLogs, setMedLogs] = useState<MedicationLogData[]>([]);
+
+  const fetchMeds = useCallback(async () => {
+    if (!user || !selectedPetId) return;
+    const supabase = createClient();
+    const nowDate = new Date().toISOString().split("T")[0];
+
+    const { data: meds } = await supabase
+      .from("medications")
+      .select("*")
+      .eq("pet_id", selectedPetId)
+      .eq("user_id", user.id)
+      .eq("active", true)
+      .or(`end_date.is.null,end_date.gte.${nowDate}`)
+      .order("created_at", { ascending: false })
+      .limit(3);
+
+    const medList = (meds ?? []) as MedicationData[];
+    setActiveMeds(medList);
+
+    if (medList.length > 0) {
+      const medIds = medList.map((m) => m.id);
+      const { data: logs } = await supabase
+        .from("medication_logs")
+        .select("*")
+        .in("medication_id", medIds)
+        .gte("scheduled_at", new Date().toISOString())
+        .order("scheduled_at", { ascending: true })
+        .limit(10);
+      setMedLogs((logs ?? []) as MedicationLogData[]);
+    }
+  }, [user, selectedPetId]);
+
+  useEffect(() => {
+    void fetchMeds();
+  }, [fetchMeds]);
 
   const pet = pets.find((p) => p.id === selectedPetId);
   const accentColor = pet?.color ?? "#0a84ff";
@@ -147,6 +188,54 @@ export function Dashboard() {
             <button onClick={() => setActiveModule("vacunas")} style={{ background: "none", border: "none", cursor: "pointer" }}>
               <ChevronRight size={18} color="#30d158" />
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Medicamentos activos */}
+      {activeMeds.length > 0 && (
+        <div style={{ padding: "0 16px", marginBottom: 20 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <p style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(235,235,245,0.4)", margin: 0 }}>
+              Medicamentos activos
+            </p>
+            <button onClick={() => setActiveModule("medicamentos")}
+              style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, fontWeight: 600, color: accentColor, background: "none", border: "none", cursor: "pointer" }}>
+              Ver todos <ChevronRight size={13} />
+            </button>
+          </div>
+          <div style={{ background: "#1c1c1e", borderRadius: 16, overflow: "hidden" }}>
+            {activeMeds.map((med, i) => {
+              const nextLog = medLogs
+                .filter((l) => l.medication_id === med.id && l.status === "pending")
+                .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())[0];
+              const nextTime = nextLog
+                ? new Date(nextLog.scheduled_at).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })
+                : null;
+              return (
+                <div key={med.id}>
+                  {i > 0 && sep}
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px" }}>
+                    <div style={{
+                      width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+                      background: `${accentColor}18`,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      <Pill size={20} color={accentColor} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 15, fontWeight: 600, color: "#fff", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {med.name}
+                      </p>
+                      <p style={{ fontSize: 12, color: "rgba(235,235,245,0.5)", margin: 0 }}>
+                        {med.dose_amount} {med.dose_unit}
+                        {nextTime ? ` · Próx: ${nextTime}` : ""}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

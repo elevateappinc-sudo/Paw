@@ -11,14 +11,10 @@ export function Card({ children, className, onClick }: CardProps) {
     <div
       onClick={onClick}
       className={cn(
-        "rounded-2xl p-4",
+        "rounded-2xl p-4 bg-surface border border-border",
         onClick && "cursor-pointer active:scale-[0.98] transition-transform",
         className
       )}
-      style={{
-        background: "#1a1a1e",
-        border: "1px solid rgba(255,255,255,0.06)",
-      }}
     >
       {children}
     </div>
@@ -70,11 +66,7 @@ export function InfoCell({
   return (
     <div
       onClick={onClick}
-      className={cn("rounded-xl p-3 flex flex-col gap-1", onClick && "cursor-pointer active:opacity-70 transition-opacity", className)}
-      style={{
-        background: "#242428",
-        border: "1px solid rgba(255,255,255,0.07)",
-      }}
+      className={cn("rounded-xl p-3 flex flex-col gap-1 bg-surface-2 border border-border", onClick && "cursor-pointer active:opacity-70 transition-opacity", className)}
     >
       <span className="text-[11px] font-medium" style={{ color: "#8e8e98" }}>
         {label}

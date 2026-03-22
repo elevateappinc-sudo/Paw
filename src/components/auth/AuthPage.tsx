@@ -106,10 +106,10 @@ export function AuthPage() {
       <div style={{ textAlign: "center", marginBottom: 40 }}>
         <div style={{
           width: 72, height: 72, borderRadius: 20,
-          background: "linear-gradient(145deg, #0a84ff, #0052cc)",
+          background: "linear-gradient(145deg, var(--color-accent), #cc4a15)",
           display: "flex", alignItems: "center", justifyContent: "center",
           margin: "0 auto 16px",
-          boxShadow: "0 8px 32px rgba(10,132,255,0.35)",
+          boxShadow: "0 8px 32px rgba(255,122,69,0.35)",
         }}>
           <PawPrint size={36} color="white" />
         </div>
@@ -188,7 +188,7 @@ export function AuthPage() {
           <button type="submit" disabled={loading}
             style={{
               width: "100%", padding: "16px", borderRadius: 13, border: "none",
-              background: "#0a84ff", color: "#ffffff",
+              background: "var(--color-accent)", color: "#ffffff",
               fontSize: 17, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer",
               opacity: loading ? 0.7 : 1, transition: "opacity 0.2s",
               fontFamily: "inherit",

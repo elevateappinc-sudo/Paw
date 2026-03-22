@@ -17,8 +17,11 @@ const config: Config = {
           600: "#4f46e5",
           700: "#4338ca",
         },
-        surface: "#ffffff",
-        background: "#f5f5f7",
+        accent: "var(--color-accent)",
+        surface: "#1a1a1e",
+        "surface-2": "#242428",
+        background: "#000000",
+        border: "rgba(255,255,255,0.06)",
         sidebar: "#fafafa",
       },
       borderRadius: {
