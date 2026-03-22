@@ -1,12 +1,12 @@
 "use client";
 import { useState } from "react";
-import { useStore } from "@/store";
-import { PawPrint, Eye, EyeOff } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { PawPrint, Eye, EyeOff, Loader2 } from "lucide-react";
 
 export function AuthPage() {
-  const { login, register } = useStore();
+  const { signIn, signUp } = useAuth();
   const [tab, setTab] = useState<"login" | "register">("login");
-  const [name, setName] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -14,24 +14,51 @@ export function AuthPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+
+    if (tab === "register") {
+      if (!displayName.trim()) {
+        setError("Ingresa tu nombre.");
+        return;
+      }
+      if (password.length < 6) {
+        setError("La contraseña debe tener al menos 6 caracteres.");
+        return;
+      }
+      if (password !== confirm) {
+        setError("Las contraseñas no coinciden.");
+        return;
+      }
+    }
+
     setLoading(true);
 
-    setTimeout(() => {
+    try {
       if (tab === "login") {
-        const r = login(email.trim(), password);
-        if (!r.ok) setError(r.error ?? "Error");
+        const result = await signIn({ email: email.trim(), password });
+        if (!result.ok) {
+          setError(result.error ?? "Error al ingresar.");
+        }
+        // On success, AuthContext will update and page.tsx will redirect
       } else {
-        if (!name.trim()) { setError("Ingresa tu nombre"); setLoading(false); return; }
-        if (password.length < 6) { setError("La contraseña debe tener al menos 6 caracteres"); setLoading(false); return; }
-        if (password !== confirm) { setError("Las contraseñas no coinciden"); setLoading(false); return; }
-        const r = register(name.trim(), email.trim(), password);
-        if (!r.ok) setError(r.error ?? "Error");
+        const result = await signUp({
+          email: email.trim(),
+          password,
+          displayName: displayName.trim(),
+        });
+        if (!result.ok) {
+          setError(result.error ?? "Error al crear la cuenta.");
+        } else {
+          setError("");
+          // Show confirmation message if email confirmation is required
+          // AuthContext will pick up the session automatically if auto-confirmed
+        }
       }
+    } finally {
       setLoading(false);
-    }, 300);
+    }
   }
 
   const inputStyle: React.CSSProperties = {
@@ -46,17 +73,28 @@ export function AuthPage() {
     boxSizing: "border-box",
   };
 
-  const fields = tab === "login"
-    ? [
-        { key: "email", label: "Email", value: email, set: setEmail, type: "email", placeholder: "tu@email.com" },
-        { key: "password", label: "Contraseña", value: password, set: setPassword, type: showPass ? "text" : "password", placeholder: "••••••••" },
-      ]
-    : [
-        { key: "name", label: "Nombre", value: name, set: setName, type: "text", placeholder: "Tu nombre" },
-        { key: "email", label: "Email", value: email, set: setEmail, type: "email", placeholder: "tu@email.com" },
-        { key: "password", label: "Contraseña", value: password, set: setPassword, type: showPass ? "text" : "password", placeholder: "Mínimo 6 caracteres" },
-        { key: "confirm", label: "Confirmar", value: confirm, set: setConfirm, type: showPass ? "text" : "password", placeholder: "Repite la contraseña" },
-      ];
+  type FieldDef = {
+    key: string;
+    label: string;
+    value: string;
+    set: (v: string) => void;
+    type: string;
+    placeholder: string;
+  };
+
+  const loginFields: FieldDef[] = [
+    { key: "email", label: "Email", value: email, set: setEmail, type: "email", placeholder: "tu@email.com" },
+    { key: "password", label: "Contraseña", value: password, set: setPassword, type: showPass ? "text" : "password", placeholder: "••••••••" },
+  ];
+
+  const registerFields: FieldDef[] = [
+    { key: "displayName", label: "Nombre", value: displayName, set: setDisplayName, type: "text", placeholder: "Tu nombre" },
+    { key: "email", label: "Email", value: email, set: setEmail, type: "email", placeholder: "tu@email.com" },
+    { key: "password", label: "Contraseña", value: password, set: setPassword, type: showPass ? "text" : "password", placeholder: "Mínimo 6 caracteres" },
+    { key: "confirm", label: "Confirmar", value: confirm, set: setConfirm, type: showPass ? "text" : "password", placeholder: "Repite la contraseña" },
+  ];
+
+  const fields = tab === "login" ? loginFields : registerFields;
 
   return (
     <div style={{
@@ -121,6 +159,7 @@ export function AuthPage() {
                     placeholder={f.placeholder}
                     required
                     autoComplete="off"
+                    disabled={loading}
                     style={{ ...inputStyle, flex: 1 }}
                   />
                   {(f.key === "password" || f.key === "confirm") && (
@@ -150,15 +189,26 @@ export function AuthPage() {
             style={{
               width: "100%", padding: "16px", borderRadius: 13, border: "none",
               background: "#0a84ff", color: "#ffffff",
-              fontSize: 17, fontWeight: 600, cursor: "pointer",
+              fontSize: 17, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer",
               opacity: loading ? 0.7 : 1, transition: "opacity 0.2s",
               fontFamily: "inherit",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
             }}
           >
-            {loading ? "..." : tab === "login" ? "Continuar" : "Crear cuenta"}
+            {loading && <Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} />}
+            {loading
+              ? (tab === "login" ? "Ingresando..." : "Creando cuenta...")
+              : (tab === "login" ? "Continuar" : "Crear cuenta")}
           </button>
         </form>
       </div>
+
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }

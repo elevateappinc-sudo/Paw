@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useStore } from "@/store";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { Pencil, UserPlus, X, Users, Crown } from "lucide-react";
 import { PetPhotos } from "./PetPhotos";
 import { PetForm } from "./PetForm";
@@ -9,7 +10,8 @@ import { formatDate } from "@/lib/utils";
 const FONT = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
 
 export function PetInfoModule() {
-  const { pets, users, selectedPetId, currentUser, selectPet, sharePet, unsharePet } = useStore();
+  const { pets, selectedPetId, selectPet } = useStore();
+  const { user: currentUser } = useAuthContext();
   const pet = pets.find((p) => p.id === selectedPetId);
   const [editing, setEditing] = useState(false);
   const [shareEmail, setShareEmail] = useState("");
@@ -19,9 +21,7 @@ export function PetInfoModule() {
   if (!pet) return null;
 
   const isOwner = pet.ownerId === currentUser?.id;
-  const collaborators = (pet.sharedWith ?? [])
-    .map((uid) => users.find((u) => u.id === uid))
-    .filter(Boolean) as typeof users;
+  const collaborators: { id: string; name: string; email: string }[] = [];
 
   function calcAge(birthDate: string) {
     const birth = new Date(birthDate);
@@ -35,14 +35,8 @@ export function PetInfoModule() {
     e.preventDefault();
     setShareError("");
     setShareSuccess("");
-    const result = sharePet(pet!.id, shareEmail.trim());
-    if (!result.ok) {
-      setShareError(result.error ?? "Error al compartir");
-    } else {
-      const name = users.find((u) => u.email.toLowerCase() === shareEmail.trim().toLowerCase())?.name ?? shareEmail;
-      setShareSuccess(`✓ Acceso compartido con ${name}`);
-      setShareEmail("");
-    }
+    // TODO: Implement sharing via Supabase in future sprint
+    setShareError("Compartir pets via Supabase se implementará próximamente.");
   }
 
   const rows = [
@@ -78,7 +72,7 @@ export function PetInfoModule() {
           <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 8, padding: "4px 12px", borderRadius: 999, background: "rgba(10,132,255,0.12)" }}>
             <Users size={12} color="#0a84ff" />
             <span style={{ fontSize: 12, color: "#0a84ff", fontWeight: 600 }}>
-              Compartida por {users.find((u) => u.id === pet.ownerId)?.name ?? "otro usuario"}
+              Compartida por otro usuario
             </span>
           </div>
         )}
@@ -120,7 +114,9 @@ export function PetInfoModule() {
                   <Crown size={16} color={pet.color} />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 15, fontWeight: 600, color: "#fff", margin: 0 }}>{currentUser?.name}</p>
+                  <p style={{ fontSize: 15, fontWeight: 600, color: "#fff", margin: 0 }}>
+                    {(currentUser?.user_metadata?.full_name as string | undefined) ?? currentUser?.email?.split("@")[0] ?? "Tú"}
+                  </p>
                   <p style={{ fontSize: 12, color: "rgba(235,235,245,0.4)", margin: 0 }}>{currentUser?.email}</p>
                 </div>
                 <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 9px", borderRadius: 999, background: `${pet.color}18`, color: pet.color }}>
@@ -128,9 +124,9 @@ export function PetInfoModule() {
                 </span>
               </div>
 
-              {/* Collaborators */}
-              {collaborators.map((user) => (
-                <div key={user.id}>
+              {/* Collaborators — populated from Supabase in future sprint */}
+              {collaborators.map((collab) => (
+                <div key={collab.id}>
                   {sep(60)}
                   <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px" }}>
                     <div style={{
@@ -139,14 +135,14 @@ export function PetInfoModule() {
                       display: "flex", alignItems: "center", justifyContent: "center",
                       fontSize: 15, fontWeight: 700, color: "rgba(235,235,245,0.6)",
                     }}>
-                      {user.name.charAt(0).toUpperCase()}
+                      {collab.name.charAt(0).toUpperCase()}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: 15, fontWeight: 600, color: "#fff", margin: 0 }}>{user.name}</p>
-                      <p style={{ fontSize: 12, color: "rgba(235,235,245,0.4)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.email}</p>
+                      <p style={{ fontSize: 15, fontWeight: 600, color: "#fff", margin: 0 }}>{collab.name}</p>
+                      <p style={{ fontSize: 12, color: "rgba(235,235,245,0.4)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{collab.email}</p>
                     </div>
                     <button
-                      onClick={() => unsharePet(pet.id, user.id)}
+                      onClick={() => { /* TODO: unshare via Supabase */ }}
                       style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,69,58,0.12)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
                     >
                       <X size={13} color="#ff453a" />

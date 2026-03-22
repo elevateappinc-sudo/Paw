@@ -1,20 +1,28 @@
 "use client";
 import { useState } from "react";
 import { useStore } from "@/store";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { Plus, ChevronRight, LogOut, Trash2, Users } from "lucide-react";
 import { PetForm } from "./PetForm";
 
 const FONT = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
 
 export function PetSelector() {
-  const { currentUser, pets, users, selectPet, logout, deletePet } = useStore();
+  const { pets, selectPet, deletePet } = useStore();
+  const { user } = useAuthContext();
+  const { signOut } = useAuth();
   const [showForm, setShowForm] = useState(false);
 
-  const myPets     = pets.filter((p) => p.ownerId === currentUser?.id);
-  const sharedPets = pets.filter((p) => p.ownerId !== currentUser?.id && (p.sharedWith ?? []).includes(currentUser?.id ?? ""));
+  const displayName = user?.user_metadata?.full_name as string | undefined
+    ?? user?.email?.split("@")[0]
+    ?? "Usuario";
 
-  function ownerName(ownerId: string) {
-    return users.find((u) => u.id === ownerId)?.name ?? "Desconocido";
+  const myPets     = pets.filter((p) => p.ownerId === user?.id);
+  const sharedPets = pets.filter((p) => p.ownerId !== user?.id && (p.sharedWith ?? []).includes(user?.id ?? ""));
+
+  function ownerName(_ownerId: string) {
+    return "Desconocido";
   }
 
   function PetRow({ pet, isOwner }: { pet: typeof pets[0]; isOwner: boolean }) {
@@ -103,13 +111,13 @@ export function PetSelector() {
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
           <div>
             <p style={{ fontSize: 13, color: "rgba(235,235,245,0.5)", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>
-              Bienvenido, {currentUser?.name?.split(" ")[0]}
+              Bienvenido, {displayName.split(" ")[0]}
             </p>
             <h1 style={{ fontSize: 34, fontWeight: 700, color: "#ffffff", margin: 0, letterSpacing: -0.5 }}>
               Mis mascotas
             </h1>
           </div>
-          <button onClick={logout}
+          <button onClick={() => void signOut()}
             style={{ padding: "8px 14px", borderRadius: 10, background: "rgba(255,255,255,0.08)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: "rgba(235,235,245,0.6)", fontSize: 14, fontWeight: 500, fontFamily: FONT }}>
             <LogOut size={15} />
             Salir

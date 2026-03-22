@@ -2,7 +2,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type {
-  User, Pet, Gasto, ClaseEntrenamiento, TareaEntrenamiento,
+  Pet, Gasto, ClaseEntrenamiento, TareaEntrenamiento,
   TaskStatus, ActiveModule, Vacuna, ItinerarioItem, RegistroItinerario, Notificacion,
 } from "@/types";
 
@@ -14,24 +14,15 @@ const DEFAULT_CONCEPTOS = ["Comida", "Baño", "Juguetes", "Salud", "Entrenamient
 const DEFAULT_PERSONAS  = ["Yo", "Mi pareja", "Familiar"];
 
 interface PawStore {
-  // Auth
-  users: User[];
-  currentUser: User | null;
-  register: (name: string, email: string, password: string) => { ok: boolean; error?: string };
-  login: (email: string, password: string) => { ok: boolean; error?: string };
-  logout: () => void;
-
   // Pets
   pets: Pet[];
   selectedPetId: string | null;
-  addPet: (p: Omit<Pet, "id" | "ownerId" | "sharedWith" | "photos" | "createdAt">) => void;
+  addPet: (p: Omit<Pet, "id" | "ownerId" | "sharedWith" | "photos" | "createdAt">, ownerId?: string) => void;
   addPetPhoto: (petId: string, dataUrl: string) => void;
   deletePetPhoto: (petId: string, index: number) => void;
   updatePet: (id: string, p: Partial<Pet>) => void;
   deletePet: (id: string) => void;
   selectPet: (id: string | null) => void;
-  sharePet: (petId: string, email: string) => { ok: boolean; error?: string };
-  unsharePet: (petId: string, userId: string) => void;
 
   // Navigation
   activeModule: ActiveModule;
@@ -66,11 +57,11 @@ interface PawStore {
   addItinerarioItem: (i: Omit<ItinerarioItem, "id" | "petId" | "createdAt">) => void;
   updateItinerarioItem: (id: string, i: Partial<ItinerarioItem>) => void;
   deleteItinerarioItem: (id: string) => void;
-  toggleRegistro: (itemId: string, fecha: string) => void;
+  toggleRegistro: (itemId: string, fecha: string, userId: string) => void;
 
   // Notificaciones
   notificaciones: Notificacion[];
-  addNotificacion: (n: Omit<Notificacion, "id" | "petId" | "autorId" | "leida" | "createdAt">) => void;
+  addNotificacion: (n: Omit<Notificacion, "id" | "petId" | "autorId" | "leida" | "createdAt">, petId: string, autorId: string) => void;
   marcarLeida: (id: string) => void;
   deleteNotificacion: (id: string) => void;
   marcarTodasLeidas: () => void;
@@ -79,38 +70,12 @@ interface PawStore {
 export const useStore = create<PawStore>()(
   persist(
     (set, get) => ({
-      // ── Auth ──────────────────────────────────────────────
-      users: [],
-      currentUser: null,
-
-      register: (name, email, password) => {
-        const { users } = get();
-        if (users.find((u) => u.email.toLowerCase() === email.toLowerCase()))
-          return { ok: false, error: "Este email ya está registrado" };
-        const user: User = { id: uid(), name, email: email.toLowerCase(), password, createdAt: new Date().toISOString() };
-        set((s) => ({ users: [...s.users, user], currentUser: user, selectedPetId: null }));
-        return { ok: true };
-      },
-
-      login: (email, password) => {
-        const user = get().users.find(
-          (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
-        );
-        if (!user) return { ok: false, error: "Email o contraseña incorrectos" };
-        set({ currentUser: user, selectedPetId: null });
-        return { ok: true };
-      },
-
-      logout: () => set({ currentUser: null, selectedPetId: null, activeModule: "dashboard" }),
-
       // ── Pets ──────────────────────────────────────────────
       pets: [],
       selectedPetId: null,
 
-      addPet: (p) => {
-        const { currentUser } = get();
-        if (!currentUser) return;
-        const pet: Pet = { ...p, id: uid(), ownerId: currentUser.id, sharedWith: [], photos: [], createdAt: new Date().toISOString() };
+      addPet: (p, ownerId = "") => {
+        const pet: Pet = { ...p, id: uid(), ownerId, sharedWith: [], photos: [], createdAt: new Date().toISOString() };
         set((s) => ({ pets: [...s.pets, pet], selectedPetId: pet.id }));
       },
 
@@ -130,21 +95,6 @@ export const useStore = create<PawStore>()(
 
       selectPet: (id) => set({ selectedPetId: id, activeModule: "dashboard" }),
 
-      sharePet: (petId, email) => {
-        const { users, pets, currentUser } = get();
-        const pet = pets.find((p) => p.id === petId);
-        if (!pet) return { ok: false, error: "Mascota no encontrada" };
-        if (pet.ownerId !== currentUser?.id) return { ok: false, error: "Solo el dueño puede compartir" };
-        const target = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
-        if (!target) return { ok: false, error: "No existe ningún usuario con ese email" };
-        if (target.id === currentUser?.id) return { ok: false, error: "No puedes compartir contigo mismo" };
-        if ((pet.sharedWith ?? []).includes(target.id)) return { ok: false, error: "Ya tiene acceso a esta mascota" };
-        set((s) => ({
-          pets: s.pets.map((p) => p.id === petId ? { ...p, sharedWith: [...(p.sharedWith ?? []), target.id] } : p),
-        }));
-        return { ok: true };
-      },
-
       addPetPhoto: (petId, dataUrl) =>
         set((s) => ({
           pets: s.pets.map((p) => p.id === petId ? { ...p, photos: [...(p.photos ?? []), dataUrl] } : p),
@@ -153,11 +103,6 @@ export const useStore = create<PawStore>()(
       deletePetPhoto: (petId, index) =>
         set((s) => ({
           pets: s.pets.map((p) => p.id === petId ? { ...p, photos: (p.photos ?? []).filter((_, i) => i !== index) } : p),
-        })),
-
-      unsharePet: (petId, userId) =>
-        set((s) => ({
-          pets: s.pets.map((p) => p.id === petId ? { ...p, sharedWith: (p.sharedWith ?? []).filter((id) => id !== userId) } : p),
         })),
 
       // ── Navigation ───────────────────────────────────────
@@ -192,7 +137,7 @@ export const useStore = create<PawStore>()(
         set((s) => ({
           clases: s.clases.map((c) =>
             c.id === claseId
-              ? { ...c, tareas: c.tareas.map((t) => t.id === tareaId ? { ...t, estado } : t) }
+              ? { ...c, tareas: c.tareas.map((t: TareaEntrenamiento) => t.id === tareaId ? { ...t, estado } : t) }
               : c
           ),
         })),
@@ -226,8 +171,8 @@ export const useStore = create<PawStore>()(
           registros: s.registros.filter((x) => x.itemId !== id),
         })),
 
-      toggleRegistro: (itemId, fecha) => {
-        const { registros, selectedPetId, currentUser } = get();
+      toggleRegistro: (itemId, fecha, userId) => {
+        const { registros, selectedPetId } = get();
         const existing = registros.find((r) => r.itemId === itemId && r.fecha === fecha);
         if (existing) {
           set((s) => ({
@@ -239,7 +184,7 @@ export const useStore = create<PawStore>()(
           set((s) => ({
             registros: [...s.registros, {
               id: uid(), petId: selectedPetId!, itemId, fecha,
-              completado: true, completadoPor: currentUser?.id,
+              completado: true, completadoPor: userId,
               createdAt: new Date().toISOString(),
             }],
           }));
@@ -249,12 +194,10 @@ export const useStore = create<PawStore>()(
       // ── Notificaciones ───────────────────────────────────
       notificaciones: [],
 
-      addNotificacion: (n) => {
-        const { selectedPetId, currentUser } = get();
-        if (!selectedPetId || !currentUser) return;
+      addNotificacion: (n, petId, autorId) => {
         set((s) => ({
           notificaciones: [{
-            ...n, id: uid(), petId: selectedPetId, autorId: currentUser.id,
+            ...n, id: uid(), petId, autorId,
             leida: false, createdAt: new Date().toISOString(),
           }, ...s.notificaciones],
         }));

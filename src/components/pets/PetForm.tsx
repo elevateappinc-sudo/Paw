@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useStore } from "@/store";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { X } from "lucide-react";
 import type { Pet } from "@/types";
 
@@ -30,6 +31,7 @@ interface PetFormProps { onClose: () => void; editPet?: Pet; }
 
 export function PetForm({ onClose, editPet }: PetFormProps) {
   const { addPet, updatePet } = useStore();
+  const { user } = useAuthContext();
   const [name,      setName]      = useState(editPet?.name ?? "");
   const [species,   setSpecies]   = useState<Pet["species"]>(editPet?.species ?? "perro");
   const [breed,     setBreed]     = useState(editPet?.breed ?? "");
@@ -41,7 +43,7 @@ export function PetForm({ onClose, editPet }: PetFormProps) {
     e.preventDefault();
     if (!name.trim()) return;
     if (editPet) updatePet(editPet.id, { name: name.trim(), species, breed, birthDate, emoji, color });
-    else addPet({ name: name.trim(), species, breed, birthDate, emoji, color });
+    else addPet({ name: name.trim(), species, breed, birthDate, emoji, color }, user?.id);
     onClose();
   }
 

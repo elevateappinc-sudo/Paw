@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useStore } from "@/store";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { Bell, Plus, Trash2, X, CheckCheck, Syringe, AlertTriangle } from "lucide-react";
 import { today, formatDate } from "@/lib/utils";
 import type { Notificacion } from "@/types";
@@ -21,7 +22,8 @@ const inputS: React.CSSProperties = {
 
 // ── Note Form ─────────────────────────────────────────────────────────────────
 function NotaForm({ onClose, accentColor }: { onClose: () => void; accentColor: string }) {
-  const { addNotificacion } = useStore();
+  const { addNotificacion, selectedPetId } = useStore();
+  const { user } = useAuthContext();
   const [tipo,    setTipo]    = useState<Notificacion["tipo"]>("nota");
   const [titulo,  setTitulo]  = useState("");
   const [mensaje, setMensaje] = useState("");
@@ -29,7 +31,11 @@ function NotaForm({ onClose, accentColor }: { onClose: () => void; accentColor: 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!titulo.trim()) return;
-    addNotificacion({ tipo, titulo: titulo.trim(), mensaje: mensaje.trim() });
+    addNotificacion(
+      { tipo, titulo: titulo.trim(), mensaje: mensaje.trim() },
+      selectedPetId ?? "",
+      user?.id ?? ""
+    );
     onClose();
   }
 
@@ -93,7 +99,8 @@ function NotaForm({ onClose, accentColor }: { onClose: () => void; accentColor: 
 
 // ── Main Module ───────────────────────────────────────────────────────────────
 export function NotificacionesModule() {
-  const { notificaciones, vacunas, marcarLeida, deleteNotificacion, marcarTodasLeidas, selectedPetId, pets, users, currentUser } = useStore();
+  const { notificaciones, vacunas, marcarLeida, deleteNotificacion, marcarTodasLeidas, selectedPetId, pets } = useStore();
+  const { user: currentUser } = useAuthContext();
   const [showForm, setShowForm] = useState(false);
 
   const pet = pets.find((p) => p.id === selectedPetId);
@@ -114,7 +121,7 @@ export function NotificacionesModule() {
 
   function authorName(authorId: string) {
     if (authorId === currentUser?.id) return "Tú";
-    return users.find((u) => u.id === authorId)?.name ?? "Usuario";
+    return "Usuario";
   }
 
   function timeAgo(iso: string) {

@@ -1,6 +1,8 @@
 "use client";
 import { useState, useMemo } from "react";
 import { useStore } from "@/store";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { InfoCell } from "@/components/ui/Card";
 import { PetForm } from "@/components/pets/PetForm";
 import { formatCurrency, formatDate, getMonthKey, today } from "@/lib/utils";
@@ -9,7 +11,10 @@ import { Plus, Wallet, Dumbbell, Syringe, ChevronRight, LogOut, RefreshCw } from
 const FONT = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
 
 export function Dashboard() {
-  const { gastos, clases, vacunas, setActiveModule, selectedPetId, pets, selectPet, logout, currentUser } = useStore();
+  const { gastos, clases, vacunas, setActiveModule, selectedPetId, pets, selectPet } = useStore();
+  const { user } = useAuthContext();
+  const { signOut } = useAuth();
+  const displayName = (user?.user_metadata?.full_name as string | undefined) ?? user?.email?.split("@")[0] ?? "";
   const [showPetForm, setShowPetForm] = useState(false);
 
   const pet = pets.find((p) => p.id === selectedPetId);
@@ -60,7 +65,7 @@ export function Dashboard() {
               PAW
             </div>
           </div>
-          <button onClick={logout}
+          <button onClick={() => void signOut()}
             style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <LogOut size={16} color="rgba(235,235,245,0.4)" />
           </button>
@@ -86,9 +91,9 @@ export function Dashboard() {
               {pet?.species ? pet.species.charAt(0).toUpperCase() + pet.species.slice(1) : ""}
               {pet?.breed ? ` · ${pet.breed}` : ""}
             </p>
-            {currentUser && (
+            {displayName && (
               <p style={{ fontSize: 12, color: "rgba(235,235,245,0.3)", margin: "2px 0 0" }}>
-                {currentUser.name}
+                {displayName}
               </p>
             )}
           </div>

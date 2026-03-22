@@ -1,6 +1,7 @@
 "use client";
 import { useState, useMemo } from "react";
 import { useStore } from "@/store";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { Plus, UtensilsCrossed, Footprints, Check, Pencil, Trash2, X, Clock } from "lucide-react";
 import type { ItinerarioItem } from "@/types";
 
@@ -198,6 +199,7 @@ function ItemRow({
 // ── Main Module ───────────────────────────────────────────────────────────────
 export function ItinerarioModule() {
   const { itinerario, registros, toggleRegistro, deleteItinerarioItem, selectedPetId, pets } = useStore();
+  const { user } = useAuthContext();
   const [showForm, setShowForm] = useState(false);
   const [editItem, setEditItem] = useState<ItinerarioItem | null>(null);
 
@@ -241,7 +243,7 @@ export function ItinerarioModule() {
               item={item}
               done={isItemDone(item.id)}
               accentColor={accentColor}
-              onToggle={() => toggleRegistro(item.id, today)}
+              onToggle={() => toggleRegistro(item.id, today, user?.id ?? "")}
               onEdit={() => setEditItem(item)}
               onDelete={() => deleteItinerarioItem(item.id)}
             />
