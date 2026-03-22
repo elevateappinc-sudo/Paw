@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
+import { runPhotoMigration } from "@/lib/storage/photoMigration";
 
 interface AuthContextValue {
   user: User | null;
@@ -29,6 +30,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(data.session);
       setUser(data.session?.user ?? null);
       setLoading(false);
+
+      // F1c: trigger background migration if user is logged in
+      if (data.session?.user) {
+        runPhotoMigration(data.session.user.id).catch(() => {
+          // Migration failures are silent — user experience unaffected
+        });
+      }
     });
 
     // Listen for auth state changes
@@ -36,6 +44,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(newSession);
       setUser(newSession?.user ?? null);
       setLoading(false);
+
+      // F1c: trigger migration on sign-in event
+      if (_event === "SIGNED_IN" && newSession?.user) {
+        runPhotoMigration(newSession.user.id).catch(() => {
+          // Silent — base64 fallback remains intact
+        });
+      }
     });
 
     return () => subscription.unsubscribe();

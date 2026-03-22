@@ -196,12 +196,12 @@ export function PetInfoModule() {
 
         {/* Photos */}
         <p style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(235,235,245,0.4)", marginBottom: 10 }}>
-          Fotos {pet.photos?.length > 0 ? `· ${pet.photos.length}` : ""}
+          Fotos
         </p>
         <div style={{ marginBottom: 20 }}>
           <PetPhotos
             petId={pet.id}
-            photos={pet.photos ?? []}
+            legacyPhotos={pet.photos ?? []}
             accentColor={pet.color}
             canEdit={true}
           />
