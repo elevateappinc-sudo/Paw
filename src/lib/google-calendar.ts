@@ -1,6 +1,13 @@
 // PAW · Google Calendar Client
 // Sprint 3 · T002
 
+export class GoogleAuthRevokedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "GoogleAuthRevokedError";
+  }
+}
+
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID!;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET!;
 const GOOGLE_CALENDAR_ENCRYPTION_KEY = process.env.GOOGLE_CALENDAR_ENCRYPTION_KEY!;
@@ -63,6 +70,9 @@ async function refreshAccessToken(refreshToken: string): Promise<{
 
   if (!res.ok) {
     const err = await res.text();
+    if (err.includes("invalid_grant") || err.includes("Token has been expired or revoked")) {
+      throw new GoogleAuthRevokedError("El acceso a Google Calendar fue revocado. Vuelve a conectar.");
+    }
     throw new Error(`Token refresh failed: ${err}`);
   }
 

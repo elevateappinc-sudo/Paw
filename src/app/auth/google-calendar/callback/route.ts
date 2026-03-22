@@ -112,13 +112,15 @@ export async function GET(request: Request) {
       }
     );
 
-    if (encryptError) {
-      // Fallback: store as-is if the RPC doesn't exist yet (will be created by migration)
-      console.error("Encrypt RPC error, using plaintext fallback:", encryptError);
+    if (encryptError || !encryptedData?.encrypted_access) {
+      console.error("Encrypt RPC error — tokens will NOT be stored in plaintext:", encryptError);
+      return NextResponse.redirect(
+        `${origin}/settings/integrations?error=encryption_failed`
+      );
     }
 
-    const accessTokenStored = encryptedData?.encrypted_access ?? tokens.access_token;
-    const refreshTokenStored = encryptedData?.encrypted_refresh ?? tokens.refresh_token;
+    const accessTokenStored = encryptedData.encrypted_access;
+    const refreshTokenStored = encryptedData.encrypted_refresh;
 
     // Upsert calendar_integrations
     const { error: upsertError } = await serviceSupabase
