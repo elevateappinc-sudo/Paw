@@ -14,6 +14,7 @@ import { VacunasModule } from "@/components/vacunas/VacunasModule";
 import { PetInfoModule } from "@/components/pets/PetInfoModule";
 import { ItinerarioModule } from "@/components/itinerario/ItinerarioModule";
 import { NotificacionesModule } from "@/components/notificaciones/NotificacionesModule";
+import { ClinicalRecordsModule } from "@/components/clinical/ClinicalRecordsModule";
 
 export default function Home() {
   const { user, loading } = useAuthContext();
@@ -107,6 +108,7 @@ export default function Home() {
               {activeModule === "itinerario"     && <ItinerarioModule />}
               {activeModule === "notificaciones" && <NotificacionesModule />}
               {activeModule === "info"           && <PetInfoModule />}
+              {activeModule === "historial"      && <ClinicalRecordsModule />}
             </div>
           </main>
         </div>

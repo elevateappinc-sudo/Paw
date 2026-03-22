@@ -98,6 +98,43 @@ export interface Notificacion {
   createdAt: string;
 }
 
+// Clinical Records (F3)
+export type VisitType =
+  | "consulta_general"
+  | "emergencia"
+  | "cirugia"
+  | "control_rutina"
+  | "peluqueria"
+  | "otro";
+
+export interface ClinicalRecord {
+  id: string;
+  pet_id: string;
+  user_id: string;
+  created_by_role: string;
+  visit_date: string;          // YYYY-MM-DD
+  visit_type: VisitType;
+  vet_name?: string;
+  clinic_name?: string;
+  diagnosis?: string;
+  treatment?: string;
+  notes?: string;
+  vaccine_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ClinicalDocument {
+  id: string;
+  clinical_record_id: string;
+  file_name: string;
+  file_url: string;
+  file_type: string;
+  storage_path: string;
+  file_size_bytes?: number;
+  created_at: string;
+}
+
 export type ActiveModule =
   | "dashboard"
   | "gastos"
@@ -105,6 +142,7 @@ export type ActiveModule =
   | "vacunas"
   | "itinerario"
   | "notificaciones"
-  | "info";
+  | "info"
+  | "historial";
 
 export type AppScreen = "auth" | "pets" | "app";
