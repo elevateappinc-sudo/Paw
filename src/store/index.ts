@@ -98,11 +98,20 @@ interface PawStore {
 // ─── Store implementation ────────────────────────────────────────────────────
 export const useStore = create<PawStore>()((set, get) => ({
 
-  // ── Pets ──────────────────────────────────────────────
-  pets: [],
-  selectedPetId: null,
-  currentUserId: null,
-  setCurrentUserId: (id) => set({ currentUserId: id }),
+      addPet: (p, ownerId = "") => {
+        const newId = uid();
+        const pet: Pet = {
+          ...p,
+          id: newId,
+          ownerId,
+          sharedWith: [],
+          photos: [],
+          // If no avatar_config provided, lazy init will handle it in PetAvatar
+          avatar_config: p.avatar_config ?? null,
+          createdAt: new Date().toISOString(),
+        };
+        set((s) => ({ pets: [...s.pets, pet], selectedPetId: pet.id }));
+      },
 
   addPet: (p, ownerId = "") => {
     const pet: Pet = { ...p, id: uid(), ownerId, sharedWith: [], photos: [], createdAt: new Date().toISOString() };

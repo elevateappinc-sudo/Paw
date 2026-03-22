@@ -6,9 +6,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { InfoCell } from "@/components/ui/Card";
 import { PetForm } from "@/components/pets/PetForm";
 import { formatCurrency, formatDate, getMonthKey, today } from "@/lib/utils";
-import { Plus, Wallet, Dumbbell, Syringe, ChevronRight, LogOut, RefreshCw, Pill } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
-import type { MedicationData, MedicationLogData } from "@/components/medications/MedicationCard";
+import { Plus, Wallet, Dumbbell, Syringe, ChevronRight, LogOut, RefreshCw } from "lucide-react";
+import { PetAvatar } from "@/components/pets/PetAvatar";
 
 const FONT = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
 
@@ -114,16 +113,26 @@ export function Dashboard() {
 
         {/* Pet avatar + name */}
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          <div style={{
-            width: 80, height: 80, borderRadius: 22,
-            background: `${accentColor}20`,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 40,
-            border: `2px solid ${accentColor}30`,
-            flexShrink: 0,
-          }}>
-            {pet?.emoji ?? "🐾"}
-          </div>
+          {pet ? (
+            <PetAvatar
+              pet={pet}
+              size="lg"
+              style={{
+                borderRadius: 22,
+                border: `2px solid ${accentColor}30`,
+                width: 80, height: 80,
+              }}
+            />
+          ) : (
+            <div style={{
+              width: 80, height: 80, borderRadius: 22,
+              background: `${accentColor}20`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 40,
+              border: `2px solid ${accentColor}30`,
+              flexShrink: 0,
+            }}>🐾</div>
+          )}
           <div>
             <h1 style={{ fontSize: 28, fontWeight: 700, color: "#fff", margin: 0, letterSpacing: -0.5 }}>
               {pet?.name ?? "Mi mascota"}

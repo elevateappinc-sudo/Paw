@@ -1,7 +1,8 @@
 "use client";
 import { useStore } from "@/store";
 import type { ActiveModule } from "@/types";
-import { LayoutDashboard, Wallet, Dumbbell, Syringe, Info, PawPrint, Clock, Bell, Pill } from "lucide-react";
+import { LayoutDashboard, Wallet, Dumbbell, Syringe, Info, PawPrint, Clock, Bell } from "lucide-react";
+import { PetAvatar } from "@/components/pets/PetAvatar";
 
 const NAV: { id: ActiveModule; label: string; icon: React.ReactNode }[] = [
   { id: "dashboard",       label: "Inicio",   icon: <LayoutDashboard size={19} /> },
@@ -81,8 +82,12 @@ export default function Sidebar() {
         {/* Back to pets */}
         <div style={{ height: 64, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <button onClick={() => selectPet(null)} title="Cambiar mascota"
-            style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(255,255,255,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>
-            {pet?.emoji ?? "🐾"}
+            style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(255,255,255,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, overflow: "hidden", padding: 0 }}>
+            {pet ? (
+              <PetAvatar pet={pet} size="sm" style={{ borderRadius: 12, width: 40, height: 40 }} />
+            ) : (
+              "🐾"
+            )}
           </button>
         </div>
       </aside>

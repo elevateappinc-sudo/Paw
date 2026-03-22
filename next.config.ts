@@ -1,16 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Allow Supabase Storage signed URL images
-  images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "*.supabase.co",
-        pathname: "/storage/v1/**",
-      },
-    ],
-  },
+  // Transpile DiceBear ESM-only packages for Next.js compatibility
+  transpilePackages: [
+    "@dicebear/core",
+    "@dicebear/collection",
+    "@dicebear/adventurer",
+    "@dicebear/adventurer-neutral",
+    "@dicebear/fun-emoji",
+    "@dicebear/lorelei",
+    "@dicebear/bottts",
+  ],
 };
 
 export default nextConfig;
