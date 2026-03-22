@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Generic paw silhouette fallback -->
+  <circle cx="50" cy="50" r="50" fill="rgba(120,120,128,0.15)"/>
+  <!-- Main pad -->
+  <ellipse cx="50" cy="62" rx="18" ry="15" fill="rgba(180,180,188,0.5)"/>
+  <!-- Toes -->
+  <ellipse cx="33" cy="47" rx="8" ry="7" fill="rgba(180,180,188,0.5)"/>
+  <ellipse cx="45" cy="40" rx="8" ry="7" fill="rgba(180,180,188,0.5)"/>
+  <ellipse cx="57" cy="40" rx="8" ry="7" fill="rgba(180,180,188,0.5)"/>
+  <ellipse cx="69" cy="47" rx="8" ry="7" fill="rgba(180,180,188,0.5)"/>
+</svg>

@@ -5,6 +5,7 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { useAuth } from "@/hooks/useAuth";
 import { Plus, ChevronRight, LogOut, Trash2, Users } from "lucide-react";
 import { PetForm } from "./PetForm";
+import { PetAvatar } from "./PetAvatar";
 
 const FONT = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
 
@@ -43,14 +44,7 @@ export function PetSelector() {
           <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 4, background: pet.color, borderRadius: "16px 0 0 16px" }} />
 
           {/* Avatar */}
-          <div style={{
-            width: 56, height: 56, borderRadius: 16, flexShrink: 0,
-            background: `${pet.color}22`,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 28,
-          }}>
-            {pet.emoji}
-          </div>
+          <PetAvatar pet={pet} size="md" style={{ borderRadius: 16, width: 56, height: 56 }} />
 
           {/* Info */}
           <div style={{ flex: 1 }}>

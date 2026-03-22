@@ -5,6 +5,7 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { Pencil, UserPlus, X, Users, Crown } from "lucide-react";
 import { PetPhotos } from "./PetPhotos";
 import { PetForm } from "./PetForm";
+import { PetAvatar } from "./PetAvatar";
 import { formatDate } from "@/lib/utils";
 
 const FONT = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
@@ -54,14 +55,16 @@ export function PetInfoModule() {
 
       {/* Hero */}
       <div style={{ padding: "56px 24px 32px", textAlign: "center" }}>
-        <div style={{
-          width: 100, height: 100, borderRadius: 28, margin: "0 auto 16px",
-          background: `${pet.color}22`,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 52,
-          border: `2px solid ${pet.color}33`,
-        }}>
-          {pet.emoji}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
+          <PetAvatar
+            pet={pet}
+            size="lg"
+            style={{
+              borderRadius: 28,
+              border: `2px solid ${pet.color}33`,
+              width: 100, height: 100,
+            }}
+          />
         </div>
         <h1 style={{ fontSize: 28, fontWeight: 700, color: "#fff", margin: 0 }}>{pet.name}</h1>
         <p style={{ fontSize: 15, color: "rgba(235,235,245,0.5)", marginTop: 6 }}>

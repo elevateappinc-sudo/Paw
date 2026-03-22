@@ -1,12 +1,14 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useStore } from "@/store";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { X } from "lucide-react";
-import type { Pet } from "@/types";
+import type { Pet, AvatarConfig } from "@/types";
+import { PetAvatar } from "./PetAvatar";
+import { AvatarSelector } from "./AvatarSelector";
+import { getDefaultAvatarConfig, SPECIES_VARIANTS } from "@/lib/avatar";
 
 const FONT = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
-const EMOJIS = ["🐶", "🐱", "🐰", "🐹", "🐦", "🐠", "🦜", "🐢", "🦎", "🐇"];
 const COLORS = ["#0a84ff", "#30d158", "#ff9f0a", "#ff453a", "#bf5af2", "#64d2ff", "#ff6b6b", "#ffd60a"];
 const SPECIES = [
   { value: "perro", label: "Perro" },
@@ -15,6 +17,14 @@ const SPECIES = [
   { value: "conejo",label: "Conejo" },
   { value: "otro",  label: "Otro" },
 ] as const;
+
+const SPECIES_EMOJI: Record<Pet["species"], string> = {
+  perro: "🐶",
+  gato: "🐱",
+  ave: "🐦",
+  conejo: "🐰",
+  otro: "🐾",
+};
 
 const inputS: React.CSSProperties = {
   width: "100%", padding: "14px 16px", fontSize: 16, color: "#fff",
@@ -32,18 +42,78 @@ interface PetFormProps { onClose: () => void; editPet?: Pet; }
 export function PetForm({ onClose, editPet }: PetFormProps) {
   const { addPet, updatePet } = useStore();
   const { user } = useAuthContext();
-  const [name,      setName]      = useState(editPet?.name ?? "");
-  const [species,   setSpecies]   = useState<Pet["species"]>(editPet?.species ?? "perro");
-  const [breed,     setBreed]     = useState(editPet?.breed ?? "");
-  const [birthDate, setBirthDate] = useState(editPet?.birthDate ?? "");
-  const [emoji,     setEmoji]     = useState(editPet?.emoji ?? "🐶");
-  const [color,     setColor]     = useState(editPet?.color ?? "#0a84ff");
+  const [name,        setName]        = useState(editPet?.name ?? "");
+  const [species,     setSpecies]     = useState<Pet["species"]>(editPet?.species ?? "perro");
+  const [breed,       setBreed]       = useState(editPet?.breed ?? "");
+  const [birthDate,   setBirthDate]   = useState(editPet?.birthDate ?? "");
+  const [color,       setColor]       = useState(editPet?.color ?? "#0a84ff");
+  const [avatarConfig, setAvatarConfig] = useState<AvatarConfig | null>(
+    editPet?.avatar_config ?? null
+  );
+  // Pending species change (used for confirmation dialog)
+  const [pendingSpecies, setPendingSpecies] = useState<Pet["species"] | null>(null);
+
+  // Initialize avatar config when species first resolves (create mode)
+  useEffect(() => {
+    if (!avatarConfig) {
+      const firstVariant = SPECIES_VARIANTS[species]?.[0];
+      if (firstVariant) {
+        setAvatarConfig({ style: firstVariant.style, seed: firstVariant.seed });
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Build a pseudo-pet for preview (id not known yet in create mode)
+  const previewPet: Pet = {
+    id: editPet?.id ?? "preview",
+    ownerId: user?.id ?? "",
+    sharedWith: [],
+    name: name || "Mascota",
+    species,
+    emoji: SPECIES_EMOJI[species],
+    color,
+    photos: [],
+    avatar_config: avatarConfig,
+    createdAt: new Date().toISOString(),
+  };
+
+  function handleSpeciesClick(newSpecies: Pet["species"]) {
+    if (newSpecies === species) return;
+    if (avatarConfig) {
+      // Warn user that changing species resets avatar
+      setPendingSpecies(newSpecies);
+    } else {
+      applySpeciesChange(newSpecies);
+    }
+  }
+
+  function applySpeciesChange(newSpecies: Pet["species"]) {
+    setSpecies(newSpecies);
+    // Reset avatar to first variant for the new species
+    const firstVariant = SPECIES_VARIANTS[newSpecies]?.[0];
+    setAvatarConfig(firstVariant ? { style: firstVariant.style, seed: firstVariant.seed } : null);
+    setPendingSpecies(null);
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
-    if (editPet) updatePet(editPet.id, { name: name.trim(), species, breed, birthDate, emoji, color });
-    else addPet({ name: name.trim(), species, breed, birthDate, emoji, color }, user?.id);
+
+    // Derive emoji from species
+    const emoji = SPECIES_EMOJI[species];
+
+    if (editPet) {
+      updatePet(editPet.id, {
+        name: name.trim(), species, breed, birthDate, emoji, color,
+        avatar_config: avatarConfig,
+      });
+    } else {
+      addPet({
+        name: name.trim(), species, breed, birthDate, emoji, color,
+        avatar_config: avatarConfig,
+      }, user?.id);
+    }
     onClose();
   }
 
@@ -70,36 +140,20 @@ export function PetForm({ onClose, editPet }: PetFormProps) {
 
         <form onSubmit={handleSubmit} style={{ padding: "0 20px 40px" }}>
 
-          {/* Emoji + Color preview */}
+          {/* Avatar preview */}
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}>
-            <div style={{
-              width: 88, height: 88, borderRadius: 24,
-              background: `${color}22`, fontSize: 44,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              border: `2px solid ${color}44`,
-            }}>
-              {emoji}
-            </div>
-          </div>
-
-          {/* Emoji picker */}
-          <label style={sectionLabel}>Emoji</label>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
-            {EMOJIS.map((e) => (
-              <button key={e} type="button" onClick={() => setEmoji(e)}
-                style={{
-                  width: 44, height: 44, borderRadius: 12, border: "none", cursor: "pointer",
-                  fontSize: 22,
-                  background: emoji === e ? `${color}25` : "rgba(255,255,255,0.06)",
-                  outline: emoji === e ? `2px solid ${color}` : "none", outlineOffset: 1,
-                }}>
-                {e}
-              </button>
-            ))}
+            <PetAvatar
+              pet={previewPet}
+              size="lg"
+              style={{
+                borderRadius: 24,
+                border: `2px solid ${color}44`,
+              }}
+            />
           </div>
 
           {/* Color picker */}
-          <label style={sectionLabel}>Color</label>
+          <label style={sectionLabel}>Color de acento</label>
           <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
             {COLORS.map((c) => (
               <button key={c} type="button" onClick={() => setColor(c)}
@@ -125,11 +179,11 @@ export function PetForm({ onClose, editPet }: PetFormProps) {
 
           {/* Species */}
           <label style={sectionLabel}>Especie</label>
-          <div style={{ background: "#2c2c2e", borderRadius: 13, overflow: "hidden", marginBottom: 28 }}>
+          <div style={{ background: "#2c2c2e", borderRadius: 13, overflow: "hidden", marginBottom: 20 }}>
             {SPECIES.map((s, i) => (
               <div key={s.value}>
                 {i > 0 && sep}
-                <button type="button" onClick={() => setSpecies(s.value)}
+                <button type="button" onClick={() => handleSpeciesClick(s.value)}
                   style={{
                     width: "100%", padding: "14px 16px", textAlign: "left",
                     background: species === s.value ? `${color}18` : "transparent",
@@ -142,6 +196,16 @@ export function PetForm({ onClose, editPet }: PetFormProps) {
                 </button>
               </div>
             ))}
+          </div>
+
+          {/* Avatar selector */}
+          <label style={{ ...sectionLabel, marginBottom: 12 }}>Avatar</label>
+          <div style={{ marginBottom: 28 }}>
+            <AvatarSelector
+              pet={previewPet}
+              value={avatarConfig}
+              onChange={setAvatarConfig}
+            />
           </div>
 
           {/* Buttons */}
@@ -157,6 +221,44 @@ export function PetForm({ onClose, editPet }: PetFormProps) {
           </div>
         </form>
       </div>
+
+      {/* Species change confirmation dialog */}
+      {pendingSpecies && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 200,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)",
+          padding: "0 24px",
+        }}>
+          <div style={{
+            background: "#2c2c2e", borderRadius: 20, padding: "28px 24px", width: "100%", maxWidth: 340,
+            fontFamily: FONT,
+          }}>
+            <h3 style={{ fontSize: 18, fontWeight: 700, color: "#fff", margin: "0 0 10px" }}>
+              ¿Cambiar especie?
+            </h3>
+            <p style={{ fontSize: 15, color: "rgba(235,235,245,0.6)", margin: "0 0 24px", lineHeight: 1.5 }}>
+              Cambiar la especie reseteará tu avatar. ¿Continuar?
+            </p>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button
+                type="button"
+                onClick={() => setPendingSpecies(null)}
+                style={{ flex: 1, padding: "13px", borderRadius: 12, background: "rgba(255,255,255,0.08)", border: "none", cursor: "pointer", fontSize: 15, fontWeight: 600, color: "rgba(235,235,245,0.6)", fontFamily: FONT }}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => applySpeciesChange(pendingSpecies)}
+                style={{ flex: 1, padding: "13px", borderRadius: 12, background: "#ff453a", border: "none", cursor: "pointer", fontSize: 15, fontWeight: 600, color: "#fff", fontFamily: FONT }}
+              >
+                Cambiar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

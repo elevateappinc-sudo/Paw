@@ -8,6 +8,11 @@ export interface User {
   createdAt: string;
 }
 
+export interface AvatarConfig {
+  style: "adventurer" | "adventurer-neutral" | "fun-emoji" | "lorelei" | "bottts";
+  seed: string;
+}
+
 export interface Pet {
   id: string;
   ownerId: string;
@@ -20,6 +25,7 @@ export interface Pet {
   emoji: string;
   color: string;
   photos: string[];   // base64 data URLs
+  avatar_config?: AvatarConfig | null;
   createdAt: string;
 }
 
