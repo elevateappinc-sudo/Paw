@@ -19,6 +19,7 @@
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@types/uuid": "^10.0.0",
     "autoprefixer": "^10.4.27",
     "lucide-react": "^0.577.0",
     "next": "^15.5.12",
@@ -28,6 +29,7 @@
     "recharts": "^3.8.0",
     "tailwindcss": "^4.2.1",
     "typescript": "^5.9.3",
+    "uuid": "^13.0.0",
     "zustand": "^5.0.11"
   }
 }
