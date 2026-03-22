@@ -4,13 +4,15 @@
  * Sprint 3 · PAW
  */
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { Camera } from "lucide-react";
+import { Camera, PlayCircle, Upload } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useStore } from "@/store";
 import { uploadPetPhoto } from "@/lib/storage/uploadPhoto";
 import { PhotoMonth, type MonthGroup } from "./PhotoMonth";
 import { PhotoFullscreen } from "./PhotoFullscreen";
+import { VideoFullscreen } from "./VideoFullscreen";
+import { useVideoUpload, type VideoEntry } from "@/hooks/useVideoUpload";
 import type { PhotoCardPhoto, ContextualBadge } from "./PhotoCard";
 
 const FONT = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
@@ -46,8 +48,14 @@ export function PhotoGallery() {
   const [badgeCache, setBadgeCache] = useState<BadgeCache>({});
   const [fullscreen, setFullscreen] = useState<{ photo: PhotoCardPhoto; group: MonthGroup } | null>(null);
   const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
+  const [videos, setVideos] = useState<VideoEntry[]>([]);
+  const [videosLoading, setVideosLoading] = useState(false);
+  const [fullscreenVideo, setFullscreenVideo] = useState<VideoEntry | null>(null);
+  const [videoWarning, setVideoWarning] = useState<string | null>(null);
+  const { upload: uploadVideo, progress: videoProgress, isUploading: videoUploading, error: videoError } = useVideoUpload();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
   // ----- Fetch grouped data -----
@@ -203,6 +211,46 @@ export function PhotoGallery() {
     const newPhotos = monthGroups.slice(0, visibleMonths).flatMap((g) => g.photos);
     void generateSignedUrls(newPhotos, supabase);
   }, [visibleMonths, monthGroups, selectedPetId]);
+
+  // ----- Fetch videos -----
+  const fetchVideos = useCallback(async () => {
+    if (!user || !selectedPetId) return;
+    setVideosLoading(true);
+    const supabase = createClient();
+    const { data: rows, error } = await supabase
+      .from("pet_videos")
+      .select("id, pet_id, user_id, video_url, storage_path, file_size_bytes, duration_seconds, created_at")
+      .eq("pet_id", selectedPetId)
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+    if (!error && rows) {
+      const vids = (rows as Array<{
+        id: string; pet_id: string; user_id: string; video_url: string;
+        storage_path: string; file_size_bytes: number; duration_seconds?: number; created_at: string;
+      }>).map((r) => ({
+        id: r.id, petId: r.pet_id, userId: r.user_id, videoUrl: r.video_url,
+        storagePath: r.storage_path, fileSizeBytes: r.file_size_bytes,
+        durationSeconds: r.duration_seconds, createdAt: r.created_at,
+      }));
+      setVideos(vids);
+    }
+    setVideosLoading(false);
+  }, [user, selectedPetId]);
+
+  useEffect(() => { void fetchVideos(); }, [fetchVideos]);
+
+  // ----- Video upload handler -----
+  async function handleVideoUpload(files: FileList | null) {
+    if (!files || !user || !selectedPetId) return;
+    const file = files[0];
+    if (!file) return;
+    const result = await uploadVideo(file, {
+      petId: selectedPetId,
+      userId: user.id,
+      onWarning: (msg) => { setVideoWarning(msg); setTimeout(() => setVideoWarning(null), 6000); },
+    });
+    if (result) void fetchVideos();
+  }
 
   // ----- Upload -----
   async function handleFileUpload(files: FileList | null) {
@@ -459,6 +507,91 @@ export function PhotoGallery() {
         <div ref={loadMoreRef} style={{ height: 1 }} />
       )}
 
+      {/* ── Videos Section ── */}
+      <div style={{ marginTop: 32 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#fff" }}>🎬 Videos</h2>
+          <button
+            onClick={() => videoInputRef.current?.click()}
+            disabled={videoUploading}
+            style={{
+              display: "flex", alignItems: "center", gap: 6,
+              padding: "8px 14px", borderRadius: 20,
+              background: videoUploading ? "rgba(255,255,255,0.08)" : accentColor,
+              border: "none", cursor: videoUploading ? "not-allowed" : "pointer",
+              fontSize: 13, fontWeight: 600, color: "#fff", fontFamily: FONT,
+            }}
+          >
+            <Upload size={14} />
+            {videoUploading ? `Subiendo ${videoProgress}%` : "Subir video"}
+          </button>
+        </div>
+
+        {/* Video upload progress bar */}
+        {videoUploading && (
+          <div style={{ height: 4, borderRadius: 999, background: "rgba(255,255,255,0.08)", marginBottom: 14, overflow: "hidden" }}>
+            <div style={{ height: "100%", borderRadius: 999, background: accentColor, width: `${videoProgress}%`, transition: "width 0.3s" }} />
+          </div>
+        )}
+
+        {/* Video error */}
+        {videoError && (
+          <div style={{ background: "rgba(255,69,58,0.12)", border: "1px solid rgba(255,69,58,0.3)", borderRadius: 10, padding: "10px 14px", marginBottom: 12, fontSize: 13, color: "#ff453a", fontFamily: FONT }}>
+            {videoError}
+          </div>
+        )}
+
+        {/* Video warning */}
+        {videoWarning && (
+          <div style={{ background: "rgba(255,159,10,0.12)", border: "1px solid rgba(255,159,10,0.3)", borderRadius: 10, padding: "10px 14px", marginBottom: 12, fontSize: 13, color: "#ff9f0a", fontFamily: FONT }}>
+            ⚠️ {videoWarning}
+          </div>
+        )}
+
+        {/* Videos grid */}
+        {videosLoading ? (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 3 }}>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} style={{ aspectRatio: "9/16", borderRadius: 10, background: "#1c1c1e", animation: "pulse 1.5s ease-in-out infinite" }} />
+            ))}
+          </div>
+        ) : videos.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "32px 0", color: "rgba(235,235,245,0.3)", fontSize: 14, fontFamily: FONT }}>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>🎬</div>
+            <p style={{ margin: 0 }}>Aún no hay videos. ¡Captura los mejores momentos!</p>
+          </div>
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 3 }}>
+            {videos.map((vid) => (
+              <div
+                key={vid.id}
+                onClick={() => setFullscreenVideo(vid)}
+                style={{ position: "relative", aspectRatio: "9/16", borderRadius: 10, overflow: "hidden", background: "#1c1c1e", cursor: "pointer" }}
+              >
+                {/* Play icon overlay */}
+                <div style={{
+                  position: "absolute", inset: 0,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  background: "rgba(0,0,0,0.35)",
+                }}>
+                  <PlayCircle size={36} color="rgba(255,255,255,0.9)" />
+                </div>
+                {/* Duration badge */}
+                {vid.durationSeconds !== undefined && vid.durationSeconds !== null && (
+                  <div style={{
+                    position: "absolute", bottom: 6, right: 6,
+                    background: "rgba(0,0,0,0.65)", borderRadius: 6,
+                    padding: "2px 6px", fontSize: 11, color: "#fff", fontFamily: FONT, fontWeight: 600,
+                  }}>
+                    {Math.floor(vid.durationSeconds / 60)}:{String(vid.durationSeconds % 60).padStart(2, "0")}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Hidden file input */}
       <input
         ref={fileInputRef}
@@ -467,6 +600,14 @@ export function PhotoGallery() {
         multiple
         style={{ display: "none" }}
         onChange={(e) => { void handleFileUpload(e.target.files); }}
+        onClick={(e) => { (e.target as HTMLInputElement).value = ""; }}
+      />
+      <input
+        ref={videoInputRef}
+        type="file"
+        accept="video/mp4"
+        style={{ display: "none" }}
+        onChange={(e) => { void handleVideoUpload(e.target.files); }}
         onClick={(e) => { (e.target as HTMLInputElement).value = ""; }}
       />
 
@@ -483,6 +624,19 @@ export function PhotoGallery() {
           onDeleted={(id) => {
             void fetchPhotos();
             setFullscreen(null);
+          }}
+        />
+      )}
+
+      {/* Video fullscreen */}
+      {fullscreenVideo && (
+        <VideoFullscreen
+          video={fullscreenVideo}
+          accentColor={accentColor}
+          onClose={() => setFullscreenVideo(null)}
+          onDeleted={(id) => {
+            setVideos((prev) => prev.filter((v) => v.id !== id));
+            setFullscreenVideo(null);
           }}
         />
       )}

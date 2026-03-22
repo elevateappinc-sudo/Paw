@@ -149,6 +149,7 @@ export type ActiveModule =
   | "itinerario"
   | "notificaciones"
   | "medicamentos"
-  | "info";
+  | "info"
+  | "marketplace";
 
 export type AppScreen = "auth" | "pets" | "app";
