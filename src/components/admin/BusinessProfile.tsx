@@ -13,7 +13,7 @@ interface Props {
 }
 
 export function BusinessProfile({ business, onUpdate }: Props) {
-  const { updateBusiness, refreshQrToken } = useBusinesses();
+  const { updateBusiness, regenerateQR } = useBusinesses();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(business.name);
   const [description, setDescription] = useState(business.description ?? "");
@@ -44,7 +44,7 @@ export function BusinessProfile({ business, onUpdate }: Props) {
   async function handleRefreshQr() {
     setRefreshing(true);
     try {
-      await refreshQrToken(business.id);
+      await regenerateQR(business.id);
       onUpdate();
     } finally {
       setRefreshing(false);
@@ -80,11 +80,11 @@ export function BusinessProfile({ business, onUpdate }: Props) {
             placeholder="Ej: Veterinaria Los Pinos"
             style={{ display: "block", width: "100%", marginTop: 8, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: "10px 14px", color: "#fff", fontSize: 15, outline: "none", boxSizing: "border-box" }}
           />
-          <label style={{ fontSize: 12, color: "rgba(235,235,245,0.5)", textTransform: "uppercase", letterSpacing: 1, display: "block", marginTop: 14 }}>Descripción (opcional)</label>
+          <label style={{ fontSize: 12, color: "rgba(235,235,245,0.5)", textTransform: "uppercase", letterSpacing: 1, display: "block", marginTop: 14 }}>Descripci\u00f3n (opcional)</label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Breve descripción"
+            placeholder="Breve descripci\u00f3n"
             rows={3}
             style={{ display: "block", width: "100%", marginTop: 8, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: "10px 14px", color: "#fff", fontSize: 15, outline: "none", resize: "none", boxSizing: "border-box" }}
           />
@@ -109,7 +109,7 @@ export function BusinessProfile({ business, onUpdate }: Props) {
               <QrCode size={20} color={ACCENT} />
             </div>
             <div style={{ flex: 1, textAlign: "left" }}>
-              <p style={{ margin: 0, fontSize: 16, color: "#fff", fontWeight: 600 }}>Código QR de vinculación</p>
+              <p style={{ margin: 0, fontSize: 16, color: "#fff", fontWeight: 600 }}>C\u00f3digo QR de vinculaci\u00f3n</p>
               <p style={{ margin: "2px 0 0", fontSize: 13, color: "rgba(235,235,245,0.5)" }}>Los clientes lo escanean para vincularse</p>
             </div>
             <span style={{ color: "rgba(235,235,245,0.3)", fontSize: 20 }}>›</span>
@@ -134,7 +134,7 @@ export function BusinessProfile({ business, onUpdate }: Props) {
                 {refreshing ? "Actualizando…" : "Generar nuevo QR"}
               </button>
               <p style={{ textAlign: "center", fontSize: 12, color: "rgba(235,235,245,0.3)", margin: "10px 0 0" }}>
-                Al generar uno nuevo, el anterior dejará de funcionar
+                Al generar uno nuevo, el anterior dejar\u00e1 de funcionar
               </p>
             </div>
           )}

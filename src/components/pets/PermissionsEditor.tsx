@@ -23,7 +23,7 @@ const MODULE_LABELS: Record<string, string> = {
   itinerario:     "Horario",
   notificaciones: "Avisos",
   medicamentos:   "Medicamentos",
-  info:           "Información",
+  info:           "Informaci\u00f3n",
 };
 
 const LEVELS: { value: AccessLevel; label: string; color: string }[] = [
@@ -37,7 +37,7 @@ interface Props {
   onClose: () => void;
 }
 
-export function PermissionsEditor({ petMemberId, onClose }: Props) {
+export default function PermissionsEditor({ petMemberId, onClose }: Props) {
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
@@ -61,22 +61,13 @@ export function PermissionsEditor({ petMemberId, onClose }: Props) {
     setSaving(module);
     const supabase = createClient();
     const existing = permissions.find((p) => p.module === module);
-
     if (existing) {
-      await supabase
-        .from("pet_member_permissions")
-        .update({ access_level: level })
-        .eq("id", existing.id);
+      await supabase.from("pet_member_permissions").update({ access_level: level }).eq("id", existing.id);
       setPermissions((prev) => prev.map((p) => p.module === module ? { ...p, access_level: level } : p));
     } else {
-      const { data } = await supabase
-        .from("pet_member_permissions")
-        .insert({ pet_member_id: petMemberId, module, access_level: level })
-        .select()
-        .single();
+      const { data } = await supabase.from("pet_member_permissions").insert({ pet_member_id: petMemberId, module, access_level: level }).select().single();
       if (data) setPermissions((prev) => [...prev, data as Permission]);
     }
-
     setSaving(null);
   }
 
@@ -88,15 +79,13 @@ export function PermissionsEditor({ petMemberId, onClose }: Props) {
           Listo
         </button>
       </div>
-
       {loading ? (
-        <div style={{ textAlign: "center", padding: 32, color: "rgba(235,235,245,0.4)" }}>Cargando…</div>
+        <div style={{ textAlign: "center", padding: 32, color: "rgba(235,235,245,0.4)" }}>Cargando\u2026</div>
       ) : (
         <div style={{ padding: "0 20px 20px" }}>
           {Object.entries(MODULE_LABELS).map(([module, label]) => {
             const perm = permissions.find((p) => p.module === module);
             const currentLevel = perm?.access_level ?? "none";
-
             return (
               <div key={module} style={{ background: "rgba(255,255,255,0.06)", borderRadius: 12, marginBottom: 8, padding: "14px 16px" }}>
                 <p style={{ margin: "0 0 10px", fontSize: 15, color: "#fff", fontWeight: 600 }}>{label}</p>
@@ -105,20 +94,10 @@ export function PermissionsEditor({ petMemberId, onClose }: Props) {
                     const active = currentLevel === lvl.value;
                     const isSaving = saving === module;
                     return (
-                      <button
-                        key={lvl.value}
+                      <button key={lvl.value}
                         onClick={() => { if (!active && !isSaving) void updatePermission(module, lvl.value); }}
                         disabled={isSaving}
-                        style={{
-                          flex: 1, padding: "8px 4px", borderRadius: 10, border: active ? `1px solid ${lvl.color}44` : "1px solid transparent",
-                          background: active ? `${lvl.color}22` : "rgba(255,255,255,0.04)",
-                          color: active ? lvl.color : "rgba(235,235,245,0.4)",
-                          fontSize: 12, fontWeight: active ? 700 : 400,
-                          cursor: isSaving ? "wait" : "pointer",
-                          display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
-                          transition: "all 0.15s",
-                        }}
-                      >
+                        style={{ flex: 1, padding: "8px 4px", borderRadius: 10, border: active ? `1px solid ${lvl.color}44` : "1px solid transparent", background: active ? `${lvl.color}22` : "rgba(255,255,255,0.04)", color: active ? lvl.color : "rgba(235,235,245,0.4)", fontSize: 12, fontWeight: active ? 700 : 400, cursor: isSaving ? "wait" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4, transition: "all 0.15s" }}>
                         {active && <Check size={11} />}
                         {lvl.label}
                       </button>

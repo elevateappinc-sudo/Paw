@@ -7,7 +7,7 @@ import { PetPhotos } from "./PetPhotos";
 import { PetForm } from "./PetForm";
 import { formatDate } from "@/lib/utils";
 import { NotificationSettings } from "@/components/notifications/NotificationSettings";
-import { PetMembersPanel } from "./PetMembersPanel";
+import PetMembersPanel from "./PetMembersPanel";
 
 const FONT = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
 
