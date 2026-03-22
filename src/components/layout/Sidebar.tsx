@@ -1,19 +1,17 @@
 "use client";
 import { useStore } from "@/store";
 import type { ActiveModule } from "@/types";
-import { LayoutDashboard, Wallet, Dumbbell, Syringe, Info, PawPrint, Clock, Bell, Pill, Link2, Image } from "lucide-react";
-import Link from "next/link";
+import { LayoutDashboard, Wallet, Dumbbell, Syringe, Info, PawPrint, Clock, Bell, Stethoscope } from "lucide-react";
 
 const NAV: { id: ActiveModule; label: string; icon: React.ReactNode }[] = [
-  { id: "dashboard",       label: "Inicio",   icon: <LayoutDashboard size={19} /> },
-  { id: "gastos",          label: "Gastos",   icon: <Wallet size={19} /> },
-  { id: "entrenamiento",   label: "Entrena",  icon: <Dumbbell size={19} /> },
-  { id: "vacunas",         label: "Vacunas",  icon: <Syringe size={19} /> },
-  { id: "itinerario",      label: "Horario",  icon: <Clock size={19} /> },
-  { id: "notificaciones",  label: "Avisos",   icon: <Bell size={19} /> },
-  { id: "medicamentos",    label: "Medicam.", icon: <Pill size={19} /> },
-  { id: "galeria",         label: "Galería",  icon: <Image size={19} /> },
-  { id: "info",            label: "Info",     icon: <Info size={19} /> },
+  { id: "dashboard",       label: "Inicio",    icon: <LayoutDashboard size={19} /> },
+  { id: "gastos",          label: "Gastos",    icon: <Wallet size={19} /> },
+  { id: "entrenamiento",   label: "Entrena",   icon: <Dumbbell size={19} /> },
+  { id: "vacunas",         label: "Vacunas",   icon: <Syringe size={19} /> },
+  { id: "historial",       label: "Historial", icon: <Stethoscope size={19} /> },
+  { id: "itinerario",      label: "Horario",   icon: <Clock size={19} /> },
+  { id: "notificaciones",  label: "Avisos",    icon: <Bell size={19} /> },
+  { id: "info",            label: "Info",      icon: <Info size={19} /> },
 ];
 
 export default function Sidebar() {

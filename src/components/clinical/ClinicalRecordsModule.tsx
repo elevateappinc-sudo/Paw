@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useStore } from "@/store";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -7,9 +7,6 @@ import {
   Share2, Upload, ChevronDown, Loader2, Link, Eye,
 } from "lucide-react";
 import type { ClinicalRecord, ClinicalDocument, VisitType } from "@/types";
-import { Modal } from "@/components/ui/Modal";
-import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
@@ -563,7 +560,6 @@ function DocumentsPanel({
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const loadDocs = useCallback(async () => {
     const { data } = await supabase
@@ -776,26 +772,13 @@ function DocumentsPanel({
             </p>
           )}
 
-          {/* FIX-06: Accessible file upload button */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".pdf,.jpg,.jpeg,.png,.webp"
-            onChange={handleFileChange}
-            disabled={uploading}
-            style={{ display: "none" }}
-            aria-hidden="true"
-          />
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
+          <label
             style={{
               width: "100%",
               padding: "16px",
               borderRadius: 13,
               border: "none",
-              background: uploading ? "rgba(255,122,69,0.5)" : accentColor,
+              background: uploading ? "rgba(10,132,255,0.5)" : accentColor,
               color: "#fff",
               fontSize: 17,
               fontWeight: 600,
@@ -818,7 +801,14 @@ function DocumentsPanel({
                 <Upload size={18} /> Agregar documento
               </>
             )}
-          </button>
+            <input
+              type="file"
+              accept=".pdf,.jpg,.jpeg,.png,.webp"
+              onChange={handleFileChange}
+              disabled={uploading}
+              style={{ display: "none" }}
+            />
+          </label>
         </div>
       </div>
     </div>
@@ -848,9 +838,9 @@ function RecordDetail({
   const [showDocs, setShowDocs] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   async function handleDelete() {
+    if (!window.confirm("¿Eliminar este registro?")) return;
     setDeleting(true);
     await supabase.from("clinical_records").delete().eq("id", record.id);
     onDeleted();
@@ -1015,7 +1005,7 @@ function RecordDetail({
                   <Pencil size={16} /> Editar
                 </button>
                 <button
-                  onClick={() => setShowDeleteConfirm(true)}
+                  onClick={handleDelete}
                   disabled={deleting}
                   style={{
                     flex: 1,
@@ -1061,34 +1051,6 @@ function RecordDetail({
           onSaved={onEdited}
         />
       )}
-
-      {/* FIX-03: Confirmation modal instead of window.confirm */}
-      <Modal
-        open={showDeleteConfirm}
-        onClose={() => setShowDeleteConfirm(false)}
-        title="¿Eliminar registro?"
-      >
-        <p style={{ fontSize: 15, color: "rgba(235,235,245,0.7)", marginBottom: 20 }}>
-          Esta acción eliminará permanentemente el registro clínico y sus documentos adjuntos. No se puede deshacer.
-        </p>
-        <div style={{ display: "flex", gap: 10 }}>
-          <Button
-            variant="ghost"
-            onClick={() => setShowDeleteConfirm(false)}
-            className="flex-1"
-          >
-            Cancelar
-          </Button>
-          <Button
-            variant="danger"
-            loading={deleting}
-            onClick={() => { setShowDeleteConfirm(false); void handleDelete(); }}
-            className="flex-1"
-          >
-            Eliminar
-          </Button>
-        </div>
-      </Modal>
     </>
   );
 }
@@ -1248,30 +1210,23 @@ function ShareModal({
                   {link}
                 </p>
               </div>
-              {/* FIX-07: Use Badge for success state instead of hardcoded #30d158 */}
-              {copied ? (
-                <div style={{ display: "flex", justifyContent: "center", padding: "12px 0" }}>
-                  <Badge variant="success" style={{ fontSize: 15, padding: "8px 20px" }}>¡Link copiado!</Badge>
-                </div>
-              ) : (
-                <button
-                  onClick={copyLink}
-                  style={{
-                    width: "100%",
-                    padding: "16px",
-                    borderRadius: 13,
-                    background: accentColor,
-                    border: "none",
-                    cursor: "pointer",
-                    fontSize: 17,
-                    fontWeight: 600,
-                    color: "#fff",
-                    fontFamily: "inherit",
-                  }}
-                >
-                  Copiar enlace
-                </button>
-              )}
+              <button
+                onClick={copyLink}
+                style={{
+                  width: "100%",
+                  padding: "16px",
+                  borderRadius: 13,
+                  background: copied ? "#30d158" : accentColor,
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: 17,
+                  fontWeight: 600,
+                  color: "#fff",
+                  fontFamily: "inherit",
+                }}
+              >
+                {copied ? "¡Copiado!" : "Copiar enlace"}
+              </button>
             </>
           ) : (
             <button
