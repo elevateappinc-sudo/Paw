@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Badge } from "@/components/ui/Badge";
 import { trackListingEvent } from "@/app/actions/marketplace";
 
 export interface Listing {

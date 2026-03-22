@@ -170,14 +170,13 @@ export function MarketplaceModule({ businessId, planName = "free", maxImages = 3
       )}
 
       {/* Create modal */}
-      <Modal
-        open={showCreate}
-        title="Publicar en Marketplace"
-        onClose={() => setShowCreate(false)}
-      >
-        {businessId && (
+      {showCreate && (
+        <Modal
+          title="Publicar en Marketplace"
+          onClose={() => setShowCreate(false)}
+        >
           <CreateListingForm
-            businessId={businessId}
+            businessId={businessId!}
             planName={planName}
             maxImages={maxImages}
             onSuccess={() => {
@@ -186,8 +185,8 @@ export function MarketplaceModule({ businessId, planName = "free", maxImages = 3
             }}
             onCancel={() => setShowCreate(false)}
           />
-        )}
-      </Modal>
+        </Modal>
+      )}
     </div>
   );
 }

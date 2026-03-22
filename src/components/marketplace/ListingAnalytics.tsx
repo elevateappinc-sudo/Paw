@@ -55,6 +55,7 @@ export function ListingAnalytics({ businessId, hasAnalytics }: ListingAnalyticsP
 
   useEffect(() => { void load(); }, [load]);
 
+  // Totals
   const totalViews = data.reduce((acc, l) => acc + l.listing_analytics.filter(e => e.event_type === "view").length, 0);
   const totalWA = data.reduce((acc, l) => acc + l.listing_analytics.filter(e => e.event_type === "click_whatsapp").length, 0);
   const totalEmail = data.reduce((acc, l) => acc + l.listing_analytics.filter(e => e.event_type === "click_email").length, 0);
@@ -69,6 +70,7 @@ export function ListingAnalytics({ businessId, hasAnalytics }: ListingAnalyticsP
 
   return (
     <div style={{ padding: "24px 16px", position: "relative" }}>
+      {/* Header */}
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
         <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(48,209,88,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <BarChart2 size={20} color="#30d158" />
@@ -79,12 +81,14 @@ export function ListingAnalytics({ businessId, hasAnalytics }: ListingAnalyticsP
         </div>
       </div>
 
+      {/* Summary cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 24, filter: hasAnalytics ? undefined : "blur(6px)", pointerEvents: hasAnalytics ? undefined : "none" }}>
         <StatCard icon={<Eye size={16} color="#0a84ff" />} label="Vistas" value={totalViews} color="#0a84ff" />
         <StatCard icon={<MessageCircle size={16} color="#25d366" />} label="WhatsApp" value={totalWA} color="#25d366" />
         <StatCard icon={<Mail size={16} color="#ff9500" />} label="Email" value={totalEmail} color="#ff9500" />
       </div>
 
+      {/* Per-listing breakdown */}
       {data.length > 0 && (
         <div style={{ display: "flex", flexDirection: "column", gap: 10, filter: hasAnalytics ? undefined : "blur(6px)", pointerEvents: hasAnalytics ? undefined : "none" }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: "rgba(235,235,245,0.4)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>
@@ -114,6 +118,7 @@ export function ListingAnalytics({ businessId, hasAnalytics }: ListingAnalyticsP
         </div>
       )}
 
+      {/* Gate for Free plan */}
       {!hasAnalytics && (
         <div style={{
           position: "absolute",

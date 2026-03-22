@@ -135,6 +135,7 @@ export function BusinessPlanSelector({ currentPlan = "free", onSelect }: Busines
                     background: isCurrent ? "rgba(255,255,255,0.06)" : plan.color,
                     color: isCurrent ? "rgba(235,235,245,0.35)" : plan.name === "free" ? "white" : "#000",
                     transition: "opacity 0.15s",
+                    opacity: isCurrent ? 1 : undefined,
                   }}
                 >
                   {isCurrent ? "Plan actual" : plan.cta}
