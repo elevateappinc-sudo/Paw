@@ -229,9 +229,7 @@ export function DatePicker({
               className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-text-secondary hover:text-white transition-colors"
               aria-label="Mes anterior"
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+              ←
             </button>
             <span className="text-sm font-semibold text-white">
               {MONTHS_ES[viewMonth]} {viewYear}
@@ -242,9 +240,7 @@ export function DatePicker({
               className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-text-secondary hover:text-white transition-colors"
               aria-label="Mes siguiente"
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+              →
             </button>
           </div>
 

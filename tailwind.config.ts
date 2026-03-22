@@ -9,6 +9,11 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        accent: 'var(--color-accent)',
+        surface: '#111111',
+        'surface-2': '#1A1A1A',
+        border: '#1F1F1F',
+        'text-secondary': '#9CA3AF',
         primary: {
           DEFAULT: "#6366f1",
           50: "#eef2ff",
@@ -17,12 +22,6 @@ const config: Config = {
           600: "#4f46e5",
           700: "#4338ca",
         },
-        accent: "var(--color-accent)",
-        surface: "#1a1a1e",
-        "surface-2": "#242428",
-        background: "#000000",
-        border: "rgba(255,255,255,0.06)",
-        sidebar: "#fafafa",
       },
       borderRadius: {
         xl: "16px",
