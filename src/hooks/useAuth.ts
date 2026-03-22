@@ -41,6 +41,27 @@ function mapAuthError(error: AuthError): string {
   return error.message;
 }
 
+function mapOAuthError(error: AuthError | null, errorParam?: string | null): string {
+  if (!error && !errorParam) return "";
+
+  const msg = error?.message?.toLowerCase() ?? errorParam?.toLowerCase() ?? "";
+
+  if (msg.includes("already registered") || msg.includes("email already") || msg.includes("user already")) {
+    return "Ya tienes una cuenta con email y contraseña. Inicia sesión normal y luego vincula Google desde tu perfil.";
+  }
+  if (msg.includes("email_verified") || msg.includes("not verified")) {
+    return "No pudimos verificar tu correo de Google. Por favor usa otro método de inicio de sesión.";
+  }
+  if (msg.includes("email") && msg.includes("coincide")) {
+    return "Tu cuenta está registrada con otro email. Usa ese email para ingresar.";
+  }
+  if (msg === "oauth_failed" || msg.includes("oauth")) {
+    return "No pudimos conectar con Google. Intenta de nuevo.";
+  }
+
+  return "No pudimos conectar con Google. Intenta de nuevo.";
+}
+
 export function useAuth() {
   const supabase = createClient();
 
@@ -72,6 +93,58 @@ export function useAuth() {
     }
   }
 
+  async function signInWithGoogle(): Promise<AuthResult> {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: "offline",
+            prompt: "consent",
+          },
+        },
+      });
+
+      if (error) {
+        return { ok: false, error: mapOAuthError(error) };
+      }
+
+      // OAuth redirects the user — no session available here yet
+      return { ok: true };
+    } catch (err) {
+      // User cancelled or popup blocked — silently return without error
+      const message = err instanceof Error ? err.message.toLowerCase() : "";
+      if (message.includes("cancelled") || message.includes("closed") || message.includes("popup")) {
+        return { ok: true }; // Treated as cancellation — no visible error
+      }
+      return { ok: false, error: "No pudimos conectar con Google. Intenta de nuevo." };
+    }
+  }
+
+  async function linkGoogleAccount(): Promise<AuthResult> {
+    try {
+      const { error } = await supabase.auth.linkIdentity({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) {
+        const msg = error.message.toLowerCase();
+        if (msg.includes("already linked") || msg.includes("already exists")) {
+          return { ok: false, error: "Esta cuenta de Google ya está vinculada a otro usuario." };
+        }
+        return { ok: false, error: mapOAuthError(error) };
+      }
+
+      return { ok: true };
+    } catch {
+      return { ok: false, error: "No pudimos conectar con Google. Intenta de nuevo." };
+    }
+  }
+
   async function signOut(): Promise<AuthResult> {
     try {
       const { error } = await supabase.auth.signOut();
@@ -87,5 +160,5 @@ export function useAuth() {
     return data.session;
   }
 
-  return { signUp, signIn, signOut, getSession };
+  return { signUp, signIn, signInWithGoogle, linkGoogleAccount, signOut, getSession };
 }

@@ -1,10 +1,12 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useStore } from "@/store";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { createClient } from "@/lib/supabase/client";
 import { Pencil, UserPlus, X, Users, Crown } from "lucide-react";
 import { PetPhotos } from "./PetPhotos";
 import { PetForm } from "./PetForm";
+import { AccountSettings } from "@/components/settings/AccountSettings";
 import { formatDate } from "@/lib/utils";
 
 const FONT = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
@@ -17,6 +19,21 @@ export function PetInfoModule() {
   const [shareEmail, setShareEmail] = useState("");
   const [shareError, setShareError] = useState("");
   const [shareSuccess, setShareSuccess] = useState("");
+  const [googleLinked, setGoogleLinked] = useState(false);
+
+  // Load google_linked status from users table
+  useEffect(() => {
+    if (!currentUser) return;
+    const supabase = createClient();
+    supabase
+      .from("users")
+      .select("google_linked")
+      .eq("id", currentUser.id)
+      .single()
+      .then(({ data }) => {
+        if (data) setGoogleLinked(Boolean(data.google_linked));
+      });
+  }, [currentUser]);
 
   if (!pet) return null;
 
@@ -204,6 +221,14 @@ export function PetInfoModule() {
             photos={pet.photos ?? []}
             accentColor={pet.color}
             canEdit={true}
+          />
+        </div>
+
+        {/* Account Settings (Google linking) */}
+        <div style={{ marginBottom: 24 }}>
+          <AccountSettings
+            googleLinked={googleLinked}
+            onGoogleLinkChange={setGoogleLinked}
           />
         </div>
 
