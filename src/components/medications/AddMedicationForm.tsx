@@ -3,7 +3,6 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useStore } from "@/store";
-import { Button } from "@/components/ui/Button";
 
 const FONT = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
 
@@ -24,7 +23,7 @@ export function AddMedicationForm({ onClose, onSuccess }: Props) {
   const { user } = useAuthContext();
   const { selectedPetId, pets } = useStore();
   const pet = pets.find((p) => p.id === selectedPetId);
-  const accentColor = pet?.color ?? "var(--color-accent)";
+  const accentColor = pet?.color ?? "#0a84ff";
 
   const [name, setName] = useState("");
   const [doseAmount, setDoseAmount] = useState("");
@@ -246,12 +245,14 @@ export function AddMedicationForm({ onClose, onSuccess }: Props) {
 
       {/* Actions */}
       <div style={{ display: "flex", gap: 10 }}>
-        <Button type="button" variant="ghost" onClick={onClose} className="flex-1">
+        <button type="button" onClick={onClose}
+          style={{ flex: 1, padding: "14px", borderRadius: 13, background: "rgba(255,255,255,0.08)", border: "none", cursor: "pointer", fontSize: 15, fontWeight: 600, color: "rgba(235,235,245,0.7)", fontFamily: FONT }}>
           Cancelar
-        </Button>
-        <Button type="submit" variant="primary" loading={saving} className="flex-[2]">
-          Guardar medicamento
-        </Button>
+        </button>
+        <button type="submit" disabled={saving}
+          style={{ flex: 2, padding: "14px", borderRadius: 13, background: saving ? "rgba(255,255,255,0.1)" : accentColor, border: "none", cursor: saving ? "not-allowed" : "pointer", fontSize: 15, fontWeight: 700, color: "#fff", fontFamily: FONT }}>
+          {saving ? "Guardando..." : "Guardar medicamento"}
+        </button>
       </div>
     </form>
   );

@@ -2,8 +2,6 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useStore } from "@/store";
-import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
 
 const FONT = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
 
@@ -76,22 +74,21 @@ function hasTodayPending(logs: MedicationLogData[]): MedicationLogData | null {
   ) ?? null;
 }
 
-type BadgeVariant = "success" | "neutral" | "error";
-function getBadge(medication: MedicationData): { label: string; variant: BadgeVariant } {
+function getBadge(medication: MedicationData): { label: string; color: string; bg: string } {
   if (!medication.active) {
-    return { label: "Discontinuado", variant: "error" };
+    return { label: "Discontinuado", color: "#ff453a", bg: "rgba(255,69,58,0.12)" };
   }
   const now = new Date().toISOString().split("T")[0];
   if (medication.end_date && medication.end_date < now) {
-    return { label: "Completado", variant: "neutral" };
+    return { label: "Completado", color: "rgba(235,235,245,0.5)", bg: "rgba(255,255,255,0.06)" };
   }
-  return { label: "Activo", variant: "success" };
+  return { label: "Activo", color: "#30d158", bg: "rgba(48,209,88,0.12)" };
 }
 
 export function MedicationCard({ medication, logs, onUpdate }: Props) {
   const { pets, selectedPetId } = useStore();
   const pet = pets.find((p) => p.id === selectedPetId);
-  const accentColor = pet?.color ?? "var(--color-accent)";
+  const accentColor = pet?.color ?? "#0a84ff";
 
   const [loading, setLoading] = useState(false);
 
@@ -139,7 +136,12 @@ export function MedicationCard({ medication, logs, onUpdate }: Props) {
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <span style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>💊 {medication.name}</span>
-            <Badge variant={badge.variant}>{badge.label}</Badge>
+            <span style={{
+              fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 6,
+              background: badge.bg, color: badge.color,
+            }}>
+              {badge.label}
+            </span>
           </div>
           <p style={{ fontSize: 13, color: "rgba(235,235,245,0.5)", margin: "4px 0 0" }}>
             {medication.dose_amount} {medication.dose_unit} · {frequencyLabel(medication.frequency_value, medication.frequency_unit)}
@@ -169,25 +171,30 @@ export function MedicationCard({ medication, logs, onUpdate }: Props) {
       {medication.active && (
         <div style={{ display: "flex", gap: 8 }}>
           {todayLog && (
-            <Button
-              variant="primary"
-              size="sm"
-              loading={loading}
+            <button
               onClick={() => void handleRegisterDose()}
-              className="flex-[2]"
+              disabled={loading}
+              style={{
+                flex: 2, padding: "10px", borderRadius: 10,
+                background: "#30d158", border: "none", cursor: loading ? "not-allowed" : "pointer",
+                fontSize: 13, fontWeight: 700, color: "#fff", fontFamily: FONT,
+              }}
             >
-              ✓ Registrar toma
-            </Button>
+              {loading ? "Registrando..." : "✓ Registrar toma"}
+            </button>
           )}
-          <Button
-            variant="danger"
-            size="sm"
-            loading={loading}
+          <button
             onClick={() => void handleDiscontinue()}
-            className="flex-1"
+            disabled={loading}
+            style={{
+              flex: 1, padding: "10px", borderRadius: 10,
+              background: "rgba(255,69,58,0.1)", border: "1px solid rgba(255,69,58,0.2)",
+              cursor: loading ? "not-allowed" : "pointer",
+              fontSize: 13, fontWeight: 600, color: "#ff453a", fontFamily: FONT,
+            }}
           >
             Discontinuar
-          </Button>
+          </button>
         </div>
       )}
     </div>
