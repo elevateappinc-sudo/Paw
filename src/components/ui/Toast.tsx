@@ -1,22 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Button } from "./Button";
-
-export type ToastType = "success" | "error" | "info" | "warning";
 
 export interface ToastMessage {
   id: string;
   message: string;
-  type?: ToastType;
   onRetry?: () => void;
 }
-
-const TYPE_BORDER: Record<ToastType, string> = {
-  success: "#22C55E",
-  error: "#EF4444",
-  warning: "#F59E0B",
-  info: "rgba(255,255,255,0.12)",
-};
 
 interface ToastProps {
   toast: ToastMessage;
@@ -24,9 +13,6 @@ interface ToastProps {
 }
 
 function ToastItem({ toast, onDismiss }: ToastProps) {
-  const type: ToastType = toast.type ?? "info";
-  const borderColor = TYPE_BORDER[type];
-
   useEffect(() => {
     const timer = setTimeout(() => onDismiss(toast.id), 6000);
     return () => clearTimeout(timer);
@@ -46,23 +32,31 @@ function ToastItem({ toast, onDismiss }: ToastProps) {
         minWidth: 280,
         maxWidth: 340,
         animation: "slideUp 0.2s ease-out",
-        borderLeft: `3px solid ${borderColor}`,
       }}
     >
       <span style={{ fontSize: 14, color: "rgba(235,235,245,0.9)", flex: 1 }}>
         {toast.message}
       </span>
       {toast.onRetry && (
-        <Button
-          variant="ghost"
-          size="sm"
+        <button
           onClick={() => {
             toast.onRetry?.();
             onDismiss(toast.id);
           }}
+          style={{
+            background: "#ff375f",
+            border: "none",
+            borderRadius: 8,
+            padding: "6px 12px",
+            color: "#fff",
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: "pointer",
+            flexShrink: 0,
+          }}
         >
           Reintentar
-        </Button>
+        </button>
       )}
       <button
         onClick={() => onDismiss(toast.id)}
@@ -76,7 +70,6 @@ function ToastItem({ toast, onDismiss }: ToastProps) {
           padding: 0,
           flexShrink: 0,
         }}
-        aria-label="Cerrar notificación"
       >
         ×
       </button>
@@ -118,25 +111,25 @@ export function ToastContainer({ toasts, onDismiss }: ToastContainerProps) {
 }
 
 // Hook
-let _showToast: ((msg: string, type?: ToastType, onRetry?: () => void) => void) | null = null;
+let _showToast: ((msg: string, onRetry?: () => void) => void) | null = null;
 
 export function registerToastHandler(
-  handler: (msg: string, type?: ToastType, onRetry?: () => void) => void
+  handler: (msg: string, onRetry?: () => void) => void
 ) {
   _showToast = handler;
 }
 
-export function showToast(msg: string, type?: ToastType, onRetry?: () => void) {
-  if (_showToast) _showToast(msg, type, onRetry);
+export function showToast(msg: string, onRetry?: () => void) {
+  if (_showToast) _showToast(msg, onRetry);
   else console.warn("[Toast]", msg);
 }
 
 export function useToasts() {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  const show = (message: string, type?: ToastType, onRetry?: () => void) => {
+  const show = (message: string, onRetry?: () => void) => {
     const id = Math.random().toString(36).slice(2);
-    setToasts((prev) => [...prev, { id, message, type: type ?? "info", onRetry }]);
+    setToasts((prev) => [...prev, { id, message, onRetry }]);
   };
 
   const dismiss = (id: string) => {
