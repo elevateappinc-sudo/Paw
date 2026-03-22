@@ -32,10 +32,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       setSession(newSession);
       setUser(newSession?.user ?? null);
       setLoading(false);
+
+      // On Google sign-in: sync avatar_url and display_name to users table
+      if (event === "SIGNED_IN" && newSession?.user?.app_metadata?.provider === "google") {
+        const { user: authUser } = newSession;
+        await supabase
+          .from("users")
+          .update({
+            avatar_url: authUser.user_metadata?.avatar_url ?? null,
+            display_name: authUser.user_metadata?.full_name ?? null,
+          })
+          .eq("id", authUser.id);
+      }
     });
 
     return () => subscription.unsubscribe();

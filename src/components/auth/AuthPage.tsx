@@ -1,10 +1,34 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { PawPrint, Eye, EyeOff, Loader2 } from "lucide-react";
 
+// Google "G" SVG icon
+function GoogleIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+        fill="#4285F4"
+      />
+      <path
+        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+        fill="#34A853"
+      />
+      <path
+        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"
+        fill="#FBBC05"
+      />
+      <path
+        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+        fill="#EA4335"
+      />
+    </svg>
+  );
+}
+
 export function AuthPage() {
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, signInWithGoogle } = useAuth();
   const [tab, setTab] = useState<"login" | "register">("login");
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
@@ -13,6 +37,34 @@ export function AuthPage() {
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  // Handle OAuth error returned via redirect query param
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const authError = params.get("auth_error");
+    if (authError) {
+      setError(mapRedirectError(authError));
+      // Clean URL without reload
+      const url = new URL(window.location.href);
+      url.searchParams.delete("auth_error");
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, []);
+
+  function mapRedirectError(code: string): string {
+    switch (code) {
+      case "oauth_failed":
+        return "No pudimos conectar con Google. Intenta de nuevo.";
+      case "email_not_verified":
+        return "No pudimos verificar tu correo de Google. Por favor usa otro método de inicio de sesión.";
+      case "email_conflict":
+        return "Ya tienes una cuenta con email y contraseña. Inicia sesión normal y luego vincula Google desde tu perfil.";
+      default:
+        return "No pudimos conectar con Google. Intenta de nuevo.";
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -52,12 +104,25 @@ export function AuthPage() {
           setError(result.error ?? "Error al crear la cuenta.");
         } else {
           setError("");
-          // Show confirmation message if email confirmation is required
           // AuthContext will pick up the session automatically if auto-confirmed
         }
       }
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleGoogleSignIn() {
+    setError("");
+    setGoogleLoading(true);
+    try {
+      const result = await signInWithGoogle();
+      if (!result.ok) {
+        setError(result.error ?? "No pudimos conectar con Google. Intenta de nuevo.");
+      }
+      // On success: OAuth redirects the browser — no further action needed here
+    } finally {
+      setGoogleLoading(false);
     }
   }
 
@@ -95,6 +160,7 @@ export function AuthPage() {
   ];
 
   const fields = tab === "login" ? loginFields : registerFields;
+  const isAnyLoading = loading || googleLoading;
 
   return (
     <div style={{
@@ -159,7 +225,7 @@ export function AuthPage() {
                     placeholder={f.placeholder}
                     required
                     autoComplete="off"
-                    disabled={loading}
+                    disabled={isAnyLoading}
                     style={{ ...inputStyle, flex: 1 }}
                   />
                   {(f.key === "password" || f.key === "confirm") && (
@@ -185,12 +251,12 @@ export function AuthPage() {
           )}
 
           {/* Submit */}
-          <button type="submit" disabled={loading}
+          <button type="submit" disabled={isAnyLoading}
             style={{
               width: "100%", padding: "16px", borderRadius: 13, border: "none",
               background: "#0a84ff", color: "#ffffff",
-              fontSize: 17, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer",
-              opacity: loading ? 0.7 : 1, transition: "opacity 0.2s",
+              fontSize: 17, fontWeight: 600, cursor: isAnyLoading ? "not-allowed" : "pointer",
+              opacity: isAnyLoading ? 0.7 : 1, transition: "opacity 0.2s",
               fontFamily: "inherit",
               display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
             }}
@@ -201,6 +267,37 @@ export function AuthPage() {
               : (tab === "login" ? "Continuar" : "Crear cuenta")}
           </button>
         </form>
+
+        {/* Separator */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: 12, margin: "20px 0",
+        }}>
+          <div style={{ flex: 1, height: 1, background: "rgba(84,84,88,0.65)" }} />
+          <span style={{ fontSize: 13, color: "rgba(235,235,245,0.4)", flexShrink: 0 }}>o</span>
+          <div style={{ flex: 1, height: 1, background: "rgba(84,84,88,0.65)" }} />
+        </div>
+
+        {/* Google Sign-In Button */}
+        <button
+          type="button"
+          onClick={handleGoogleSignIn}
+          disabled={isAnyLoading}
+          style={{
+            width: "100%", padding: "15px 16px", borderRadius: 13,
+            background: "#111111", border: "1px solid #333333",
+            color: "#ffffff", fontSize: 16, fontWeight: 600,
+            cursor: isAnyLoading ? "not-allowed" : "pointer",
+            opacity: isAnyLoading ? 0.7 : 1, transition: "opacity 0.2s",
+            fontFamily: "inherit",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+          }}
+        >
+          {googleLoading
+            ? <Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} />
+            : <GoogleIcon size={20} />
+          }
+          {googleLoading ? "Conectando con Google..." : "Continuar con Google"}
+        </button>
       </div>
 
       <style>{`
