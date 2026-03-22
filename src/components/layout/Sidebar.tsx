@@ -1,7 +1,8 @@
 "use client";
 import { useStore } from "@/store";
 import type { ActiveModule } from "@/types";
-import { LayoutDashboard, Wallet, Dumbbell, Syringe, Info, PawPrint, Clock, Bell, Pill } from "lucide-react";
+import { LayoutDashboard, Wallet, Dumbbell, Syringe, Info, PawPrint, Clock, Bell, Pill, Link2, Image } from "lucide-react";
+import Link from "next/link";
 
 const NAV: { id: ActiveModule; label: string; icon: React.ReactNode }[] = [
   { id: "dashboard",       label: "Inicio",   icon: <LayoutDashboard size={19} /> },
@@ -11,6 +12,7 @@ const NAV: { id: ActiveModule; label: string; icon: React.ReactNode }[] = [
   { id: "itinerario",      label: "Horario",  icon: <Clock size={19} /> },
   { id: "notificaciones",  label: "Avisos",   icon: <Bell size={19} /> },
   { id: "medicamentos",    label: "Medicam.", icon: <Pill size={19} /> },
+  { id: "galeria",         label: "Galería",  icon: <Image size={19} /> },
   { id: "info",            label: "Info",     icon: <Info size={19} /> },
 ];
 
@@ -70,6 +72,14 @@ export default function Sidebar() {
           })}
         </nav>
 
+        {/* Integrations link */}
+        <Link href="/settings/integrations" title="Integraciones" style={{
+          width: 48, height: 48, borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center",
+          color: "rgba(235,235,245,0.3)", textDecoration: "none", marginBottom: 4,
+        }}>
+          <Link2 size={19} />
+        </Link>
+
         {/* Back to pets */}
         <div style={{ height: 64, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <button onClick={() => selectPet(null)} title="Cambiar mascota"
@@ -110,6 +120,16 @@ export default function Sidebar() {
               </button>
             );
           })}
+          {/* Integrations mobile item */}
+          <Link href="/settings/integrations" style={{
+            display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
+            padding: "4px 14px", textDecoration: "none",
+            color: "rgba(235,235,245,0.35)", flexShrink: 0,
+            fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif",
+          }}>
+            <Link2 size={19} />
+            <span style={{ fontSize: 9, fontWeight: 600 }}>Integrac.</span>
+          </Link>
         </div>
       </nav>
     </>
