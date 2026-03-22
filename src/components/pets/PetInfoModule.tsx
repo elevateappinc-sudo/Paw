@@ -6,6 +6,7 @@ import { Pencil, UserPlus, X, Users, Crown } from "lucide-react";
 import { PetPhotos } from "./PetPhotos";
 import { PetForm } from "./PetForm";
 import { formatDate } from "@/lib/utils";
+import { NotificationSettings } from "@/components/notifications/NotificationSettings";
 
 const FONT = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
 
@@ -207,8 +208,11 @@ export function PetInfoModule() {
           />
         </div>
 
+        {/* Notification Settings */}
+        <NotificationSettings />
+
         {/* Actions */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 24 }}>
           {isOwner && (
             <button onClick={() => setEditing(true)} style={{
               width: "100%", padding: "16px", borderRadius: 13, border: "none",
