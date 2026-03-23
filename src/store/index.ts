@@ -10,7 +10,12 @@ import * as trainingApi from "@/lib/api/training";
 import * as vaccinesApi from "@/lib/api/vaccines";
 import * as itineraryApi from "@/lib/api/itinerary";
 import * as notificationsApi from "@/lib/api/notifications";
-import { showToast } from "@/components/ui/Toast";
+// Toast import deferred to avoid SSR hydration issues
+function showToast(msg: string, retry?: () => void) {
+  if (typeof window !== "undefined") {
+    import("@/components/ui/Toast").then(({ showToast: st }) => st(msg, retry));
+  }
+}
 
 const DEFAULT_CONCEPTOS = ["Comida", "Baño", "Juguetes", "Salud", "Entrenamiento", "Veterinario", "Otros"];
 const DEFAULT_PERSONAS  = ["Yo", "Mi pareja", "Familiar"];
