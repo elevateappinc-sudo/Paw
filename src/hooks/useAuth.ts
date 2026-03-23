@@ -87,5 +87,20 @@ export function useAuth() {
     return data.session;
   }
 
-  return { signUp, signIn, signOut, getSession };
+  async function linkGoogleAccount(): Promise<AuthResult> {
+    try {
+      const { error } = await supabase.auth.linkIdentity({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback?link=google`,
+        },
+      });
+      if (error) return { ok: false, error: mapAuthError(error) };
+      return { ok: true };
+    } catch {
+      return { ok: false, error: "Sin conexión. Verifica tu internet e intenta de nuevo." };
+    }
+  }
+
+  return { signUp, signIn, signOut, getSession, linkGoogleAccount };
 }

@@ -1,7 +1,8 @@
 "use client";
 import { useStore } from "@/store";
 import type { ActiveModule } from "@/types";
-import { LayoutDashboard, Wallet, Dumbbell, Syringe, Info, PawPrint, Clock, Bell, ShoppingBag } from "lucide-react";
+import { LayoutDashboard, Wallet, Dumbbell, Syringe, Info, PawPrint, Clock, Bell, ShoppingBag, Pill, Link2 } from "lucide-react";
+import Link from "next/link";
 import { PetAvatar } from "@/components/pets/PetAvatar";
 
 const NAV: { id: ActiveModule; label: string; icon: React.ReactNode }[] = [

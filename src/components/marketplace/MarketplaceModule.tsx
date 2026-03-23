@@ -172,6 +172,7 @@ export function MarketplaceModule({ businessId, planName = "free", maxImages = 3
       {/* Create modal */}
       {showCreate && (
         <Modal
+          open={showCreate}
           title="Publicar en Marketplace"
           onClose={() => setShowCreate(false)}
         >

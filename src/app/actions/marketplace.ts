@@ -42,8 +42,10 @@ export async function createListing(input: CreateListingInput): Promise<CreateLi
     .eq("status", "active")
     .single();
 
-  // Default to free plan
-  const plan = (sub?.marketplace_plans as { name: string; max_listings: number | null; max_images: number; has_featured: boolean } | null) ?? {
+  type PlanData = { name: string; max_listings: number | null; max_images: number; has_featured: boolean };
+  const rawPlan = sub?.marketplace_plans;
+  const planData: PlanData | null = rawPlan && !Array.isArray(rawPlan) ? (rawPlan as unknown as PlanData) : Array.isArray(rawPlan) && rawPlan.length > 0 ? (rawPlan[0] as unknown as PlanData) : null;
+  const plan: PlanData = planData ?? {
     name: "free",
     max_listings: 1,
     max_images: 3,

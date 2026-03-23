@@ -16,6 +16,7 @@ import { ItinerarioModule } from "@/components/itinerario/ItinerarioModule";
 import { NotificacionesModule } from "@/components/notificaciones/NotificacionesModule";
 import { MedicationsModule } from "@/components/medications/MedicationsModule";
 import { MarketplaceModule } from "@/components/marketplace/MarketplaceModule";
+import { ClinicalRecordsModule } from "@/components/clinical/ClinicalRecordsModule";
 
 export default function Home() {
   const { user, loading } = useAuthContext();

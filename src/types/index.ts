@@ -150,6 +150,7 @@ export type ActiveModule =
   | "notificaciones"
   | "medicamentos"
   | "info"
-  | "marketplace";
+  | "marketplace"
+  | "historial";
 
 export type AppScreen = "auth" | "pets" | "app";

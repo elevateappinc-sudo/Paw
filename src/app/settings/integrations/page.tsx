@@ -3,6 +3,8 @@
 
 import { CalendarIntegration } from "@/components/settings/CalendarIntegration";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "PAW — Integraciones",
 };

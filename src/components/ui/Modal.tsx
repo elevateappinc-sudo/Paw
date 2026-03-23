@@ -1,6 +1,6 @@
 "use client";
 import { X } from "lucide-react";
-import { useEffect, useId } from "react";
+import { useEffect, useId, useRef } from "react";
 
 interface ModalProps {
   open: boolean;
@@ -14,6 +14,8 @@ const FOCUSABLE_SELECTORS =
 
 export function Modal({ open, onClose, title, children }: ModalProps) {
   const titleId = useId();
+  const triggerRef = useRef<HTMLElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -62,6 +64,7 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
 
       {/* Panel */}
       <div
+        ref={panelRef}
         className="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl bg-surface-2 border border-border"
         style={{ boxShadow: "0 -20px 60px rgba(0,0,0,0.5)" }}
       >
