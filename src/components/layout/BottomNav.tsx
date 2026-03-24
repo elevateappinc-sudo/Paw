@@ -19,23 +19,23 @@ export function BottomNav() {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-black border-t border-[#1F1F1F] pb-safe md:hidden">
+      <nav role="navigation" aria-label="Navegación principal" className="fixed bottom-0 left-0 right-0 z-50 bg-black border-t border-[#1F1F1F] pb-safe md:hidden">
         <div className="flex items-center justify-around h-16">
           {NAV_TABS.map(tab => {
             const Icon = ICONS[tab.iconName as keyof typeof ICONS]
             const active = isActive(tab.id)
 
             if (tab.id === 'more') return (
-              <button key={tab.id} onClick={() => setDrawerOpen(true)} className="flex flex-col items-center gap-1 flex-1 py-2">
+              <button key={tab.id} onClick={() => setDrawerOpen(true)} aria-current={active ? 'page' : undefined} className="flex flex-col items-center gap-1 flex-1 py-2">
                 <Grid2X2 className={`w-6 h-6 ${active ? 'text-accent' : 'text-gray-500'}`} />
-                <span className={`text-[10px] ${active ? 'text-accent font-semibold' : 'text-gray-500'}`}>Más</span>
+                <span className={`text-xs ${active ? 'text-accent font-semibold' : 'text-gray-500'}`}>Más</span>
               </button>
             )
 
             return (
-              <Link key={tab.id} href={tab.route!} className="flex flex-col items-center gap-1 flex-1 py-2">
+              <Link key={tab.id} href={tab.route!} aria-current={active ? 'page' : undefined} className="flex flex-col items-center gap-1 flex-1 py-2">
                 <Icon className={`w-6 h-6 ${active ? 'text-accent' : 'text-gray-500'}`} strokeWidth={active ? 2.5 : 1.5} />
-                <span className={`text-[10px] ${active ? 'text-accent font-semibold' : 'text-gray-500'}`}>{tab.label}</span>
+                <span className={`text-xs ${active ? 'text-accent font-semibold' : 'text-gray-500'}`}>{tab.label}</span>
               </Link>
             )
           })}
