@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useStore } from "@/store";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { Plus, UtensilsCrossed, Footprints, Check, Pencil, Trash2, X, Clock } from "lucide-react";
@@ -198,10 +198,19 @@ function ItemRow({
 
 // ── Main Module ───────────────────────────────────────────────────────────────
 export function ItinerarioModule() {
-  const { itinerario, registros, toggleRegistro, deleteItinerarioItem, selectedPetId, pets } = useStore();
+  const { itinerario, registros, toggleRegistro, deleteItinerarioItem, selectedPetId, pets, fetchItinerario } = useStore();
   const { user } = useAuthContext();
   const [showForm, setShowForm] = useState(false);
   const [editItem, setEditItem] = useState<ItinerarioItem | null>(null);
+
+  const fetchData = useCallback(async () => {
+    if (!selectedPetId) return;
+    await fetchItinerario();
+  }, [selectedPetId, fetchItinerario]);
+
+  useEffect(() => {
+    void fetchData();
+  }, [fetchData]);
 
   const pet = pets.find((p) => p.id === selectedPetId);
   const accentColor = pet?.color ?? "#0a84ff";
@@ -219,10 +228,13 @@ export function ItinerarioModule() {
     return r?.completado ?? false;
   };
 
-  const { comidas, salidas } = useMemo(() => ({
-    comidas: petItems.filter((i) => i.tipo === "comida"),
-    salidas: petItems.filter((i) => i.tipo === "salida"),
-  }), [petItems]);
+  const { comidas, salidas } = useMemo(() => {
+    const todayItemIds = new Set(todayItems.map((i) => i.id));
+    return {
+      comidas: petItems.filter((i) => i.tipo === "comida" && !todayItemIds.has(i.id)),
+      salidas: petItems.filter((i) => i.tipo === "salida" && !todayItemIds.has(i.id)),
+    };
+  }, [petItems, todayItems]);
 
   const doneToday = todayItems.filter((i) => isItemDone(i.id)).length;
   const progress  = todayItems.length > 0 ? doneToday / todayItems.length : 0;
