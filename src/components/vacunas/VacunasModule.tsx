@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useStore } from "@/store";
 import { Plus, Syringe, Pencil, Trash2, X } from "lucide-react";
 import { formatDate, today } from "@/lib/utils";
@@ -93,9 +93,18 @@ function VacunaForm({ onClose, editVacuna }: { onClose: () => void; editVacuna?:
 }
 
 export function VacunasModule() {
-  const { vacunas, deleteVacuna, selectedPetId, pets } = useStore();
+  const { vacunas, deleteVacuna, selectedPetId, pets, fetchVacunas } = useStore();
   const [showForm, setShowForm] = useState(false);
   const [editVacuna, setEditVacuna] = useState<Vacuna | null>(null);
+
+  const fetchData = useCallback(async () => {
+    if (!selectedPetId) return;
+    await fetchVacunas();
+  }, [selectedPetId, fetchVacunas]);
+
+  useEffect(() => {
+    void fetchData();
+  }, [fetchData]);
   const pet = pets.find((p) => p.id === selectedPetId);
   const petVacunas = vacunas.filter((v) => v.petId === selectedPetId).sort((a, b) => b.fecha.localeCompare(a.fecha));
 
