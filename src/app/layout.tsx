@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ToastProvider } from "@/components/ui/ToastProvider";
+import { BottomNav } from "@/components/layout/BottomNav";
+import { Sidebar } from "@/components/layout/Sidebar";
 
 export const metadata: Metadata = {
   title: "PAW",
@@ -14,7 +16,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body style={{ background: "#000000", minHeight: "100dvh", margin: 0 }}>
         <AuthProvider>
           <ToastProvider>
-            {children}
+            <Sidebar />
+            <div className="md:ml-56">
+              {children}
+            </div>
+            <BottomNav />
           </ToastProvider>
         </AuthProvider>
       </body>
