@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { PawPrint, Eye, EyeOff, Loader2 } from "lucide-react";
+import { PawPrint, Eye, EyeOff, Loader2, Mail } from "lucide-react";
 
 export function AuthPage() {
   const { signIn, signUp } = useAuth();
@@ -12,11 +12,13 @@ export function AuthPage() {
   const [confirm, setConfirm] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setSuccessMessage("");
 
     if (tab === "register") {
       if (!displayName.trim()) {
@@ -41,7 +43,6 @@ export function AuthPage() {
         if (!result.ok) {
           setError(result.error ?? "Error al ingresar.");
         }
-        // On success, AuthContext will update and page.tsx will redirect
       } else {
         const result = await signUp({
           email: email.trim(),
@@ -50,11 +51,11 @@ export function AuthPage() {
         });
         if (!result.ok) {
           setError(result.error ?? "Error al crear la cuenta.");
-        } else {
-          setError("");
-          // Show confirmation message if email confirmation is required
-          // AuthContext will pick up the session automatically if auto-confirmed
+        } else if (!result.session) {
+          // Signup exitoso pero requiere confirmación de email
+          setSuccessMessage(`¡Cuenta creada! Revisa tu bandeja de entrada en ${email.trim()} y confirma tu correo para ingresar. Si no lo ves, revisa la carpeta de spam.`);
         }
+        // Si result.session existe, AuthContext maneja el redirect automáticamente
       }
     } finally {
       setLoading(false);
@@ -96,6 +97,55 @@ export function AuthPage() {
 
   const fields = tab === "login" ? loginFields : registerFields;
 
+  // Si el registro fue exitoso y esperamos confirmación, mostrar pantalla de éxito
+  if (successMessage) {
+    return (
+      <div style={{
+        minHeight: "100dvh", background: "#000000",
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+        padding: "24px 16px", fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif",
+      }}>
+        <div style={{ textAlign: "center", maxWidth: 400 }}>
+          <div style={{
+            width: 72, height: 72, borderRadius: 20,
+            background: "linear-gradient(145deg, #22C55E, #16a34a)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            margin: "0 auto 24px",
+            boxShadow: "0 8px 32px rgba(34,197,94,0.35)",
+          }}>
+            <Mail size={36} color="white" />
+          </div>
+          <h1 style={{ fontSize: 28, fontWeight: 700, color: "#ffffff", margin: "0 0 12px" }}>
+            Revisa tu correo
+          </h1>
+          <p style={{ fontSize: 15, color: "rgba(235,235,245,0.7)", lineHeight: 1.6, margin: "0 0 32px" }}>
+            {successMessage}
+          </p>
+          <button
+            onClick={() => { setSuccessMessage(""); setTab("login"); setPassword(""); setConfirm(""); }}
+            style={{
+              padding: "14px 32px", borderRadius: 13, border: "none",
+              background: "var(--color-accent)", color: "#ffffff",
+              fontSize: 16, fontWeight: 600, cursor: "pointer",
+              fontFamily: "inherit",
+            }}
+          >
+            Ya confirmé mi correo
+          </button>
+          <p style={{ marginTop: 16, fontSize: 13, color: "rgba(235,235,245,0.4)" }}>
+            ¿No llegó el correo?{" "}
+            <button
+              onClick={() => setSuccessMessage("")}
+              style={{ background: "none", border: "none", color: "var(--color-accent)", cursor: "pointer", fontSize: 13, fontFamily: "inherit" }}
+            >
+              Intentar de nuevo
+            </button>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{
       minHeight: "100dvh", background: "#000000",
@@ -126,7 +176,7 @@ export function AuthPage() {
           borderRadius: 10, padding: 2, marginBottom: 28,
         }}>
           {(["login", "register"] as const).map((t) => (
-            <button key={t} onClick={() => { setTab(t); setError(""); }}
+            <button key={t} onClick={() => { setTab(t); setError(""); setSuccessMessage(""); }}
               style={{
                 flex: 1, padding: "8px", borderRadius: 9, border: "none", cursor: "pointer",
                 fontSize: 14, fontWeight: 600,
@@ -143,7 +193,6 @@ export function AuthPage() {
 
         {/* Form */}
         <form onSubmit={handleSubmit}>
-          {/* Input group */}
           <div style={{
             background: "#2c2c2e", borderRadius: 13,
             overflow: "hidden", marginBottom: 16,
