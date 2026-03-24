@@ -10,12 +10,7 @@ import * as trainingApi from "@/lib/api/training";
 import * as vaccinesApi from "@/lib/api/vaccines";
 import * as itineraryApi from "@/lib/api/itinerary";
 import * as notificationsApi from "@/lib/api/notifications";
-// Toast import deferred to avoid SSR hydration issues
-function showToast(msg: string, retry?: () => void) {
-  if (typeof window !== "undefined") {
-    import("@/components/ui/Toast").then(({ showToast: st }) => st(msg, retry));
-  }
-}
+import { showToast } from "@/components/ui/Toast";
 
 const DEFAULT_CONCEPTOS = ["Comida", "Baño", "Juguetes", "Salud", "Entrenamiento", "Veterinario", "Otros"];
 const DEFAULT_PERSONAS  = ["Yo", "Mi pareja", "Familiar"];
@@ -102,27 +97,22 @@ interface PawStore {
 
 // ─── Store implementation ────────────────────────────────────────────────────
 export const useStore = create<PawStore>()((set, get) => ({
-  // ── Pets ─────────────────────────────────────────────
-  pets: [],
-  selectedPetId: null,
 
-  // ── Auth ─────────────────────────────────────────────
-  currentUserId: null,
-  setCurrentUserId: (id) => set({ currentUserId: id }),
+      addPet: (p, ownerId = "") => {
+        const newId = uid();
+        const pet: Pet = {
+          ...p,
+          id: newId,
+          ownerId,
+          sharedWith: [],
+          photos: [],
+          // If no avatar_config provided, lazy init will handle it in PetAvatar
+          avatar_config: p.avatar_config ?? null,
+          createdAt: new Date().toISOString(),
+        };
+        set((s) => ({ pets: [...s.pets, pet], selectedPetId: pet.id }));
+      },
 
-  addPet: (p, ownerId = "") => {
-    const newId = uid();
-    const pet: Pet = {
-      ...p,
-      id: newId,
-      ownerId,
-      sharedWith: [],
-      photos: [],
-      // If no avatar_config provided, lazy init will handle it in PetAvatar
-      avatar_config: p.avatar_config ?? null,
-      createdAt: new Date().toISOString(),
-    };
-    set((s) => ({ pets: [...s.pets, pet], selectedPetId: pet.id }));
   },
   updatePet: (id, p) => set((s) => ({ pets: s.pets.map((x) => x.id === id ? { ...x, ...p } : x) })),
   deletePet: (id) =>
@@ -184,6 +174,7 @@ export const useStore = create<PawStore>()((set, get) => ({
     try {
       const created = await expensesApi.createExpense(g, selectedPetId, currentUserId);
       set((s) => ({ gastos: s.gastos.map((x) => x.id === optimistic.id ? created : x) }));
+      showToast("Gasto guardado ✓");
     } catch {
       set((s) => ({ gastos: s.gastos.filter((x) => x.id !== optimistic.id) }));
       toastErr("gastos", () => get().addGasto(g));
