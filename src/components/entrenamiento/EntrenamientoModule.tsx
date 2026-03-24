@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useStore } from "@/store";
 import { InfoCell } from "@/components/ui/Card";
 import { ClaseForm } from "./ClaseForm";
@@ -16,8 +16,17 @@ const section = (label: string) => (
 );
 
 export function EntrenamientoModule() {
-  const { clases, selectedPetId, pets } = useStore();
+  const { clases, selectedPetId, pets, fetchClases } = useStore();
   const [showForm, setShowForm] = useState(false);
+
+  const fetchData = useCallback(async () => {
+    if (!selectedPetId) return;
+    await fetchClases();
+  }, [selectedPetId, fetchClases]);
+
+  useEffect(() => {
+    void fetchData();
+  }, [fetchData]);
 
   const pet = pets.find((p) => p.id === selectedPetId);
   const accentColor = pet?.color ?? "#0a84ff";
