@@ -97,6 +97,9 @@ interface PawStore {
 
 // ─── Store implementation ────────────────────────────────────────────────────
 export const useStore = create<PawStore>()((set, get) => ({
+  pets: [],
+  selectedPetId: null,
+  currentUserId: null,
 
       addPet: (p, ownerId = "") => {
         const newId = uid();
