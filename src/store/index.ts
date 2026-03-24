@@ -113,9 +113,6 @@ export const useStore = create<PawStore>()((set, get) => ({
         set((s) => ({ pets: [...s.pets, pet], selectedPetId: pet.id }));
       },
 
-  addPet: (p, ownerId = "") => {
-    const pet: Pet = { ...p, id: uid(), ownerId, sharedWith: [], photos: [], createdAt: new Date().toISOString() };
-    set((s) => ({ pets: [...s.pets, pet], selectedPetId: pet.id }));
   },
   updatePet: (id, p) => set((s) => ({ pets: s.pets.map((x) => x.id === id ? { ...x, ...p } : x) })),
   deletePet: (id) =>
@@ -177,6 +174,7 @@ export const useStore = create<PawStore>()((set, get) => ({
     try {
       const created = await expensesApi.createExpense(g, selectedPetId, currentUserId);
       set((s) => ({ gastos: s.gastos.map((x) => x.id === optimistic.id ? created : x) }));
+      showToast("Gasto guardado ✓");
     } catch {
       set((s) => ({ gastos: s.gastos.filter((x) => x.id !== optimistic.id) }));
       toastErr("gastos", () => get().addGasto(g));
