@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useStore } from "@/store";
 import { InfoCell } from "@/components/ui/Card";
 import { GastoForm } from "./GastoForm";
@@ -17,9 +17,18 @@ const section = (label: string) => (
 );
 
 export function GastosModule() {
-  const { gastos, selectedPetId, pets } = useStore();
+  const { gastos, selectedPetId, pets, fetchGastos, loadingExpenses } = useStore();
   const [showForm, setShowForm] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+
+  const fetchData = useCallback(async () => {
+    if (!selectedPetId) return;
+    await fetchGastos();
+  }, [selectedPetId, fetchGastos]);
+
+  useEffect(() => {
+    void fetchData();
+  }, [fetchData]);
 
   const pet = pets.find((p) => p.id === selectedPetId);
   const accentColor = pet?.color ?? "#0a84ff";
