@@ -102,5 +102,24 @@ export function useAuth() {
     }
   }
 
-  return { signUp, signIn, signOut, getSession, linkGoogleAccount };
+  async function signInWithGoogle(): Promise<AuthResult> {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+      if (error) return { ok: false, error: mapAuthError(error) };
+      return { ok: true }; // el browser redirige, esto rara vez llega
+    } catch {
+      return { ok: false, error: 'Sin conexión. Verifica tu internet e intenta de nuevo.' };
+    }
+  }
+
+  return { signUp, signIn, signOut, getSession, linkGoogleAccount, signInWithGoogle };
 }
