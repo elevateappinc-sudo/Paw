@@ -1,9 +1,8 @@
 'use client';
 import { useState, useRef, useEffect, KeyboardEvent } from 'react';
 import { useVetChat } from '@/hooks/useVetChat';
+import { Button } from '@/components/ui/Button';
 
-// NOTE: Importar constantes del archivo de constantes en cliente puede causar bundle issues.
-// Duplicar los textos aquí como fallback si hay problema de import.
 const DISCLAIMER = '⚠️ Este chat ofrece orientación general, NO es diagnóstico médico. Ante cualquier emergencia, ve al veterinario de inmediato.';
 const EMERGENCY_BANNER = '🚨 POSIBLE EMERGENCIA — Lleva a tu mascota al veterinario INMEDIATAMENTE. No esperes.';
 
@@ -39,19 +38,25 @@ export function VetChatUI({ petId, petName }: VetChatUIProps) {
   };
 
   return (
-    <div className="flex flex-col h-full max-h-[80vh] bg-[#0a0a0a] rounded-xl overflow-hidden">
-      {/* Disclaimer fijo */}
+    <div className="flex flex-col h-full max-h-[80dvh] bg-surface rounded-xl overflow-hidden">
+      {/* Disclaimer fijo — no-dismissable */}
       <div className="px-4 py-2 bg-amber-950 border-b border-amber-900 text-amber-200 text-xs leading-relaxed shrink-0">
         {DISCLAIMER}
       </div>
 
       {/* Banner emergencia */}
       {isEmergency && (
-        <div className="px-4 py-3 bg-red-900 border-b border-red-700 text-white shrink-0">
+        <div role="alert" aria-live="assertive" className="px-4 py-3 bg-red-900 border-b border-red-700 text-white shrink-0">
           <p className="font-bold text-sm">{EMERGENCY_BANNER}</p>
-          <button onClick={dismissEmergency} className="mt-1 text-xs underline opacity-80 hover:opacity-100">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={dismissEmergency}
+            aria-label="Confirmar y cerrar aviso de emergencia"
+            className="mt-1 text-xs text-white underline opacity-80 hover:opacity-100 p-0 h-auto"
+          >
             Entendido
-          </button>
+          </Button>
         </div>
       )}
 
@@ -66,10 +71,10 @@ export function VetChatUI({ petId, petName }: VetChatUIProps) {
           <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-[80%] px-4 py-2 rounded-2xl text-sm leading-relaxed ${
               msg.role === 'user'
-                ? 'bg-[#FF7A45] text-black'
+                ? 'bg-accent text-black'
                 : msg.isEmergency
                 ? 'bg-red-900 text-white'
-                : 'bg-[#1F1F1F] text-white'
+                : 'bg-surface-2 text-white'
             }`}>
               {msg.content}
             </div>
@@ -77,10 +82,15 @@ export function VetChatUI({ petId, petName }: VetChatUIProps) {
         ))}
         {isLoading && (
           <div className="flex justify-start">
-            <div className="bg-[#1F1F1F] rounded-2xl px-4 py-3 flex gap-1">
+            <div
+              role="status"
+              aria-label="La IA está escribiendo"
+              className="bg-surface-2 rounded-2xl px-4 py-3 flex gap-1"
+            >
               {[0,1,2].map(i => (
                 <span key={i} className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
               ))}
+              <span className="sr-only">Escribiendo...</span>
             </div>
           </div>
         )}
@@ -91,13 +101,23 @@ export function VetChatUI({ petId, petName }: VetChatUIProps) {
       {error && (
         <div className="mx-4 mb-2 px-3 py-2 bg-red-900/50 border border-red-700 rounded-lg text-red-200 text-xs flex justify-between items-center">
           <span>{error.message}</span>
-          <button onClick={dismissError} className="ml-2 text-red-400 hover:text-red-200">✕</button>
+          <button
+            onClick={dismissError}
+            aria-label="Cerrar error"
+            className="ml-2 text-red-400 hover:text-red-200"
+          >✕</button>
         </div>
       )}
 
       {/* Input */}
-      <div className="px-4 py-3 border-t border-[#1F1F1F] bg-[#0a0a0a] shrink-0">
-        <p className="text-xs text-gray-600 mb-2">{dailyRemaining} consultas restantes hoy</p>
+      <div className="px-4 py-3 border-t border-border bg-surface shrink-0">
+        <p className={`text-xs mb-2 ${
+          dailyRemaining === 0 ? 'text-red-400' :
+          dailyRemaining <= 3 ? 'text-amber-400' :
+          'text-gray-600'
+        }`}>
+          {dailyRemaining === 0 ? 'Límite diario alcanzado' : `${dailyRemaining} consultas restantes hoy`}
+        </p>
         <div className="flex gap-2 items-end">
           <textarea
             ref={textareaRef}
@@ -107,16 +127,18 @@ export function VetChatUI({ petId, petName }: VetChatUIProps) {
             onInput={handleInput}
             disabled={isLoading || dailyRemaining === 0}
             placeholder={dailyRemaining === 0 ? 'Límite diario alcanzado' : `Pregunta sobre ${petName}...`}
+            aria-label={`Escribe tu consulta sobre ${petName}`}
             rows={1}
-            className="flex-1 bg-[#111111] border border-[#1F1F1F] rounded-xl px-4 py-2 text-white text-sm resize-none focus:outline-none focus:border-[#FF7A45] disabled:opacity-40 placeholder-gray-600 max-h-32 overflow-y-auto"
+            className="flex-1 bg-surface border border-border rounded-xl px-4 py-2 text-white text-sm resize-none focus:outline-none focus:border-accent disabled:opacity-40 placeholder-gray-600 max-h-32 overflow-y-auto"
           />
-          <button
+          <Button
+            variant="primary"
             onClick={handleSend}
             disabled={isLoading || !input.trim() || dailyRemaining === 0}
-            className="bg-[#FF7A45] text-black font-medium px-4 py-2 rounded-xl text-sm disabled:opacity-40 hover:bg-[#e86a35] transition-colors shrink-0"
+            className="shrink-0"
           >
             Enviar
-          </button>
+          </Button>
         </div>
       </div>
     </div>
