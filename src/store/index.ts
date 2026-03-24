@@ -113,7 +113,6 @@ export const useStore = create<PawStore>()((set, get) => ({
         set((s) => ({ pets: [...s.pets, pet], selectedPetId: pet.id }));
       },
 
-  },
   updatePet: (id, p) => set((s) => ({ pets: s.pets.map((x) => x.id === id ? { ...x, ...p } : x) })),
   deletePet: (id) =>
     set((s) => ({
