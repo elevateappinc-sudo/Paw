@@ -228,10 +228,13 @@ export function ItinerarioModule() {
     return r?.completado ?? false;
   };
 
-  const { comidas, salidas } = useMemo(() => ({
-    comidas: petItems.filter((i) => i.tipo === "comida"),
-    salidas: petItems.filter((i) => i.tipo === "salida"),
-  }), [petItems]);
+  const { comidas, salidas } = useMemo(() => {
+    const todayItemIds = new Set(todayItems.map((i) => i.id));
+    return {
+      comidas: petItems.filter((i) => i.tipo === "comida" && !todayItemIds.has(i.id)),
+      salidas: petItems.filter((i) => i.tipo === "salida" && !todayItemIds.has(i.id)),
+    };
+  }, [petItems, todayItems]);
 
   const doneToday = todayItems.filter((i) => isItemDone(i.id)).length;
   const progress  = todayItems.length > 0 ? doneToday / todayItems.length : 0;
