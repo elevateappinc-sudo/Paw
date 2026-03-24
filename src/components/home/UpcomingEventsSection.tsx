@@ -8,9 +8,10 @@ type Event = { id: string; type: string; title: string; petName: string; date: s
 export function UpcomingEventsSection({ userId }: { userId: string }) {
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
-  useEffect(() => {
-    const load = async () => {
+  const load = async () => {
+    try {
       const supabase = createClient()
       const now = new Date().toISOString()
       const limit = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString()
@@ -31,9 +32,24 @@ export function UpcomingEventsSection({ userId }: { userId: string }) {
       results.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       setEvents(results.slice(0, 5))
       setLoading(false)
+    } catch {
+      setError(true)
+      setLoading(false)
     }
-    load()
-  }, [userId])
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { load() }, [userId])
+
+  if (error) return (
+    <div className="flex flex-col items-center gap-3 py-8 text-center px-4">
+      <span className="text-4xl">⚠️</span>
+      <p className="text-white font-semibold">No pudimos cargar tus eventos</p>
+      <button onClick={() => { setError(false); setLoading(true); load() }} className="text-accent text-sm underline">
+        Reintentar
+      </button>
+    </div>
+  )
 
   if (loading) return (
     <div className="px-4 space-y-3 py-4">
