@@ -51,9 +51,11 @@ export function MedicationsModule() {
       } else {
         setLogs([]);
       }
-    } finally {
-      setLoading(false);
-    }
+  } catch (err) {
+    console.error('[MedicationsModule] fetchData error:', err);
+  } finally {
+    setLoading(false);
+  }
   }, [user, selectedPetId]);
 
   useEffect(() => {
