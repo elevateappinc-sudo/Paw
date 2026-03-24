@@ -1,5 +1,6 @@
 import { PawPrint } from 'lucide-react'
 import Link from 'next/link'
+import { Button } from '@/components/ui/Button'
 
 export function ZeroStatePets() {
   return (
@@ -9,10 +10,12 @@ export function ZeroStatePets() {
         <h2 className="text-2xl font-bold text-white">¡Tu familia peluda te espera!</h2>
         <p className="text-gray-400 mt-2">Agrega tu primera mascota para comenzar a gestionar su salud y bienestar.</p>
       </div>
-      <Link href="/mascotas/nueva" className="flex items-center gap-2 bg-accent text-black font-semibold px-8 py-4 rounded-2xl w-full max-w-xs justify-center">
-        <PawPrint className="w-5 h-5" />
-        Agregar mi primera mascota
-      </Link>
+      <Button variant="primary" className="w-full max-w-xs" asChild>
+        <Link href="/mascotas/nueva">
+          <PawPrint className="w-5 h-5" />
+          Agregar mi primera mascota
+        </Link>
+      </Button>
     </div>
   )
 }
