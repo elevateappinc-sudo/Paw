@@ -29,7 +29,7 @@ function mapRow(
 export async function fetchTraining(petId: string): Promise<ClaseEntrenamiento[]> {
   const supabase = createClient();
   const { data: sessions, error } = await supabase
-    .from("training_sessions")
+    .from("training_Sessions")
     .select("*, training_tasks(*)")
     .eq("pet_id", petId)
     .order("fecha", { ascending: false });
@@ -108,12 +108,35 @@ export async function updateTrainingSession(
     .single();
   if (error) throw error;
 
-  // Fetch tasks
-  const { data: tasksData } = await supabase
-    .from("training_tasks")
-    .select("*")
-    .eq("session_id", id);
-  const tasks = ((tasksData ?? []) as Record<string, unknown>[]).map(mapTask);
+  let tasks: TareaEntrenamiento[] = [];
+  if (c.tareas !== undefined) {
+    const { error: deleteError } = await supabase
+      .from("training_tasks")
+      .delete()
+      .eq("session_id", id);
+    if (deleteError) throw deleteError;
+
+    if (c.tareas.length > 0) {
+      const { data: insertedTasks, error: insertError } = await supabase
+        .from("training_tasks")
+        .insert(
+          c.tareas.map((t) => ({
+            session_id: id,
+            descripcion: t.descripcion,
+            estado: t.estado,
+          }))
+        )
+        .select();
+      if (insertError) throw insertError;
+      tasks = ((insertedTasks ?? []) as Record<string, unknown>[]).map(mapTask);
+    }
+  } else {
+    const { data: tasksData } = await supabase
+      .from("training_tasks")
+      .select("*")
+      .eq("session_id", id);
+    tasks = ((tasksData ?? []) as Record<string, unknown>[]).map(mapTask);
+  }
 
   return mapRow(data as Record<string, unknown>, tasks);
 }
