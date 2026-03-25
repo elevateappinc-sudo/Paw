@@ -1,13 +1,14 @@
 'use client'
 import { useEffect, useRef } from 'react'
-import { X, Wallet, ImageIcon, Video, ShoppingBag } from 'lucide-react'
+import { X, Wallet, ImageIcon, Video, ShoppingBag, Bell } from 'lucide-react'
 import Link from 'next/link'
 
 const DRAWER_ITEMS = [
-  { label: 'Gastos', icon: Wallet, href: '/gastos' },
-  { label: 'Galería', icon: ImageIcon, href: '/galeria' },
-  { label: 'Videos', icon: Video, href: '/videos' },
-  { label: 'Marketplace', icon: ShoppingBag, href: '/marketplace' },
+  { label: 'Gastos',          icon: Wallet,      href: '/gastos' },
+  { label: 'Galería',         icon: ImageIcon,   href: '/galeria' },
+  { label: 'Videos',          icon: Video,       href: '/videos' },
+  { label: 'Marketplace',     icon: ShoppingBag, href: '/marketplace' },
+  { label: 'Notificaciones',  icon: Bell,        href: '/notificaciones' },
 ]
 
 export function MoreDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -15,11 +16,9 @@ export function MoreDrawer({ open, onClose }: { open: boolean; onClose: () => vo
 
   useEffect(() => {
     if (!open) return
-    // Focus primer elemento interactivo al abrir
     const firstFocusable = drawerRef.current?.querySelector<HTMLElement>('button, a')
     firstFocusable?.focus()
 
-    // Cerrar con Escape
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
