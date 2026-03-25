@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { runPhotoMigration } from "@/lib/storage/photoMigration";
+import { useStore } from "@/store";
 
 interface AuthContextValue {
   user: User | null;
@@ -21,40 +22,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const { setCurrentUserId, fetchPets } = useStore();
 
   useEffect(() => {
     const supabase = createClient();
 
-    // Get initial session
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setUser(data.session?.user ?? null);
       setLoading(false);
 
-      // F1c: trigger background migration if user is logged in
       if (data.session?.user) {
-        runPhotoMigration(data.session.user.id).catch(() => {
-          // Migration failures are silent — user experience unaffected
-        });
+        setCurrentUserId(data.session.user.id);
+        void fetchPets();
+        runPhotoMigration(data.session.user.id).catch(() => {});
       }
     });
 
-    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
       setUser(newSession?.user ?? null);
       setLoading(false);
 
-      // F1c: trigger migration on sign-in event
-      if (_event === "SIGNED_IN" && newSession?.user) {
-        runPhotoMigration(newSession.user.id).catch(() => {
-          // Silent — base64 fallback remains intact
-        });
+      if (newSession?.user) {
+        setCurrentUserId(newSession.user.id);
+        void fetchPets();
+        if (_event === "SIGNED_IN") {
+          runPhotoMigration(newSession.user.id).catch(() => {});
+        }
+      } else {
+        setCurrentUserId(null);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [setCurrentUserId, fetchPets]);
 
   return (
     <AuthContext.Provider value={{ user, session, loading }}>
