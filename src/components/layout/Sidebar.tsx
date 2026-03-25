@@ -1,12 +1,12 @@
 'use client'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { Home, PawPrint, HeartPulse, Activity, Wallet, ImageIcon, Video, ShoppingBag } from 'lucide-react'
+import { Home, PawPrint, Heart, Activity, Wallet, ImageIcon, Video, ShoppingBag } from 'lucide-react'
 
 const ALL_ITEMS = [
   { label: 'Inicio', icon: Home, href: '/home' },
   { label: 'Mascotas', icon: PawPrint, href: '/mascotas' },
-  { label: 'Salud', icon: HeartPulse, href: '/salud' },
+  { label: 'Salud', icon: Heart, href: '/salud' },
   { label: 'Actividad', icon: Activity, href: '/actividad' },
   { label: 'Gastos', icon: Wallet, href: '/gastos' },
   { label: 'Galería', icon: ImageIcon, href: '/galeria' },
@@ -33,3 +33,4 @@ export function Sidebar() {
     </aside>
   )
 }
+
