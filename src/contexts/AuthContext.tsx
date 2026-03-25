@@ -4,7 +4,6 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { runPhotoMigration } from "@/lib/storage/photoMigration";
-import { useStore } from "@/store";
 
 interface AuthContextValue {
   user: User | null;
@@ -22,7 +21,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const { setCurrentUserId, fetchPets } = useStore();
 
   useEffect(() => {
     const supabase = createClient();
@@ -33,8 +31,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
 
       if (data.session?.user) {
-        setCurrentUserId(data.session.user.id);
-        void fetchPets();
         runPhotoMigration(data.session.user.id).catch(() => {});
       }
     });
@@ -44,19 +40,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(newSession?.user ?? null);
       setLoading(false);
 
-      if (newSession?.user) {
-        setCurrentUserId(newSession.user.id);
-        void fetchPets();
-        if (_event === "SIGNED_IN") {
-          runPhotoMigration(newSession.user.id).catch(() => {});
-        }
-      } else {
-        setCurrentUserId(null);
+      if (_event === "SIGNED_IN" && newSession?.user) {
+        runPhotoMigration(newSession.user.id).catch(() => {});
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [setCurrentUserId, fetchPets]);
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, session, loading }}>
