@@ -5,6 +5,7 @@ import { ToastProvider } from "@/components/ui/ToastProvider";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { PetsLoader } from "@/components/auth/PetsLoader";
+import { NavGuard, MainContent } from "@/components/layout/NavGuard";
 
 export const metadata: Metadata = {
   title: "PAW",
@@ -18,11 +19,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           <ToastProvider>
             <PetsLoader />
-            <Sidebar />
-            <div className="md:ml-56">
+            <NavGuard>
+              <Sidebar />
+            </NavGuard>
+            <MainContent>
               {children}
-            </div>
-            <BottomNav />
+            </MainContent>
+            <NavGuard>
+              <BottomNav />
+            </NavGuard>
           </ToastProvider>
         </AuthProvider>
       </body>
