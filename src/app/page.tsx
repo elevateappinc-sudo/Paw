@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { AuthPage } from "@/components/auth/AuthPage";
 import { MigrationModal } from "@/components/auth/MigrationModal";
 import { PetSelector } from "@/components/pets/PetSelector";
-import Sidebar from "@/components/layout/Sidebar";
+import { Sidebar } from "@/components/layout/Sidebar";
 import { Dashboard } from "@/components/Dashboard";
 import { GastosModule } from "@/components/gastos/GastosModule";
 import { EntrenamientoModule } from "@/components/entrenamiento/EntrenamientoModule";
