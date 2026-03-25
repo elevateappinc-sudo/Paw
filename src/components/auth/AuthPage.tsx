@@ -1,10 +1,12 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { PawPrint, Eye, EyeOff, Loader2, Mail } from "lucide-react";
 
 export function AuthPage() {
   const { signIn, signUp, signInWithGoogle } = useAuth();
+  const router = useRouter();
   const [tab, setTab] = useState<"login" | "register">("login");
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
@@ -43,6 +45,8 @@ export function AuthPage() {
         const result = await signIn({ email: email.trim(), password });
         if (!result.ok) {
           setError(result.error ?? "Error al ingresar.");
+        } else {
+          router.push('/home');
         }
       } else {
         const result = await signUp({
@@ -55,8 +59,9 @@ export function AuthPage() {
         } else if (!result.session) {
           // Signup exitoso pero requiere confirmación de email
           setSuccessMessage(`¡Cuenta creada! Revisa tu bandeja de entrada en ${email.trim()} y confirma tu correo para ingresar. Si no lo ves, revisa la carpeta de spam.`);
+        } else if (result.session) {
+          router.push('/home');
         }
-        // Si result.session existe, AuthContext maneja el redirect automáticamente
       }
     } finally {
       setLoading(false);
