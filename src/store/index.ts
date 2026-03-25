@@ -101,6 +101,7 @@ export const useStore = create<PawStore>()((set, get) => ({
   pets: [],
   selectedPetId: null,
   currentUserId: null,
+  setCurrentUserId: (id) => set({ currentUserId: id }),
 
   fetchPets: async () => {
     const { currentUserId } = get();

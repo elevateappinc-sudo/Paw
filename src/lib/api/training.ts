@@ -35,7 +35,7 @@ export async function fetchTraining(petId: string): Promise<ClaseEntrenamiento[]
     .order("fecha", { ascending: false });
   if (error) throw error;
 
-  return (sessions ?? []).map((s) => {
+  return (sessions ?? []).map((s: Record<string, unknown>) => {
     const tasks = ((s.training_tasks as Record<string, unknown>[]) ?? []).map(mapTask);
     return mapRow(s as Record<string, unknown>, tasks);
   });

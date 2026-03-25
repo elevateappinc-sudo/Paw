@@ -1292,7 +1292,7 @@ export function ClinicalRecordsModule() {
 
   // Load user
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(({ data }: { data: { user: { id: string } | null } }) => {
       setUserId(data.user?.id ?? null);
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps

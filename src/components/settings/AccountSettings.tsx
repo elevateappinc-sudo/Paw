@@ -74,7 +74,7 @@ export function AccountSettings({ googleLinked, onGoogleLinkChange }: AccountSet
     try {
       // Remove Google identity from Supabase Auth
       const { data: identities } = await supabase.auth.getUserIdentities();
-      const googleIdentity = identities?.identities?.find((id) => id.provider === "google");
+      const googleIdentity = identities?.identities?.find((id: { provider: string }) => id.provider === "google");
 
       if (googleIdentity) {
         const { error: unlinkError } = await supabase.auth.unlinkIdentity(googleIdentity);
