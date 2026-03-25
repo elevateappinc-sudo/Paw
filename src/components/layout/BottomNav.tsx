@@ -2,11 +2,11 @@
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useState } from 'react'
-import { Home, PawPrint, HeartPulse, Activity, Grid2X2 } from 'lucide-react'
+import { Home, PawPrint, Heart, Activity, Grid2X2 } from 'lucide-react'
 import { NAV_TABS, ACTIVE_PREFIXES } from './BottomNav.config'
 import { MoreDrawer } from './MoreDrawer'
 
-const ICONS = { Home, PawPrint, HeartPulse, Activity, Grid2X2 }
+const ICONS = { Home, PawPrint, Heart, Activity, Grid2X2 }
 
 export function BottomNav() {
   const pathname = usePathname()
@@ -45,3 +45,4 @@ export function BottomNav() {
     </>
   )
 }
+
