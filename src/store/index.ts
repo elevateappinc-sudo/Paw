@@ -29,10 +29,11 @@ interface PawStore {
   // Pets (kept in Zustand — managed by auth + server actions from F1a)
   pets: Pet[];
   selectedPetId: string | null;
-  addPet: (p: Omit<Pet, "id" | "ownerId" | "sharedWith" | "photos" | "createdAt">, ownerId?: string) => void;
+  fetchPets: () => Promise<void>;
+  addPet: (p: Omit<Pet, "id" | "ownerId" | "sharedWith" | "photos" | "createdAt">, ownerId?: string) => Promise<void>;
+  updatePet: (id: string, p: Partial<Pet>) => Promise<void>;
   addPetPhoto: (petId: string, dataUrl: string) => void;
   deletePetPhoto: (petId: string, index: number) => void;
-  updatePet: (id: string, p: Partial<Pet>) => void;
   deletePet: (id: string) => void;
   selectPet: (id: string | null) => void;
 
@@ -101,22 +102,88 @@ export const useStore = create<PawStore>()((set, get) => ({
   selectedPetId: null,
   currentUserId: null,
 
-      addPet: (p, ownerId = "") => {
-        const newId = uid();
-        const pet: Pet = {
-          ...p,
-          id: newId,
-          ownerId,
-          sharedWith: [],
+  fetchPets: async () => {
+    const { currentUserId } = get();
+    if (!currentUserId) return;
+    try {
+      const { createClient } = await import("@/lib/supabase/client");
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("pets")
+        .select("*")
+        .eq("user_id", currentUserId)
+        .order("created_at", { ascending: true });
+      if (data) {
+        const mapped = data.map((r: Record<string, unknown>) => ({
+          id: r.id as string,
+          ownerId: r.user_id as string,
+          name: r.name as string,
+          species: r.species as Pet["species"],
+          breed: (r.breed as string) ?? "",
+          birthDate: (r.birth_date as string) ?? "",
+          weight: r.weight as number ?? undefined,
+          emoji: (r.emoji as string) ?? "🐾",
+          color: (r.color as string) ?? "#0a84ff",
+          avatar_config: (r.avatar_config as Pet["avatar_config"]) ?? null,
+          sharedWith: (r.shared_with as string[]) ?? [],
           photos: [],
-          // If no avatar_config provided, lazy init will handle it in PetAvatar
-          avatar_config: p.avatar_config ?? null,
-          createdAt: new Date().toISOString(),
-        };
-        set((s) => ({ pets: [...s.pets, pet], selectedPetId: pet.id }));
-      },
+          createdAt: r.created_at as string,
+        }));
+        set({ pets: mapped, selectedPetId: mapped[0]?.id ?? null });
+      }
+    } catch (e) {
+      console.error("[fetchPets]", e);
+    }
+  },
 
-  updatePet: (id, p) => set((s) => ({ pets: s.pets.map((x) => x.id === id ? { ...x, ...p } : x) })),
+  addPet: async (p, ownerId = "") => {
+    const { currentUserId } = get();
+    const userId = currentUserId || ownerId;
+    const optimisticId = uid();
+    const optimistic: Pet = { ...p, id: optimisticId, ownerId: userId, sharedWith: [], photos: [], avatar_config: p.avatar_config ?? null, createdAt: new Date().toISOString() };
+    set((s) => ({ pets: [...s.pets, optimistic], selectedPetId: optimisticId }));
+    try {
+      const { createClient } = await import("@/lib/supabase/client");
+      const supabase = createClient();
+      const { data, error } = await supabase.from("pets").insert({
+        user_id: userId,
+        name: p.name,
+        species: p.species,
+        breed: p.breed ?? null,
+        birth_date: p.birthDate ?? null,
+        emoji: p.emoji ?? "🐾",
+        color: p.color ?? "#0a84ff",
+        avatar_config: p.avatar_config ?? null,
+      }).select().single();
+      if (error) throw error;
+      const created: Pet = { ...optimistic, id: data.id };
+      set((s) => ({ pets: s.pets.map((x) => x.id === optimisticId ? created : x), selectedPetId: data.id }));
+    } catch {
+      set((s) => ({ pets: s.pets.filter((x) => x.id !== optimisticId), selectedPetId: null }));
+      toastErr("mascota", () => get().addPet(p, ownerId));
+    }
+  },
+
+  updatePet: async (id, p) => {
+    const prev = get().pets.find((x) => x.id === id);
+    set((s) => ({ pets: s.pets.map((x) => x.id === id ? { ...x, ...p } : x) }));
+    try {
+      const { createClient } = await import("@/lib/supabase/client");
+      const supabase = createClient();
+      const patch: Record<string, unknown> = {};
+      if (p.name !== undefined) patch.name = p.name;
+      if (p.species !== undefined) patch.species = p.species;
+      if (p.breed !== undefined) patch.breed = p.breed;
+      if (p.birthDate !== undefined) patch.birth_date = p.birthDate;
+      if (p.emoji !== undefined) patch.emoji = p.emoji;
+      if (p.color !== undefined) patch.color = p.color;
+      if (p.avatar_config !== undefined) patch.avatar_config = p.avatar_config;
+      await supabase.from("pets").update(patch).eq("id", id);
+    } catch {
+      if (prev) set((s) => ({ pets: s.pets.map((x) => x.id === id ? prev : x) }));
+      toastErr("mascota", () => get().updatePet(id, p));
+    }
+  },
   deletePet: (id) =>
     set((s) => ({
       pets: s.pets.filter((x) => x.id !== id),
