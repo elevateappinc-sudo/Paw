@@ -32,6 +32,15 @@ const config: Config = {
         card: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
         sidebar: "2px 0 8px rgba(0,0,0,0.06)",
       },
+      keyframes: {
+        slideUp: {
+          from: { transform: 'translateY(100%)' },
+          to: { transform: 'translateY(0)' },
+        },
+      },
+      animation: {
+        'slide-up': 'slideUp 250ms ease-out',
+      },
     },
   },
   plugins: [],
