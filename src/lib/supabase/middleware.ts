@@ -38,7 +38,7 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
 
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
-    url.pathname = "/";
+    url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
