@@ -29,6 +29,22 @@ export function UpcomingEventsSection({ userId }: { userId: string }) {
         ;(data ?? []).forEach((m: any) => results.push({ id: m.id, type: 'medication', title: (m.medications as any)?.name ?? 'Medicamento', petName: '', date: m.scheduled_at }))
       } catch {}
 
+      // Itinerario
+      try {
+        const { data } = await supabase
+          .from('itinerary')
+          .select('id, descripcion, fecha, pets(name)')
+          .gte('fecha', now)
+          .lte('fecha', limit)
+        ;(data ?? []).forEach((item: any) => results.push({
+          id: item.id,
+          type: 'itinerary',
+          title: item.descripcion ?? 'Evento',
+          petName: (item.pets as any)?.name ?? '',
+          date: item.fecha
+        }))
+      } catch {}
+
       results.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       setEvents(results.slice(0, 5))
       setLoading(false)
