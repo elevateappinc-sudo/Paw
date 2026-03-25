@@ -104,12 +104,12 @@ export function PetForm({ onClose, editPet }: PetFormProps) {
     const emoji = SPECIES_EMOJI[species];
 
     if (editPet) {
-      updatePet(editPet.id, {
+      void updatePet(editPet.id, {
         name: name.trim(), species, breed, birthDate, emoji, color,
         avatar_config: avatarConfig,
       });
     } else {
-      addPet({
+      void addPet({
         name: name.trim(), species, breed, birthDate, emoji, color,
         avatar_config: avatarConfig,
       }, user?.id);
