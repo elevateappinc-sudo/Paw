@@ -34,7 +34,7 @@ export async function GET(request: Request) {
 
     if (error) {
       // Redirect to login with error indicator
-      return NextResponse.redirect(`${origin}/?auth_error=oauth_failed`)
+      return NextResponse.redirect(`${origin}/login?auth_error=oauth_failed`)
     }
   }
 
