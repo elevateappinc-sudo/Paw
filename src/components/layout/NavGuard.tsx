@@ -17,8 +17,11 @@ export function MainContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const pub = isPublicRoute(pathname)
   return (
-    <div className={pub ? '' : 'md:ml-56'}>
-      {children}
+    <div style={pub ? {} : { marginLeft: 0 }}>
+      <style>{`@media (min-width: 768px) { .main-with-sidebar { margin-left: 72px !important; } }`}</style>
+      <div className={pub ? '' : 'main-with-sidebar'}>
+        {children}
+      </div>
     </div>
   )
 }

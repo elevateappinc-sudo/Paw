@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ToastProvider } from "@/components/ui/ToastProvider";
-import { BottomNav } from "@/components/layout/BottomNav";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { PetsLoader } from "@/components/auth/PetsLoader";
 import { NavGuard, MainContent } from "@/components/layout/NavGuard";
@@ -25,9 +24,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <MainContent>
               {children}
             </MainContent>
-            <NavGuard>
-              <BottomNav />
-            </NavGuard>
           </ToastProvider>
         </AuthProvider>
       </body>
