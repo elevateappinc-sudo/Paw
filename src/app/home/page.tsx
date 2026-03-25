@@ -5,7 +5,7 @@ import { HomeView } from '@/components/home/HomeView'
 export default async function HomePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/')
+  if (!user) redirect('/login')
 
   const { data: pets } = await supabase.from('pets').select('id, name, avatar_config').eq('owner_id', user.id)
   const hasPets = (pets?.length ?? 0) > 0
