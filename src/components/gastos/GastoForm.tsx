@@ -81,8 +81,8 @@ export function GastoForm({ onClose, editGasto, accentColor = "#0a84ff" }: Gasto
     e.preventDefault();
     if (!concepto || !monto || !fecha || !quien) return;
     const data = { concepto, monto: parseFloat(monto), fecha, quien, notas: notas.trim() };
-    if (editGasto) updateGasto(editGasto.id, data);
-    else addGasto(data);
+    if (editGasto) void updateGasto(editGasto.id, data);
+    else void addGasto(data);
     onClose();
   }
 
