@@ -83,7 +83,7 @@ END $$;
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'listings_manage_own' AND tablename = 'marketplace_listings') THEN
     CREATE POLICY "listings_manage_own" ON public.marketplace_listings FOR ALL USING (
-      EXISTS (SELECT 1 FROM public.businesses WHERE id = business_id AND owner_id = auth.uid())
+      EXISTS (SELECT 1 FROM public.businesses WHERE id = business_id AND owner_user_id = auth.uid())
     );
   END IF;
 END $$;
@@ -92,7 +92,7 @@ ALTER TABLE public.business_subscriptions ENABLE ROW LEVEL SECURITY;
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'subs_manage_own' AND tablename = 'business_subscriptions') THEN
     CREATE POLICY "subs_manage_own" ON public.business_subscriptions FOR ALL USING (
-      EXISTS (SELECT 1 FROM public.businesses WHERE id = business_id AND owner_id = auth.uid())
+      EXISTS (SELECT 1 FROM public.businesses WHERE id = business_id AND owner_user_id = auth.uid())
     );
   END IF;
 END $$;
@@ -106,7 +106,7 @@ END $$;
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'analytics_select_own' AND tablename = 'listing_analytics') THEN
     CREATE POLICY "analytics_select_own" ON public.listing_analytics FOR SELECT USING (
-      EXISTS (SELECT 1 FROM public.marketplace_listings ml JOIN public.businesses b ON b.id = ml.business_id WHERE ml.id = listing_id AND b.owner_id = auth.uid())
+      EXISTS (SELECT 1 FROM public.marketplace_listings ml JOIN public.businesses b ON b.id = ml.business_id WHERE ml.id = listing_id AND b.owner_user_id = auth.uid())
     );
   END IF;
 END $$;

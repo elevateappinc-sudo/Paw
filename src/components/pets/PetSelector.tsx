@@ -1,183 +1,161 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { motion, useReducedMotion } from "motion/react";
+import { Plus, ChevronRight, LogOut, Trash2, Users } from "lucide-react";
 import { useStore } from "@/store";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useAuth } from "@/hooks/useAuth";
-import { Plus, ChevronRight, LogOut, Trash2, Users } from "lucide-react";
+import { fadeUp, stagger } from "@/lib/motion";
+import { Button, Card, Divider, EmptyState, PageHeader, PetAvatarRing, Row, SectionTitle, Sheet, Tag } from "@/components/ui";
 import { PetForm } from "./PetForm";
-import { PetAvatar } from "./PetAvatar";
+import type { Pet } from "@/types";
 
-const FONT = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
-
+/** Lista de mascotas propias y compartidas para elegir la activa. */
 export function PetSelector() {
   const { pets, selectPet, deletePet } = useStore();
   const { user } = useAuthContext();
   const { signOut } = useAuth();
+  const router = useRouter();
+  const reduce = useReducedMotion();
   const [showForm, setShowForm] = useState(false);
+  const [toDelete, setToDelete] = useState<Pet | null>(null);
 
-  const displayName = user?.user_metadata?.full_name as string | undefined
-    ?? user?.email?.split("@")[0]
-    ?? "Usuario";
+  const displayName = (user?.user_metadata?.full_name as string | undefined) ?? user?.email?.split("@")[0] ?? "Usuario";
 
-  const myPets     = pets.filter((p) => p.ownerId === user?.id);
+  const myPets = pets.filter((p) => p.ownerId === user?.id);
   const sharedPets = pets.filter((p) => p.ownerId !== user?.id && (p.sharedWith ?? []).includes(user?.id ?? ""));
 
-  function ownerName(_ownerId: string) {
-    return "Desconocido";
+  function speciesLabel(pet: Pet) {
+    return pet.species.charAt(0).toUpperCase() + pet.species.slice(1);
   }
 
-  function PetRow({ pet, isOwner }: { pet: typeof pets[0]; isOwner: boolean }) {
+  function renderPet(pet: Pet, isOwner: boolean, i: number, total: number) {
     return (
-      <div style={{ marginBottom: 12 }}>
-        <div
-          onClick={() => selectPet(pet.id)}
-          style={{
-            background: "#1c1c1e", borderRadius: 16,
-            padding: "16px 20px",
-            display: "flex", alignItems: "center", gap: 16,
-            cursor: "pointer", position: "relative", overflow: "hidden",
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
-          onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-        >
-          {/* Color accent bar */}
-          <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 4, background: pet.color, borderRadius: "16px 0 0 16px" }} />
-
-          {/* Avatar */}
-          <PetAvatar pet={pet} size="md" style={{ borderRadius: 16, width: 56, height: 56 }} />
-
-          {/* Info */}
-          <div style={{ flex: 1 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <p style={{ fontSize: 18, fontWeight: 700, color: "#ffffff", margin: 0 }}>{pet.name}</p>
+      <div key={pet.id}>
+        {i > 0 && <Divider className="ml-[84px] mr-0" />}
+        <Row
+          icon={<PetAvatarRing pet={pet} size={56} />}
+          title={
+            <span className="flex items-center gap-2">
+              <span className="truncate">{pet.name}</span>
               {!isOwner && (
-                <span style={{
-                  fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: 999,
-                  background: "rgba(10,132,255,0.15)", color: "#0a84ff",
-                  letterSpacing: "0.04em",
-                }}>
+                <Tag tone="info" size="xs">
                   Compartida
-                </span>
+                </Tag>
               )}
-            </div>
-            <p style={{ fontSize: 13, color: "rgba(235,235,245,0.5)", margin: "2px 0 0" }}>
-              {pet.species.charAt(0).toUpperCase() + pet.species.slice(1)}
-              {pet.breed ? ` · ${pet.breed}` : ""}
-              {!isOwner ? ` · de ${ownerName(pet.ownerId)}` : ""}
-            </p>
-          </div>
-
-          <ChevronRight size={18} color="rgba(235,235,245,0.3)" />
-        </div>
-
-        {/* Delete button — only for owner */}
-        {isOwner && (
-          <button
-            onClick={() => {
-              if (confirm(`¿Eliminar a ${pet.name}? Se borrarán todos sus datos.`)) {
-                deletePet(pet.id);
-              }
-            }}
-            style={{
-              marginTop: 4, width: "100%", padding: "10px",
-              background: "rgba(255,69,58,0.08)", borderRadius: 10,
-              border: "none", cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-              fontSize: 13, color: "#ff453a", fontWeight: 500,
-              fontFamily: FONT,
-            }}
-          >
-            <Trash2 size={13} /> Eliminar
-          </button>
-        )}
+            </span>
+          }
+          subtitle={`${speciesLabel(pet)}${pet.breed ? ` · ${pet.breed}` : ""}`}
+          onClick={() => selectPet(pet.id)}
+          trailing={
+            <span className="flex items-center gap-1">
+              {isOwner && (
+                <Button
+                  variant="dangerTonal"
+                  size="icon"
+                  aria-label={`Eliminar a ${pet.name}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setToDelete(pet);
+                  }}
+                  className="min-h-[40px] min-w-[40px] border-transparent"
+                />
+              )}
+              <ChevronRight size={18} className="text-on-variant" aria-hidden="true" />
+            </span>
+          }
+          className={cnRow(i, total)}
+        />
       </div>
     );
   }
 
   return (
-    <div style={{
-      minHeight: "100dvh", background: "#000000",
-      fontFamily: FONT,
-      display: "flex", flexDirection: "column",
-    }}>
-      {/* Header */}
-      <div style={{ padding: "60px 24px 32px" }}>
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
-          <div>
-            <p style={{ fontSize: 13, color: "rgba(235,235,245,0.5)", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>
-              Bienvenido, {displayName.split(" ")[0]}
-            </p>
-            <h1 style={{ fontSize: 34, fontWeight: 700, color: "#ffffff", margin: 0, letterSpacing: -0.5 }}>
-              Mis mascotas
-            </h1>
-          </div>
-          <button onClick={() => void signOut()}
-            style={{ padding: "8px 14px", borderRadius: 10, background: "rgba(255,255,255,0.08)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: "rgba(235,235,245,0.6)", fontSize: 14, fontWeight: 500, fontFamily: FONT }}>
-            <LogOut size={15} />
+    <motion.div className="flex min-h-dvh flex-col gap-4 bg-bg pb-10" variants={reduce ? undefined : stagger()} initial={reduce ? false : "hidden"} animate="show">
+      <PageHeader
+        title="Mis mascotas"
+        eyebrow={`Hola, ${displayName.split(" ")[0]}`}
+        sos={false}
+        actions={
+          <Button
+            variant="secondary"
+            size="sm"
+            leading={<LogOut size={15} />}
+            onClick={async () => {
+              await signOut();
+              router.replace("/login");
+            }}
+          >
             Salir
-          </button>
-        </div>
-      </div>
+          </Button>
+        }
+      />
 
-      <div style={{ flex: 1, padding: "0 24px", overflowY: "auto" }}>
+      {myPets.length > 0 && (
+        <motion.section className="px-4" variants={fadeUp} aria-label="Mis mascotas">
+          <Card padded={false} className="overflow-hidden">
+            {myPets.map((pet, i) => renderPet(pet, true, i, myPets.length))}
+          </Card>
+        </motion.section>
+      )}
 
-        {/* My pets */}
-        {myPets.length > 0 && (
-          <div style={{ marginBottom: 8 }}>
-            {myPets.map((pet) => <PetRow key={pet.id} pet={pet} isOwner={true} />)}
-          </div>
-        )}
+      {sharedPets.length > 0 && (
+        <motion.section className="flex flex-col gap-3 px-4" variants={fadeUp} aria-label="Compartidas conmigo">
+          <SectionTitle>Compartidas conmigo</SectionTitle>
+          <Card padded={false} className="overflow-hidden">
+            {sharedPets.map((pet, i) => renderPet(pet, false, i, sharedPets.length))}
+          </Card>
+        </motion.section>
+      )}
 
-        {/* Shared with me */}
-        {sharedPets.length > 0 && (
-          <div style={{ marginBottom: 8 }}>
-            <p style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(235,235,245,0.4)", marginBottom: 10, marginTop: 4 }}>
-              Compartidas conmigo
-            </p>
-            {sharedPets.map((pet) => <PetRow key={pet.id} pet={pet} isOwner={false} />)}
-          </div>
-        )}
+      {myPets.length === 0 && sharedPets.length === 0 && (
+        <motion.div className="px-4" variants={fadeUp}>
+          <EmptyState title="Sin mascotas aún" description="Agrega tu primera mascota para empezar." />
+        </motion.div>
+      )}
 
-        {/* Empty state */}
-        {myPets.length === 0 && sharedPets.length === 0 && (
-          <div style={{ textAlign: "center", padding: "48px 0" }}>
-            <div style={{ fontSize: 64, marginBottom: 16 }}>🐾</div>
-            <p style={{ fontSize: 20, fontWeight: 700, color: "#ffffff", margin: 0 }}>Sin mascotas aún</p>
-            <p style={{ fontSize: 15, color: "rgba(235,235,245,0.5)", marginTop: 8 }}>
-              Agrega tu primera mascota para empezar
-            </p>
-          </div>
-        )}
+      {myPets.length === 0 && sharedPets.length > 0 && (
+        <motion.div className="px-4" variants={fadeUp}>
+          <Card tone="info" elevation={0} padded={false}>
+            <Row icon={<Users size={18} aria-hidden="true" />} iconTone="info" title="Mascotas compartidas" subtitle="También puedes crear las tuyas." />
+          </Card>
+        </motion.div>
+      )}
 
-        {/* Info tip when only shared pets */}
-        {myPets.length === 0 && sharedPets.length > 0 && (
-          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 16px", background: "rgba(10,132,255,0.1)", borderRadius: 12, marginBottom: 16 }}>
-            <Users size={15} color="#0a84ff" style={{ flexShrink: 0 }} />
-            <p style={{ fontSize: 13, color: "rgba(235,235,245,0.7)", margin: 0 }}>
-              Tienes mascotas compartidas contigo. También puedes crear las tuyas.
-            </p>
-          </div>
-        )}
-
-        {/* Add button */}
-        <button
-          onClick={() => setShowForm(true)}
-          style={{
-            width: "100%", padding: "16px", borderRadius: 13,
-            background: "#0a84ff", border: "none", cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-            fontSize: 17, fontWeight: 600, color: "#ffffff",
-            boxShadow: "0 4px 20px rgba(10,132,255,0.3)",
-            fontFamily: FONT,
-          }}
-        >
-          <Plus size={20} /> Agregar mascota
-        </button>
-
-        <div style={{ height: 40 }} />
-      </div>
+      <motion.div className="px-4" variants={fadeUp}>
+        <Button full size="lg" leading={<Plus size={20} />} onClick={() => setShowForm(true)}>
+          Agregar mascota
+        </Button>
+      </motion.div>
 
       {showForm && <PetForm onClose={() => setShowForm(false)} />}
-    </div>
+
+      <Sheet open={toDelete !== null} onClose={() => setToDelete(null)} title={toDelete ? `¿Eliminar a ${toDelete.name}?` : undefined}>
+        <div className="flex flex-col gap-4 pb-2">
+          <p className="text-[15px] leading-relaxed text-on-variant">Se borrarán todos sus datos. Esta acción no se puede deshacer.</p>
+          <div className="flex gap-2">
+            <Button variant="secondary" onClick={() => setToDelete(null)} className="flex-1">
+              Cancelar
+            </Button>
+            <Button
+              variant="danger"
+              leading={<Trash2 size={16} />}
+              onClick={() => {
+                if (toDelete) deletePet(toDelete.id);
+                setToDelete(null);
+              }}
+              className="flex-1"
+            >
+              Eliminar
+            </Button>
+          </div>
+        </div>
+      </Sheet>
+    </motion.div>
   );
+}
+
+function cnRow(_i: number, _total: number) {
+  return undefined;
 }

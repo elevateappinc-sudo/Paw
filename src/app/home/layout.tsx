@@ -1,3 +1,4 @@
+/** Inicio usa el fondo y la estructura de AppShell; sin envoltorio propio. */
 export default function HomeLayout({ children }: { children: React.ReactNode }) {
-  return <div className="min-h-screen bg-black">{children}</div>
+  return children;
 }

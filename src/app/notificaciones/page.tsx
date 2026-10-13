@@ -1,17 +1,22 @@
-'use client'
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useAuthContext } from '@/contexts/AuthContext'
-import { NotificacionesModule } from '@/components/notificaciones/NotificacionesModule'
+"use client";
+import { Suspense, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { NotificacionesModule } from "@/components/notificaciones/NotificacionesModule";
+import { NotificacionesSkeleton } from "@/components/notificaciones/NotificacionesSkeleton";
 
 export default function NotificacionesPage() {
-  const { user, loading } = useAuthContext()
-  const router = useRouter()
+  const { user, loading } = useAuthContext();
+  const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) router.replace('/login')
-  }, [user, loading, router])
+    if (!loading && !user) router.replace("/login");
+  }, [user, loading, router]);
 
-  if (loading || !user) return null
-  return <NotificacionesModule />
+  if (loading || !user) return <NotificacionesSkeleton />;
+  return (
+    <Suspense fallback={<NotificacionesSkeleton />}>
+      <NotificacionesModule />
+    </Suspense>
+  );
 }

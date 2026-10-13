@@ -1,7 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
+import { PawPrint } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { SPECIES_VARIANTS } from "@/lib/avatar";
 import type { Pet, AvatarConfig } from "@/types";
-import { SPECIES_VARIANTS, getDefaultAvatarConfig } from "@/lib/avatar";
 
 interface AvatarSelectorProps {
   pet: Partial<Pick<Pet, "id" | "species" | "emoji" | "color" | "avatar_config">>;
@@ -9,28 +11,22 @@ interface AvatarSelectorProps {
   onChange: (config: AvatarConfig) => void;
 }
 
-const FONT = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
-
 /**
- * AvatarSelector — grid of DiceBear avatar variants for the pet's species.
- * Renders inline SVG previews and lets the user pick one.
+ * AvatarSelector — rejilla de variantes DiceBear para la especie de la mascota.
  */
 export function AvatarSelector({ pet, value, onChange }: AvatarSelectorProps) {
   const species = (pet.species ?? "otro") as Pet["species"];
   const variants = SPECIES_VARIANTS[species] ?? SPECIES_VARIANTS.otro;
-  const accentColor = pet.color ?? "#0a84ff";
 
-  // SVG cache per variant index
   const [svgs, setSvgs] = useState<Record<number, string>>({});
 
   useEffect(() => {
-    setSvgs({}); // reset on species change
+    setSvgs({});
     let cancelled = false;
 
     async function loadAll() {
       const { createAvatar } = await import("@dicebear/core");
       const results: Record<number, string> = {};
-
       for (let i = 0; i < variants.length; i++) {
         const v = variants[i];
         try {
@@ -40,89 +36,71 @@ export function AvatarSelector({ pet, value, onChange }: AvatarSelectorProps) {
           const avatar = createAvatar(styleModule as any, { seed: v.seed, size: 56 });
           results[i] = avatar.toString();
         } catch {
-          // skip failed variant
+          // variante no disponible
         }
       }
-
       if (!cancelled) setSvgs(results);
     }
 
     void loadAll();
-    return () => { cancelled = true; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [species]);
 
-  // When species changes and no value set, auto-select first variant
   useEffect(() => {
     if (!value || !variants.find((v) => v.seed === value.seed)) {
       if (variants[0]) onChange({ style: variants[0].style, seed: variants[0].seed });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [species]);
 
   return (
-    <div>
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(3, 1fr)",
-        gap: 10,
-      }}>
-        {variants.map((v, i) => {
-          const isSelected = value?.seed === v.seed;
-          return (
-            <button
-              key={v.seed}
-              type="button"
-              onClick={() => onChange({ style: v.style, seed: v.seed })}
-              title={v.label}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 6,
-                padding: 10,
-                borderRadius: 14,
-                background: isSelected ? `${accentColor}22` : "rgba(255,255,255,0.05)",
-                border: `2px solid ${isSelected ? accentColor : "transparent"}`,
-                cursor: "pointer",
-                transition: "all 0.15s",
-                fontFamily: FONT,
-              }}
-            >
-              {svgs[i] ? (
-                <div
-                  style={{ width: 56, height: 56, borderRadius: 12, overflow: "hidden" }}
-                  dangerouslySetInnerHTML={{ __html: svgs[i] }}
-                />
-              ) : (
-                <div style={{
-                  width: 56, height: 56, borderRadius: 12,
-                  background: `${accentColor}18`,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 22,
-                }}>
-                  {pet.emoji ?? "🐾"}
-                </div>
-              )}
-              <span style={{ fontSize: 10, color: isSelected ? accentColor : "rgba(235,235,245,0.5)", fontWeight: 600 }}>
-                {v.label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+    <div className="grid grid-cols-3 gap-2.5" role="radiogroup" aria-label="Avatar">
+      {variants.map((v, i) => {
+        const isSelected = value?.seed === v.seed;
+        return (
+          <button
+            key={v.seed}
+            type="button"
+            role="radio"
+            aria-checked={isSelected}
+            aria-label={v.label}
+            onClick={() => onChange({ style: v.style, seed: v.seed })}
+            className={cn(
+              "flex flex-col items-center justify-center gap-1.5 rounded-card border-2 p-2.5 transition-[background-color,border-color] active:scale-95",
+              isSelected ? "border-primary bg-primary-container" : "border-transparent bg-surface-2"
+            )}
+          >
+            {svgs[i] ? (
+              <div className="h-14 w-14 overflow-hidden rounded-control bg-surface" dangerouslySetInnerHTML={{ __html: svgs[i] }} aria-hidden="true" />
+            ) : (
+              <div className="flex h-14 w-14 items-center justify-center rounded-control bg-surface text-on-variant" aria-hidden="true">
+                <PawPrint size={22} />
+              </div>
+            )}
+            <span className={cn("text-[11px] font-bold", isSelected ? "text-on-primary-container" : "text-on-variant")}>{v.label}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }
 
 async function importStyle(style: string) {
   switch (style) {
-    case "adventurer": return await import("@dicebear/adventurer");
-    case "adventurer-neutral": return await import("@dicebear/adventurer-neutral");
-    case "fun-emoji": return await import("@dicebear/fun-emoji");
-    case "lorelei": return await import("@dicebear/lorelei");
-    case "bottts": return await import("@dicebear/bottts");
-    default: return null;
+    case "adventurer":
+      return await import("@dicebear/adventurer");
+    case "adventurer-neutral":
+      return await import("@dicebear/adventurer-neutral");
+    case "fun-emoji":
+      return await import("@dicebear/fun-emoji");
+    case "lorelei":
+      return await import("@dicebear/lorelei");
+    case "bottts":
+      return await import("@dicebear/bottts");
+    default:
+      return null;
   }
 }

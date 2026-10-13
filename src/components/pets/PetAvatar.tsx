@@ -75,9 +75,19 @@ export function PetAvatar({ pet, size = "md", className, style: styleOverride, o
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    background: `${pet.color ?? "#0a84ff"}22`,
+    background: `${pet.color ?? "#357050"}22`,
     ...styleOverride,
   };
+
+  // Foto real de la mascota (las fotos mandan)
+  if (pet.photoUrl) {
+    return (
+      <div className={className} style={containerStyle}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={pet.photoUrl} alt={pet.name} width={px} height={px} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      </div>
+    );
+  }
 
   // Fallback: emoji or SVG silhouette
   if (failed) {
@@ -107,7 +117,7 @@ export function PetAvatar({ pet, size = "md", className, style: styleOverride, o
           width: px * 0.4,
           height: px * 0.4,
           borderRadius: "50%",
-          background: `${pet.color ?? "#0a84ff"}44`,
+          background: `${pet.color ?? "#357050"}44`,
           animation: "pulse 1.5s ease-in-out infinite",
         }} />
       </div>

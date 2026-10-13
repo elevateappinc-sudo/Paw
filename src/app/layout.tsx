@@ -1,29 +1,46 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import { Figtree } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ToastProvider } from "@/components/ui/ToastProvider";
-import { Sidebar } from "@/components/layout/Sidebar";
 import { PetsLoader } from "@/components/auth/PetsLoader";
-import { NavGuard, MainContent } from "@/components/layout/NavGuard";
+import { AppShell } from "@/components/layout/AppShell";
+import { ThemeInit } from "@/components/settings/ThemeInit";
+
+const figtree = Figtree({
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800", "900"],
+  variable: "--font-figtree",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
-  title: "PAW",
-  description: "Tu compañero de gestión animal",
+  title: { default: "Paw", template: "%s · Paw" },
+  description: "Todo lo que tu mascota necesita, cerca de ti.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: { capable: true, statusBarStyle: "default", title: "Paw" },
+  icons: { icon: "/icon.svg", apple: "/apple-touch-icon.png" },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FAF6F1" },
+    { media: "(prefers-color-scheme: dark)", color: "#15100D" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es">
-      <body style={{ background: "#000000", minHeight: "100dvh", margin: 0 }}>
+    <html lang="es" className={figtree.variable} suppressHydrationWarning>
+      <body>
         <AuthProvider>
           <ToastProvider>
+            <ThemeInit />
             <PetsLoader />
-            <NavGuard>
-              <Sidebar />
-            </NavGuard>
-            <MainContent>
-              {children}
-            </MainContent>
+            <AppShell>{children}</AppShell>
           </ToastProvider>
         </AuthProvider>
       </body>

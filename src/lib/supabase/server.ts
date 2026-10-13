@@ -1,8 +1,14 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { DEMO_COOKIE, isDemoEnv } from "@/lib/demo";
 
 export async function createClient() {
   const cookieStore = await cookies();
+
+  if (isDemoEnv() || cookieStore.get(DEMO_COOKIE)?.value === "1") {
+    const { createDemoClient } = await import("@/lib/demo/client");
+    return createDemoClient();
+  }
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

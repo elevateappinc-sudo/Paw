@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
+import { CloudUpload } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { Button, Card, PawIllustration, Sheet } from "@/components/ui";
 import type { User } from "@supabase/supabase-js";
 
 interface LocalPet {
@@ -28,14 +30,15 @@ interface MigrationModalProps {
 
 type MigrationStatus = "idle" | "loading" | "success" | "error";
 
+/** Hoja que ofrece migrar las mascotas guardadas en localStorage a la cuenta. */
 export function MigrationModal({ user, onComplete }: MigrationModalProps) {
   const [status, setStatus] = useState<MigrationStatus>("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const [skipping, setSkipping] = useState(false);
 
   async function handleMigrate() {
     setStatus("loading");
     setErrorMsg("");
-
     try {
       const supabase = createClient();
       const rawStore = localStorage.getItem("paw-store-v3");
@@ -54,25 +57,16 @@ export function MigrationModal({ user, onComplete }: MigrationModalProps) {
           color: pet.color ?? null,
           shared_with: [],
         }));
-
         const { error: insertError } = await supabase.from("pets").insert(petsToInsert);
         if (insertError) throw insertError;
       }
 
-      // Mark migration as completed
-      const { error: updateError } = await supabase
-        .from("users")
-        .update({ migration_completed: true })
-        .eq("id", user.id);
-
+      const { error: updateError } = await supabase.from("users").update({ migration_completed: true }).eq("id", user.id);
       if (updateError) throw updateError;
 
-      // Clear localStorage pets (keep other state)
       if (rawStore) {
         const parsed: LocalStore = JSON.parse(rawStore) as LocalStore;
-        if (parsed.state) {
-          parsed.state.pets = [];
-        }
+        if (parsed.state) parsed.state.pets = [];
         localStorage.setItem("paw-store-v3", JSON.stringify(parsed));
       }
 
@@ -80,95 +74,53 @@ export function MigrationModal({ user, onComplete }: MigrationModalProps) {
       setTimeout(() => onComplete(), 2000);
     } catch (err) {
       console.error("Migration error:", err);
-      setErrorMsg("No pudimos migrar algunos datos. Intenta de nuevo.");
+      setErrorMsg("No pudimos migrar algunos datos. Inténtalo de nuevo.");
       setStatus("error");
     }
   }
 
   async function handleSkip() {
+    setSkipping(true);
     const supabase = createClient();
-    await supabase
-      .from("users")
-      .update({ migration_completed: true })
-      .eq("id", user.id);
+    await supabase.from("users").update({ migration_completed: true }).eq("id", user.id);
     onComplete();
   }
 
+  const busy = status === "loading" || skipping;
+
   return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 1000,
-      background: "rgba(0,0,0,0.8)",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      padding: 24,
-      fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif",
-    }}>
-      <div style={{
-        background: "#1c1c1e", borderRadius: 20,
-        padding: 28, maxWidth: 360, width: "100%",
-        boxShadow: "0 20px 60px rgba(0,0,0,0.6)",
-      }}>
-        {status === "success" ? (
-          <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>🐾</div>
-            <h2 style={{ fontSize: 20, fontWeight: 700, color: "#ffffff", margin: "0 0 8px" }}>
-              ¡Todo listo!
-            </h2>
-            <p style={{ fontSize: 15, color: "rgba(235,235,245,0.6)", margin: 0 }}>
-              Tus datos están seguros en la nube.
-            </p>
-          </div>
-        ) : status === "loading" ? (
-          <div style={{ textAlign: "center" }}>
-            <p style={{ fontSize: 17, color: "#ffffff", margin: 0 }}>
-              Migrando tus datos... 🐾
-            </p>
-          </div>
-        ) : (
-          <>
-            <h2 style={{ fontSize: 20, fontWeight: 700, color: "#ffffff", margin: "0 0 12px" }}>
-              Datos guardados localmente
-            </h2>
-            <p style={{ fontSize: 15, color: "rgba(235,235,245,0.6)", margin: "0 0 24px", lineHeight: 1.5 }}>
-              Encontramos datos guardados localmente. ¿Los migramos a tu cuenta?
-            </p>
-
-            {status === "error" && (
-              <div style={{
-                padding: "12px 16px", borderRadius: 10, marginBottom: 16,
-                background: "rgba(255,69,58,0.15)",
-                fontSize: 14, color: "#ff453a",
-              }}>
-                {errorMsg}
-              </div>
-            )}
-
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              <button
-                onClick={handleMigrate}
-                style={{
-                  width: "100%", padding: "14px", borderRadius: 13, border: "none",
-                  background: "#0a84ff", color: "#ffffff",
-                  fontSize: 16, fontWeight: 600, cursor: "pointer",
-                  fontFamily: "inherit",
-                }}
-              >
-                {status === "error" ? "Reintentar migración" : "Migrar mis datos"}
-              </button>
-              <button
-                onClick={handleSkip}
-                style={{
-                  width: "100%", padding: "14px", borderRadius: 13, border: "none",
-                  background: "rgba(120,120,128,0.24)", color: "rgba(235,235,245,0.6)",
-                  fontSize: 16, fontWeight: 600, cursor: "pointer",
-                  fontFamily: "inherit",
-                }}
-              >
-                Empezar de cero
-              </button>
+    <Sheet open onClose={() => {}} hideClose title={status === "success" ? undefined : "Datos guardados en este dispositivo"}>
+      {status === "success" ? (
+        <div className="flex flex-col items-center gap-3 py-4 text-center">
+          <PawIllustration className="h-24 w-24" />
+          <h2 className="font-display text-[22px] leading-tight text-on">Todo listo</h2>
+          <p className="text-[15px] text-on-variant">Tus datos están seguros en tu cuenta.</p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-4 pb-2">
+          <div className="flex items-start gap-3">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] bg-primary-container text-on-primary-container">
+              <CloudUpload size={22} aria-hidden="true" />
             </div>
-          </>
-        )}
-      </div>
-    </div>
+            <p className="text-[15px] leading-relaxed text-on-variant">Encontramos mascotas guardadas en este dispositivo. ¿Las pasamos a tu cuenta para tenerlas en todos tus dispositivos?</p>
+          </div>
+
+          {status === "error" && (
+            <Card tone="danger" elevation={0} role="alert" className="py-3 text-[14px]">
+              {errorMsg}
+            </Card>
+          )}
+
+          <div className="flex flex-col gap-2">
+            <Button size="lg" full onClick={() => void handleMigrate()} loading={status === "loading"} disabled={busy}>
+              {status === "error" ? "Reintentar migración" : "Migrar mis datos"}
+            </Button>
+            <Button size="lg" full variant="secondary" onClick={() => void handleSkip()} loading={skipping} disabled={busy}>
+              Empezar de cero
+            </Button>
+          </div>
+        </div>
+      )}
+    </Sheet>
   );
 }

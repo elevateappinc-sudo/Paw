@@ -2,6 +2,9 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function updateSession(request: NextRequest): Promise<NextResponse> {
+  if (process.env.NEXT_PUBLIC_PAW_DEMO === "1" || request.cookies.get("paw_demo")?.value === "1") {
+    return NextResponse.next({ request });
+  }
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -29,7 +32,7 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
   const { data: { user } } = await supabase.auth.getUser();
 
   // Public routes that don't require authentication
-  const publicRoutes = ["/", "/login", "/register", "/auth/callback"];
+  const publicRoutes = ["/", "/login", "/register", "/auth/callback", "/join", "/shared", "/e", "/demo", "/manifest.webmanifest", "/sw.js"];
   const { pathname } = request.nextUrl;
 
   const isPublicRoute = publicRoutes.some(

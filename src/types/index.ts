@@ -25,6 +25,7 @@ export interface Pet {
   emoji: string;
   color: string;
   photos: string[];   // base64 data URLs
+  photoUrl?: string | null;
   avatar_config?: AvatarConfig | null;
   createdAt: string;
 }

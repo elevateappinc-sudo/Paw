@@ -13,6 +13,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.132.1",
     "@dicebear/collection": "^9.4.2",
     "@dicebear/core": "^9.4.2",
     "@supabase/ssr": "^0.9.0",
@@ -25,6 +26,8 @@
     "autoprefixer": "^10.4.27",
     "class-variance-authority": "^0.7.1",
     "lucide-react": "^0.577.0",
+    "maplibre-gl": "^6.13.0",
+    "motion": "^14.0.0",
     "next": "^15.5.12",
     "postcss": "^8.5.8",
     "qrcode.react": "^4.2.0",
@@ -37,8 +40,11 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.7",
     "@types/jest": "^30.0.0",
     "@types/qrcode.react": "^1.0.5",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^15.5.27",
     "jest": "^30.3.0",
     "ts-jest": "^29.4.6"
   }

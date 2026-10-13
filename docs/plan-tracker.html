@@ -1,0 +1,286 @@
+<title>Paw Plan de Cierre</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@500;600;700;800&display=swap">
+<style>
+  /* Layout: una columna de lectura de 760 px; tarjetas por prioridad; cada ítem es una fila con estado a la izquierda. */
+  :root {
+    --bg: #faf6f1;
+    --sf: #ffffff;
+    --sc: #f2ece4;
+    --line: #d9cfc5;
+    --fg: #221c17;
+    --muted: #5e544c;
+    --accent: #357050;
+    --accent-soft: #d3ead8;
+    --accent-ink: #0f3a20;
+    --info: #2f6f8f;
+    --info-soft: #d2e7f1;
+    --warn: #8a5a00;
+    --warn-soft: #ffe6b3;
+    --hold: #6d5a9e;
+    --hold-soft: #e9dcf9;
+    --display: "Figtree", -apple-system, "Segoe UI", system-ui, sans-serif;
+    --body: -apple-system, "SF Pro Text", "Segoe UI", Roboto, system-ui, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #15100d; --sf: #1d1714; --sc: #27201c; --line: #4a3f38; --fg: #f3ece5; --muted: #cdbfb3;
+      --accent: #a3d3b0; --accent-soft: #2a5438; --accent-ink: #d3ead8; --info: #9ccbe4; --info-soft: #1f4a60;
+      --warn: #f5c56b; --warn-soft: #5a3b00; --hold: #cdb4f5; --hold-soft: #3d2a63; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #15100d; --sf: #1d1714; --sc: #27201c; --line: #4a3f38; --fg: #f3ece5; --muted: #cdbfb3;
+    --accent: #a3d3b0; --accent-soft: #2a5438; --accent-ink: #d3ead8; --info: #9ccbe4; --info-soft: #1f4a60;
+    --warn: #f5c56b; --warn-soft: #5a3b00; --hold: #cdb4f5; --hold-soft: #3d2a63; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 1.5; }
+  .wrap { max-width: 760px; margin: 0 auto; padding-block: 28px 64px; padding-inline: 16px; }
+  h1, h2, h3 { font-family: var(--display); font-weight: 800; letter-spacing: -0.02em; text-wrap: balance; margin: 0; }
+  h1 { font-size: 30px; line-height: 1.1; }
+  h2 { font-size: 20px; }
+  h3 { font-size: 16px; }
+  .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .muted { color: var(--muted); }
+  a { color: var(--accent); font-weight: 600; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  header { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 13px; color: var(--muted); }
+  .summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 20px; }
+  .tile { background: var(--sf); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+  .tile .n { font-family: var(--display); font-size: 26px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+  .tile .l { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+  .chip { border: 1px solid var(--line); background: var(--sf); color: var(--fg); border-radius: 999px; padding: 7px 12px; font: 600 13px var(--body); cursor: pointer; min-height: 36px; }
+  .chip[aria-pressed="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
+  :root[data-theme="dark"] .chip[aria-pressed="true"], :root:not([data-theme="light"]) .chip[aria-pressed="true"] { color: var(--accent-ink); }
+  .chip:focus-visible, .toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .block { background: var(--sf); border: 1px solid var(--line); border-radius: 18px; padding: 18px 18px 8px; margin-bottom: 16px; }
+  .block.blocker { border-color: var(--warn); }
+  .block-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+  .block-head .sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .bar { height: 6px; background: var(--sc); border-radius: 999px; overflow: hidden; margin: 10px 0 6px; }
+  .bar > span { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+  .bar-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; font-variant-numeric: tabular-nums; }
+  .items { list-style: none; margin: 0; padding: 0; }
+  .item { display: grid; grid-template-columns: 92px minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 10px 0; border-top: 1px solid var(--line); }
+  .item:first-child { border-top: 0; }
+  .item.hidden { display: none; }
+  .st { display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 3px 9px; font-size: 11px; font-weight: 700; white-space: nowrap; margin-top: 2px; }
+  .st::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .st.hecho { background: var(--accent-soft); color: var(--accent-ink); }
+  .st.curso { background: var(--info-soft); color: var(--info); }
+  .st.pendiente { background: var(--sc); color: var(--muted); }
+  .st.bloqueado { background: var(--warn-soft); color: var(--warn); }
+  .st.espera { background: var(--hold-soft); color: var(--hold); }
+  .item .t { font-weight: 600; }
+  .item .d { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .item .when { font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .tables { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 18px; margin: 10px 0 14px; }
+  .tables div { min-width: 0; }
+  .tables h3 { font-size: 13px; margin-bottom: 4px; }
+  .tables ul { margin: 0; padding-left: 18px; font-family: var(--mono); font-size: 12px; line-height: 1.6; color: var(--muted); }
+  .need { background: var(--warn-soft); color: var(--fg); border-radius: 12px; padding: 12px 14px; margin: 8px 0 12px; }
+  .need ol { margin: 6px 0 0; padding-left: 20px; }
+  .need li { margin: 4px 0; }
+  code { font-family: var(--mono); font-size: 12.5px; background: var(--sc); padding: 1px 5px; border-radius: 5px; }
+  .log { font-size: 13px; }
+  .log li { margin: 4px 0; }
+  .log time { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-right: 8px; }
+  @media (max-width: 520px) {
+    .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .item { grid-template-columns: 1fr; gap: 4px; }
+    .item .when { order: 3; }
+    .tables { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: no-preference) { .bar > span { transition: width 400ms cubic-bezier(.3,0,0,1); } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Paw · reestructuración</div>
+    <h1>Plan de cierre por prioridades</h1>
+    <div class="meta">
+      <span>Actualizado <strong id="updated">9 oct 2026</strong></span>
+      <span>Rama <code>feat/prd-redesign</code></span>
+      <a href="https://claude.ai/code/artifact/29c8128c-4fd4-48f7-a23a-03545bba4f70">PRD</a>
+      <a href="https://claude.ai/code/artifact/6e13fdb8-cd3a-42da-b788-b1abaa49448a">Sistema de diseño</a>
+      <a href="https://claude.ai/artifact/MyZsV9Zxv7nt56Ykq7ARy3">Mockups</a>
+    </div>
+  </header>
+
+  <section class="summary" aria-label="Resumen">
+    <div class="tile"><div class="n" id="n-hecho">0</div><div class="l">Hechos</div></div>
+    <div class="tile"><div class="n" id="n-curso">0</div><div class="l">En curso</div></div>
+    <div class="tile"><div class="n" id="n-pendiente">0</div><div class="l">Pendientes</div></div>
+    <div class="tile"><div class="n" id="n-espera">0</div><div class="l">En espera</div></div>
+  </section>
+
+  <section class="block" aria-labelledby="h-supabase">
+    <div class="block-head">
+      <div><h2 id="h-supabase">Conexión a Supabase</h2><div class="sub">Proyecto nuevo <code>PAW - Dev · qomzldpywoapcusavxqw</code>, migrado el 9 oct</div></div>
+      <span class="st hecho">Conectado</span>
+    </div>
+    <p>Decidiste llevar el back end a un proyecto nuevo, <strong>PAW - Dev</strong>. Ahí están aplicadas las 22 migraciones (50 tablas, 100 políticas, PostGIS), los 4 buckets de Storage con sus políticas, las 9 edge functions, las claves de push y la semilla del directorio. La app local ya apunta a este proyecto. El proyecto anterior <code>rgcpbuhypcvttqanvnpq</code> queda intacto con sus 32 tablas por si hay que volver.</p>
+    <div class="tables">
+      <div>
+        <h3>Migrado desde el proyecto anterior (32 tablas)</h3>
+        <ul>
+          <li>users, pets, pet_members, pet_member_permissions, share_tokens</li>
+          <li>vaccines, medications, medication_logs, clinical_records, clinical_documents</li>
+          <li>expenses, itinerary, itinerary_records, training_sessions, training_tasks</li>
+          <li>pet_photos, pet_videos, user_storage_usage, storage_cleanup_queue</li>
+          <li>notifications, notification_queue, notification_preferences, notification_rate_tracker, push_subscriptions</li>
+          <li>calendar_integrations, calendar_event_mappings</li>
+          <li>businesses, business_subscriptions, marketplace_plans, marketplace_listings, marketplace_config, listing_analytics</li>
+          <li>ai_usage_log, auth_sync_errors</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Nuevo en PAW - Dev (migraciones 001 a 008)</h3>
+        <ul>
+          <li>pets: sexo, microchip, alergias, contacto, foto, alimento</li>
+          <li>weight_logs, care_protocols, care_cycles, care_cycle_logs</li>
+          <li>can_access_pet() y políticas por miembro</li>
+          <li>PostGIS, columnas de ubicación y horario en businesses</li>
+          <li>business_services, reviews, bookings, events, event_rsvps, saved_businesses</li>
+          <li>lost_pet_alerts, lost_pet_sightings, user_locations, assistant_messages</li>
+          <li>RPC: nearby_businesses, nearest_emergency, complete_care_cycle, pet_emergency_card, nearby_lost_pets</li>
+        </ul>
+      </div>
+    </div>
+    <div class="need">
+      <strong>Pendiente de tu lado en Supabase:</strong>
+      <ol>
+        <li>Google OAuth: en Authentication → Providers → Google, pegar Client ID y Secret y añadir <code>https://qomzldpywoapcusavxqw.supabase.co/auth/v1/callback</code> en Google Cloud. Mientras tanto funciona el registro con correo y contraseña (sin confirmación por correo en Dev).</li>
+        <li>Revocar el token pegado en el chat y crear otro con el mismo alcance.</li>
+        <li>Al desplegar en Vercel, cambiar las variables de entorno a PAW - Dev.</li>
+      </ol>
+      
+    </div>
+  </section>
+
+  <div class="filters" role="group" aria-label="Filtrar por estado">
+    <button class="chip" aria-pressed="true" data-filter="all">Todo</button>
+    <button class="chip" aria-pressed="false" data-filter="pendiente">Pendiente</button>
+    <button class="chip" aria-pressed="false" data-filter="curso">En curso</button>
+    <button class="chip" aria-pressed="false" data-filter="hecho">Hecho</button>
+    <button class="chip" aria-pressed="false" data-filter="espera">En espera</button>
+  </div>
+
+  <div id="blocks"></div>
+
+  <section class="block" aria-labelledby="h-log">
+    <div class="block-head"><h2 id="h-log">Bitácora</h2></div>
+    <ul class="log" id="log"></ul>
+  </section>
+</div>
+
+<script>
+  // Estado de cada ítem: hecho · curso · pendiente · bloqueado · espera
+  const PLAN = [
+    {
+      id: "p1", title: "Prioridad 1 · Fase 1 operativa", sub: "Objetivo: registrar la información real de la mascota desde el tab Mascota",
+      items: [
+        ["hecho", "Tokens de diseño, kit de UI con motion, shell con tab bar y SOS, PWA", "Tailwind v4 claro/oscuro, acento salvia; 49 rutas compilan", "7 oct"],
+        ["hecho", "Pantallas Inicio, Mascotas, Perfil, Alta, Salud, Alimentación, Higiene", "Con estados cargando, vacío y error", "7 oct"],
+        ["hecho", "Migraciones 001 a 004 escritas", "Perfil v2, motor de ciclos con protocolos por especie, RLS por miembro, backfill de vacunas", "7 oct"],
+        ["hecho", "Modo demo con datos e imágenes de ejemplo", "/demo · cliente simulado · 13 pruebas", "8 oct"],
+        ["hecho", "Aplicar las 22 migraciones en PAW - Dev", "Incluye 3 arreglos: orden del historial clínico, owner_user_id en marketplace, política de lectura de pets y claves foráneas al borrar usuarios", "9 oct"],
+        ["hecho", "Buckets de Storage con políticas y 9 edge functions desplegadas", "pet-photos público; paw-photos, clinical-docs y pet-videos privados; claves VAPID como secrets", "9 oct"],
+        ["hecho", "Tipos generados en src/types/supabase.ts", "112 KB desde la API de tipos", "9 oct"],
+        ["hecho", "Verificado con usuarios de prueba en el proyecto real", "Alta genera 12 ciclos, completar registra log y gasto, peso sincroniza, RLS aísla a otros usuarios y da acceso a miembros", "9 oct"],
+        ["hecho", "Historial previo al alta: registrar últimas vacunas, desparasitación y antipulgas", "Hoja desde el alta, el perfil y Salud; los ciclos sin fecha muestran Sin registro y recalculan al guardar", "9 oct"],
+        ["hecho", "Plan de cuidados parametrizable: frecuencia en días, semanas o meses; seguir o no cada cuidado; cuidados propios", "Columnas interval_value e interval_unit con trigger que mantiene interval_days; el configurador permite desactivar ciclos y añadir seguimientos (dermatitis, vista, condiciones especiales)", "9 oct"],
+        ["pendiente", "Rutina: paseos con duración y distancia, registro de conducta", "Tablas walks y behavior_logs, vista en el tab Rutina", ""],
+        ["pendiente", "Historial: laboratorios con valores, certificado al completar vacuna, PDF", "Tabla lab_results, adjunto en care_cycle_logs, vista imprimible", ""],
+        ["pendiente", "Galería y foto de perfil desde el perfil, QR de la placa", "", ""],
+        ["pendiente", "Revisión veterinaria de protocolos y lista de alimentos tóxicos", "Contenido, no código", ""],
+        ["pendiente", "Pruebas pgTAP de las políticas de acceso", "Dueño, miembro con permiso, miembro sin permiso, anónimo", ""],
+      ],
+    },
+    {
+      id: "p2", title: "Prioridad 2 · Consola de administración del directorio", sub: "Modelo Rappi: el comercio se registra solo, un administrador aprueba, luego se autogestiona",
+      items: [
+        ["hecho", "Investigación del modelo de vinculación de Rappi", "Autoservicio con revisión de documentos y activación; sin costo de alta, comisión por venta", "8 oct"],
+        ["hecho", "Directorio construido: Explorar con mapa, ficha, reserva, citas, eventos, panel del negocio", "Migración 005 y semilla de 15 negocios escritas", "7 oct"],
+        ["hecho", "Migración 005 y semilla aplicadas", "15 negocios, 23 servicios y 4 eventos ficticios en Bogotá; se reemplazan desde la consola", "9 oct"],
+        ["pendiente", "Roles de usuario y protección de /admin en servidor", "users.role: owner, business, admin", ""],
+        ["pendiente", "Comercios: listado con estados, alta y edición completa, importación CSV", "Categorías, dirección geolocalizada, horarios, precios, fotos, servicios y ciclo que completan, promo, verificado, destacado, plan", ""],
+        ["pendiente", "Solicitudes: aprobar registros self-service y reclamaciones con documentos", "RUT o cédula, certificado bancario, registro sanitario en veterinarias", ""],
+        ["pendiente", "Parámetros globales", "Categorías e iconos, ciudades y radio por defecto, política de cancelación, planes y precios, textos del banner, catálogo de protocolos", ""],
+        ["pendiente", "Moderación de eventos y reseñas", "", ""],
+        ["pendiente", "Métricas del directorio", "Negocios activos, reservas por semana, reseñas, vistas", ""],
+      ],
+    },
+    {
+      id: "p3", title: "Prioridad 3 · Fase 3 en espera", sub: "Registrado para no perderlo; se retoma cuando cierren las prioridades 1 y 2",
+      items: [
+        ["hecho", "Modo emergencia, mascota perdida, asistente con Claude, selector de plan", "Migraciones 006 y 007 aplicadas; falta ANTHROPIC_API_KEY para el asistente", "7 oct"],
+        ["espera", "Pago real del plan B2B", "Pasarela Wompi o Mercado Pago", ""],
+        ["espera", "Etapas de vida: celo, gestación, senior, fin de vida", "Solo existe la columna reproductive", ""],
+        ["espera", "Bóveda de documentos y seguros", "", ""],
+        ["espera", "Comunidad local y grupos por barrio", "", ""],
+        ["espera", "Multi-ciudad con importación por ciudad", "", ""],
+        ["espera", "Wearables (collares GPS)", "", ""],
+        ["espera", "Instrumentación de producto (PostHog)", "", ""],
+      ],
+    },
+  ];
+
+  const LOG = [
+    ["9 oct", "Plan de cuidados parametrizable: cada ciclo tiene frecuencia editable con unidad, se puede dejar de seguir y el usuario añade cuidados propios. Migración 004 aplicada en PAW - Dev."],
+    ["9 oct", "Primera mascota real registrada (Jagger). Añadido el historial previo para cargar vacunas y antiparasitarios ya aplicados."],
+    ["9 oct", "Back end movido al proyecto nuevo PAW - Dev: 22 migraciones, Storage, 9 edge functions, push, auth, semilla y tipos. Verificado el flujo completo con usuarios de prueba. La app local ya apunta al proyecto nuevo."],
+    ["8 oct", "Plan creado. Verificada la conexión a Supabase: 32 tablas existentes, faltan las de la reestructuración. Investigado el modelo de vinculación de Rappi."],
+    ["8 oct", "Modo demo publicado con datos e imágenes de ejemplo. Corregidos el middleware (no se cargaba desde src/) y la tabla training_sessions."],
+    ["7 oct", "Fases 1, 2 y la parte alta de la 3 construidas en la rama feat/prd-redesign. Build, tipos y lint limpios."],
+  ];
+
+  const LABEL = { hecho: "Hecho", curso: "En curso", pendiente: "Pendiente", bloqueado: "Bloqueado", espera: "En espera" };
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  function render() {
+    const root = document.getElementById("blocks");
+    const counts = { hecho: 0, curso: 0, pendiente: 0, espera: 0 };
+    root.innerHTML = PLAN.map((b) => {
+      const total = b.items.length;
+      const done = b.items.filter((i) => i[0] === "hecho").length;
+      b.items.forEach((i) => { const k = i[0] === "bloqueado" ? "pendiente" : i[0]; if (counts[k] !== undefined) counts[k]++; });
+      const pct = Math.round((done / total) * 100);
+      return `<section class="block" aria-labelledby="h-${b.id}">
+        <div class="block-head"><div><h2 id="h-${b.id}">${esc(b.title)}</h2><div class="sub">${esc(b.sub)}</div></div></div>
+        <div class="bar"><span style="width:${pct}%"></span></div>
+        <div class="bar-label">${done} de ${total} ítems hechos · ${pct}%</div>
+        <ul class="items">${b.items.map((i) => `
+          <li class="item" data-status="${i[0]}">
+            <span class="st ${i[0]}">${LABEL[i[0]]}</span>
+            <div><div class="t">${esc(i[1])}</div>${i[2] ? `<div class="d">${esc(i[2])}</div>` : ""}</div>
+            <span class="when">${esc(i[3])}</span>
+          </li>`).join("")}</ul>
+      </section>`;
+    }).join("");
+    document.getElementById("n-hecho").textContent = counts.hecho;
+    document.getElementById("n-curso").textContent = counts.curso;
+    document.getElementById("n-pendiente").textContent = counts.pendiente;
+    document.getElementById("n-espera").textContent = counts.espera;
+    document.getElementById("log").innerHTML = LOG.map((l) => `<li><time>${esc(l[0])}</time>${esc(l[1])}</li>`).join("");
+  }
+
+  function applyFilter(f) {
+    document.querySelectorAll(".item").forEach((el) => {
+      const s = el.dataset.status;
+      const match = f === "all" || s === f || (f === "pendiente" && s === "bloqueado");
+      el.classList.toggle("hidden", !match);
+    });
+    document.querySelectorAll(".chip").forEach((c) => c.setAttribute("aria-pressed", String(c.dataset.filter === f)));
+    try { localStorage.setItem("paw.plan.filter", f); } catch (e) {}
+  }
+
+  render();
+  let initial = "all";
+  try { initial = localStorage.getItem("paw.plan.filter") || "all"; } catch (e) {}
+  applyFilter(initial);
+  document.querySelectorAll(".chip").forEach((c) => c.addEventListener("click", () => applyFilter(c.dataset.filter)));
+</script>

@@ -1,15 +1,19 @@
-'use client'
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useAuthContext } from '@/contexts/AuthContext'
-import { AccountSettings } from '@/components/settings/AccountSettings'
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { SettingsView } from "@/components/settings/SettingsView";
 
-export default function SettingsPage() {
-  const { user, loading } = useAuthContext()
-  const router = useRouter()
-  useEffect(() => {
-    if (!loading && !user) router.replace('/login')
-  }, [user, loading, router])
-  if (loading || !user) return null
-  return <AccountSettings />
+export const metadata: Metadata = { title: "Ajustes" };
+
+export default async function SettingsPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const { data: row } = await supabase.from("users").select("google_linked").eq("id", user.id).maybeSingle();
+  const googleLinked = Boolean((row as { google_linked?: boolean } | null)?.google_linked);
+
+  return <SettingsView email={user.email ?? null} googleLinked={googleLinked} />;
 }

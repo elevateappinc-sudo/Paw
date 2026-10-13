@@ -1,11 +1,14 @@
 "use client";
+import { Check, Minus, PawPrint, Star, Trophy } from "lucide-react";
+import { Button } from "@/components/ui";
+import { cn } from "@/lib/utils";
 
 interface Plan {
   name: string;
   label: string;
   price: string;
-  emoji: string;
-  color: string;
+  icon: React.ReactNode;
+  tone: "neutral" | "info" | "primary";
   features: { label: string; value: string | boolean }[];
   cta: string;
 }
@@ -15,51 +18,57 @@ const PLANS: Plan[] = [
     name: "free",
     label: "Free",
     price: "Gratis",
-    emoji: "🐾",
-    color: "rgba(255,255,255,0.2)",
+    icon: <PawPrint size={22} />,
+    tone: "neutral",
     features: [
-      { label: "Listados activos", value: "1" },
-      { label: "Imágenes por listado", value: "3" },
-      { label: "Comisión por venta", value: "8%" },
-      { label: "Analytics", value: false },
-      { label: "Listados destacados", value: false },
-      { label: "Badge verificado", value: false },
+      { label: "Aparece en Explorar", value: true },
+      { label: "Fotos del negocio", value: "3" },
+      { label: "Reservas desde Paw", value: true },
+      { label: "Recordatorios a clientes", value: false },
+      { label: "Destacado en el mapa", value: false },
+      { label: "Analítica", value: false },
     ],
     cta: "Plan actual",
   },
   {
     name: "pro",
     label: "Pro",
-    price: "$29.99/mes",
-    emoji: "⭐",
-    color: "#0a84ff",
+    price: "$ 119 000/mes",
+    icon: <Star size={22} />,
+    tone: "info",
     features: [
-      { label: "Listados activos", value: "Ilimitados" },
-      { label: "Imágenes por listado", value: "5" },
-      { label: "Comisión por venta", value: "3%" },
-      { label: "Analytics", value: true },
-      { label: "Listados destacados", value: false },
-      { label: "Badge verificado ✅", value: true },
+      { label: "Aparece en Explorar", value: true },
+      { label: "Fotos del negocio", value: "10" },
+      { label: "Reservas desde Paw", value: true },
+      { label: "Recordatorios a clientes", value: true },
+      { label: "Destacado en el mapa", value: false },
+      { label: "Analítica", value: true },
     ],
-    cta: "Actualizar a Pro",
+    cta: "Pasar a Pro",
   },
   {
     name: "business",
     label: "Business",
-    price: "$79.99/mes",
-    emoji: "🏆",
-    color: "#ff9500",
+    price: "$ 299 000/mes",
+    icon: <Trophy size={22} />,
+    tone: "primary",
     features: [
-      { label: "Listados activos", value: "Ilimitados" },
-      { label: "Imágenes por listado", value: "5" },
-      { label: "Comisión por venta", value: "0%" },
-      { label: "Analytics avanzados", value: true },
-      { label: "Listados destacados ⭐", value: true },
-      { label: "Badge verificado ✅", value: true },
+      { label: "Aparece en Explorar", value: true },
+      { label: "Fotos del negocio", value: "Ilimitadas" },
+      { label: "Reservas desde Paw", value: true },
+      { label: "Recordatorios a clientes", value: true },
+      { label: "Destacado en el mapa", value: true },
+      { label: "Analítica avanzada", value: true },
     ],
-    cta: "Actualizar a Business",
+    cta: "Pasar a Business",
   },
 ];
+
+const toneHead: Record<Plan["tone"], string> = {
+  neutral: "bg-surface-2 text-on",
+  info: "bg-info-container text-on-info-container",
+  primary: "bg-primary-container text-on-primary-container",
+};
 
 interface BusinessPlanSelectorProps {
   currentPlan?: string;
@@ -68,87 +77,45 @@ interface BusinessPlanSelectorProps {
 
 export function BusinessPlanSelector({ currentPlan = "free", onSelect }: BusinessPlanSelectorProps) {
   return (
-    <div style={{ padding: "24px 16px" }}>
-      <div style={{ textAlign: "center", marginBottom: 28 }}>
-        <div style={{ fontSize: 24, fontWeight: 800, color: "rgba(235,235,245,0.95)", marginBottom: 6 }}>
-          Planes del Marketplace
-        </div>
-        <div style={{ fontSize: 14, color: "rgba(235,235,245,0.4)" }}>
-          Elige el plan que mejor se adapte a tu negocio
-        </div>
+    <div className="flex flex-col gap-4 py-2">
+      <div className="text-center">
+        <h3 className="font-display text-[22px] text-on">Planes para negocios</h3>
+        <p className="mt-1 text-[14px] text-on-variant">Elige el que mejor se adapte a tu negocio</p>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16 }}>
+      <div className="grid gap-3 sm:grid-cols-3">
         {PLANS.map((plan) => {
           const isCurrent = currentPlan === plan.name;
           return (
-            <div key={plan.name} style={{
-              background: "#111",
-              borderRadius: 18,
-              border: `1.5px solid ${isCurrent ? plan.color : "rgba(255,255,255,0.08)"}`,
-              overflow: "hidden",
-              display: "flex",
-              flexDirection: "column",
-              position: "relative",
-            }}>
-              {/* Header */}
-              <div style={{
-                padding: "20px 20px 16px",
-                background: isCurrent ? `${plan.color}15` : "transparent",
-                borderBottom: "1px solid rgba(255,255,255,0.06)",
-              }}>
-                <div style={{ fontSize: 28, marginBottom: 6 }}>{plan.emoji}</div>
-                <div style={{ fontSize: 20, fontWeight: 800, color: plan.color }}>{plan.label}</div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: "rgba(235,235,245,0.95)", marginTop: 4 }}>
-                  {plan.price}
+            <div key={plan.name} className={cn("flex flex-col overflow-hidden rounded-card-lg border bg-surface", isCurrent ? "border-primary" : "border-outline-variant")}>
+              <div className={cn("flex flex-col gap-1 px-4 py-4", toneHead[plan.tone])}>
+                <div className="flex items-center gap-2">
+                  {plan.icon}
+                  <span className="font-display text-[18px]">{plan.label}</span>
                 </div>
+                <div className="text-[20px] font-extrabold">{plan.price}</div>
               </div>
-
-              {/* Features */}
-              <div style={{ padding: "16px 20px", flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
-                {plan.features.map((f, i) => (
-                  <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: 13, color: "rgba(235,235,245,0.55)" }}>{f.label}</span>
-                    <span style={{
-                      fontSize: 13, fontWeight: 700,
-                      color: f.value === false ? "rgba(235,235,245,0.25)" : f.value === true ? "#30d158" : "rgba(235,235,245,0.85)",
-                    }}>
-                      {f.value === true ? "✓" : f.value === false ? "—" : String(f.value)}
+              <ul className="flex flex-1 flex-col gap-2 px-4 py-3">
+                {plan.features.map((f) => (
+                  <li key={f.label} className="flex items-center justify-between gap-3 text-[13px]">
+                    <span className="text-on-variant">{f.label}</span>
+                    <span className={cn("inline-flex items-center font-bold", f.value === false ? "text-outline" : f.value === true ? "text-ok" : "text-on")}>
+                      {f.value === true ? <Check size={16} aria-label="Incluido" /> : f.value === false ? <Minus size={16} aria-label="No incluido" /> : String(f.value)}
                     </span>
-                  </div>
+                  </li>
                 ))}
-              </div>
-
-              {/* CTA */}
-              <div style={{ padding: "0 20px 20px" }}>
-                <button
-                  onClick={() => !isCurrent && onSelect?.(plan.name)}
-                  disabled={isCurrent}
-                  style={{
-                    width: "100%",
-                    padding: "12px 0",
-                    borderRadius: 12,
-                    border: "none",
-                    cursor: isCurrent ? "default" : "pointer",
-                    fontWeight: 700,
-                    fontSize: 14,
-                    background: isCurrent ? "rgba(255,255,255,0.06)" : plan.color,
-                    color: isCurrent ? "rgba(235,235,245,0.35)" : plan.name === "free" ? "white" : "#000",
-                    transition: "opacity 0.15s",
-                    opacity: isCurrent ? 1 : undefined,
-                  }}
-                >
+              </ul>
+              <div className="px-4 pb-4">
+                <Button full variant={isCurrent ? "secondary" : plan.tone === "primary" ? "primary" : "tonal"} disabled={isCurrent} onClick={() => !isCurrent && onSelect?.(plan.name)}>
                   {isCurrent ? "Plan actual" : plan.cta}
-                </button>
+                </Button>
               </div>
             </div>
           );
         })}
       </div>
 
-      <div style={{ marginTop: 20, textAlign: "center", fontSize: 12, color: "rgba(235,235,245,0.25)" }}>
-        * Las comisiones aplican cuando el switch de comisiones está habilitado por el administrador.
-      </div>
+      <p className="text-center text-[12px] text-on-variant">Precios en pesos colombianos. Cambia o cancela cuando quieras.</p>
     </div>
   );
 }

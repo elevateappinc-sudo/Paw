@@ -1,12 +1,10 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
+import { Users, Settings2, UserMinus, UserCheck, Clock } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { Users, Settings2, UserMinus, UserCheck, Clock } from "lucide-react";
+import { Button, Card, Divider, Row, SectionTitle, SkeletonRow, Tag, showToast } from "@/components/ui";
 import PermissionsEditor from "./PermissionsEditor";
-
-const FONT = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
-const ACCENT = "#0a84ff";
 
 interface PetMember {
   id: string;
@@ -21,6 +19,7 @@ interface Props {
   petId: string;
 }
 
+/** Personas con acceso a la mascota: aprobar, revocar y editar permisos. */
 export default function PetMembersPanel({ petId }: Props) {
   const { user } = useAuthContext();
   const [members, setMembers] = useState<PetMember[]>([]);
@@ -39,17 +38,21 @@ export default function PetMembersPanel({ petId }: Props) {
     setLoading(false);
   }, [petId]);
 
-  useEffect(() => { void fetchMembers(); }, [fetchMembers]);
+  useEffect(() => {
+    void fetchMembers();
+  }, [fetchMembers]);
 
   async function handleApprove(id: string) {
     const supabase = createClient();
-    await supabase.from("pet_members").update({ status: "active" }).eq("id", id);
+    const { error } = await supabase.from("pet_members").update({ status: "active" }).eq("id", id);
+    if (error) showToast("No se pudo aprobar el acceso", () => void handleApprove(id), "error");
     void fetchMembers();
   }
 
   async function handleRevoke(id: string) {
     const supabase = createClient();
-    await supabase.from("pet_members").update({ status: "revoked" }).eq("id", id);
+    const { error } = await supabase.from("pet_members").update({ status: "revoked" }).eq("id", id);
+    if (error) showToast("No se pudo quitar el acceso", () => void handleRevoke(id), "error");
     void fetchMembers();
   }
 
@@ -57,66 +60,72 @@ export default function PetMembersPanel({ petId }: Props) {
     return (
       <PermissionsEditor
         petMemberId={editingPermsMemberId}
-        onClose={() => { setEditingPermsMemberId(null); void fetchMembers(); }}
+        onClose={() => {
+          setEditingPermsMemberId(null);
+          void fetchMembers();
+        }}
       />
     );
   }
 
   return (
-    <div style={{ fontFamily: FONT }}>
-      <div style={{ padding: "20px 20px 8px", display: "flex", alignItems: "center", gap: 10 }}>
-        <Users size={18} color="rgba(235,235,245,0.5)" />
-        <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: "#fff" }}>Personas con acceso</h3>
-      </div>
+    <section className="flex flex-col gap-3" aria-label="Personas con acceso">
+      <SectionTitle>
+        <span className="inline-flex items-center gap-2">
+          <Users size={20} className="text-on-variant" aria-hidden="true" /> Personas con acceso
+        </span>
+      </SectionTitle>
 
       {loading ? (
-        <div style={{ padding: "16px 20px", color: "rgba(235,235,245,0.4)", fontSize: 14 }}>Cargando\u2026</div>
+        <Card padded={false} className="overflow-hidden" aria-busy="true">
+          <SkeletonRow />
+        </Card>
       ) : members.length === 0 ? (
-        <div style={{ padding: "16px 20px 8px" }}>
-          <p style={{ margin: 0, fontSize: 14, color: "rgba(235,235,245,0.4)" }}>
-            Nadie m\u00e1s tiene acceso a esta mascota.
-          </p>
-        </div>
+        <Card tone="container" elevation={0}>
+          <p className="text-[14px] text-on-variant">Nadie más tiene acceso a esta mascota.</p>
+        </Card>
       ) : (
-        <div style={{ padding: "4px 20px 8px" }}>
-          {members.map((m) => {
+        <Card padded={false} className="overflow-hidden">
+          {members.map((m, i) => {
             const isCurrentUser = m.member_id === user?.id;
+            const pending = m.status === "pending";
             return (
-              <div key={m.id} style={{ background: "rgba(255,255,255,0.05)", borderRadius: 12, marginBottom: 8, padding: "12px 14px", display: "flex", alignItems: "center", gap: 12 }}>
-                <div style={{ width: 38, height: 38, borderRadius: 10, background: m.status === "active" ? `${ACCENT}22` : "rgba(255,159,10,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  {m.status === "pending" ? <Clock size={18} color="#ff9f0a" /> : <UserCheck size={18} color={ACCENT} />}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#fff" }}>
-                    {m.member_id.slice(0, 8)}\u2026
-                    {isCurrentUser && <span style={{ marginLeft: 6, fontSize: 11, color: "rgba(235,235,245,0.4)" }}>(t\u00fa)</span>}
-                  </p>
-                  {m.status === "pending" && (
-                    <p style={{ margin: "2px 0 0", fontSize: 11, color: "#ff9f0a", fontWeight: 600 }}>Pendiente de aprobaci\u00f3n</p>
-                  )}
-                </div>
-                <div style={{ display: "flex", gap: 6 }}>
-                  {m.status === "pending" && !isCurrentUser && (
-                    <button onClick={() => handleApprove(m.id)} style={{ width: 32, height: 32, borderRadius: 9, background: "rgba(52,199,89,0.15)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <UserCheck size={15} color="#34c759" />
-                    </button>
-                  )}
-                  {m.status === "active" && (
-                    <button onClick={() => setEditingPermsMemberId(m.id)} style={{ width: 32, height: 32, borderRadius: 9, background: "rgba(255,255,255,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <Settings2 size={15} color="rgba(235,235,245,0.6)" />
-                    </button>
-                  )}
-                  {!isCurrentUser && (
-                    <button onClick={() => handleRevoke(m.id)} style={{ width: 32, height: 32, borderRadius: 9, background: "rgba(255,69,58,0.1)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <UserMinus size={15} color="#ff453a" />
-                    </button>
-                  )}
-                </div>
+              <div key={m.id}>
+                {i > 0 && <Divider className="ml-[72px] mr-0" />}
+                <Row
+                  icon={pending ? <Clock size={18} aria-hidden="true" /> : <UserCheck size={18} aria-hidden="true" />}
+                  iconTone={pending ? "warn" : "primary"}
+                  title={
+                    <span>
+                      {m.member_id.slice(0, 8)}…{isCurrentUser && <span className="ml-1.5 text-[12px] font-semibold text-on-variant">(tú)</span>}
+                    </span>
+                  }
+                  subtitle={pending ? <Tag tone="warn" size="xs">Pendiente de aprobación</Tag> : "Acceso activo"}
+                  trailing={
+                    <span className="flex gap-1">
+                      {pending && !isCurrentUser && (
+                        <Button variant="tonal" size="icon" aria-label="Aprobar acceso" onClick={() => void handleApprove(m.id)} className="min-h-[40px] min-w-[40px]">
+                          <UserCheck size={16} />
+                        </Button>
+                      )}
+                      {m.status === "active" && (
+                        <Button variant="secondary" size="icon" aria-label="Editar permisos" onClick={() => setEditingPermsMemberId(m.id)} className="min-h-[40px] min-w-[40px]">
+                          <Settings2 size={16} />
+                        </Button>
+                      )}
+                      {!isCurrentUser && (
+                        <Button variant="dangerTonal" size="icon" aria-label="Quitar acceso" onClick={() => void handleRevoke(m.id)} className="min-h-[40px] min-w-[40px] border-transparent">
+                          <UserMinus size={16} />
+                        </Button>
+                      )}
+                    </span>
+                  }
+                />
               </div>
             );
           })}
-        </div>
+        </Card>
       )}
-    </div>
+    </section>
   );
 }

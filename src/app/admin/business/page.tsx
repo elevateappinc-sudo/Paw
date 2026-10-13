@@ -1,6 +1,6 @@
-"use client";
-import { BusinessDashboard } from "@/components/admin/BusinessDashboard";
+import { redirect } from "next/navigation";
 
+/** El panel del negocio vive ahora en /negocio. */
 export default function AdminBusinessPage() {
-  return <BusinessDashboard />;
+  redirect("/negocio");
 }

@@ -1,5 +1,8 @@
-import { redirect } from 'next/navigation'
+import type { Metadata } from "next";
+import { ActividadHub } from "@/components/itinerario/ActividadHub";
+
+export const metadata: Metadata = { title: "Actividad" };
 
 export default function ActividadPage() {
-  redirect('/actividad/entrenamiento')
+  return <ActividadHub />;
 }

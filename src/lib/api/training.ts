@@ -29,7 +29,7 @@ function mapRow(
 export async function fetchTraining(petId: string): Promise<ClaseEntrenamiento[]> {
   const supabase = createClient();
   const { data: sessions, error } = await supabase
-    .from("training_Sessions")
+    .from("training_sessions")
     .select("*, training_tasks(*)")
     .eq("pet_id", petId)
     .order("fecha", { ascending: false });

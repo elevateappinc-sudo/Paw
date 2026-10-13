@@ -24,7 +24,7 @@ function uid() {
 }
 
 function makeChain(table: string) {
-  let _filters: Array<{ col: string; val: unknown }> = [];
+  const _filters: Array<{ col: string; val: unknown }> = [];
   let _insert: unknown = null;
   let _update: Record<string, unknown> | null = null;
   let _singleMode = false;

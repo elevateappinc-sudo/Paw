@@ -162,15 +162,15 @@ export function DatePicker({
     return (
       <div className="flex flex-col gap-1">
         {label && (
-          <label htmlFor={inputId} className="text-sm font-medium text-text-secondary">
+          <label htmlFor={inputId} className="text-sm font-medium text-on-variant">
             {label}
           </label>
         )}
         <input
           id={inputId}
           type="date"
-          className={`w-full rounded-xl px-4 py-3 bg-surface text-white outline-none transition-colors border ${
-            error ? "border-red-500" : "border-border focus:border-accent"
+          className={`w-full rounded-xl px-4 py-3 bg-surface text-on outline-none transition-colors border ${
+            error ? "border-danger" : "border-outline-variant focus:border-primary"
           }`}
           value={value ? value.toISOString().split("T")[0] : ""}
           min={minDate?.toISOString().split("T")[0]}
@@ -190,7 +190,7 @@ export function DatePicker({
   return (
     <div className="flex flex-col gap-1 relative">
       {label && (
-        <label htmlFor={inputId} className="text-sm font-medium text-text-secondary">
+        <label htmlFor={inputId} className="text-sm font-medium text-on-variant">
           {label}
         </label>
       )}
@@ -198,8 +198,8 @@ export function DatePicker({
         ref={triggerRef}
         id={inputId}
         readOnly
-        className={`w-full rounded-xl px-4 py-3 bg-surface text-white outline-none transition-colors border cursor-pointer ${
-          error ? "border-red-500" : "border-border focus:border-accent"
+        className={`w-full rounded-xl px-4 py-3 bg-surface text-on outline-none transition-colors border cursor-pointer ${
+          error ? "border-danger" : "border-outline-variant focus:border-primary"
         }`}
         value={value ? formatDateES(value) : ""}
         placeholder="Seleccionar fecha"
@@ -218,7 +218,7 @@ export function DatePicker({
           ref={popoverRef}
           role="dialog"
           aria-label="Calendario"
-          className="absolute top-full mt-2 left-0 z-50 rounded-2xl p-4 shadow-xl bg-surface-2 border border-border w-72"
+          className="absolute top-full mt-2 left-0 z-50 rounded-2xl p-4 shadow-xl bg-surface border border-outline-variant shadow-3 w-72"
           onKeyDown={handleKeyDown}
         >
           {/* Header */}
@@ -226,18 +226,18 @@ export function DatePicker({
             <button
               type="button"
               onClick={prevMonth}
-              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-text-secondary hover:text-white transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-3 text-on-variant hover:text-on transition-colors"
               aria-label="Mes anterior"
             >
               ←
             </button>
-            <span className="text-sm font-semibold text-white">
+            <span className="text-sm font-semibold text-on">
               {MONTHS_ES[viewMonth]} {viewYear}
             </span>
             <button
               type="button"
               onClick={nextMonth}
-              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-text-secondary hover:text-white transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-3 text-on-variant hover:text-on transition-colors"
               aria-label="Mes siguiente"
             >
               →
@@ -247,7 +247,7 @@ export function DatePicker({
           {/* Day headers */}
           <div className="grid grid-cols-7 mb-1">
             {DAYS_ES.map((d) => (
-              <div key={d} className="text-center text-xs text-text-secondary py-1 font-medium">
+              <div key={d} className="text-center text-xs text-on-variant py-1 font-medium">
                 {d}
               </div>
             ))}
@@ -275,10 +275,10 @@ export function DatePicker({
                   }}
                   onFocus={() => setFocusedIdx(validIdx)}
                   className={`w-8 h-8 mx-auto flex items-center justify-center rounded-full text-sm transition-colors
-                    ${selected ? "bg-accent text-[#000000] font-semibold" : ""}
-                    ${!selected && !disabled ? "hover:bg-white/10 text-white" : ""}
-                    ${disabled ? "opacity-30 cursor-not-allowed text-text-secondary" : ""}
-                    ${focused && !selected ? "ring-2 ring-accent" : ""}
+                    ${selected ? "bg-primary text-on-primary font-semibold" : ""}
+                    ${!selected && !disabled ? "hover:bg-surface-3 text-on" : ""}
+                    ${disabled ? "opacity-30 cursor-not-allowed text-on-variant" : ""}
+                    ${focused && !selected ? "ring-2 ring-primary" : ""}
                   `}
                   aria-pressed={selected}
                   aria-label={formatDateES(day)}

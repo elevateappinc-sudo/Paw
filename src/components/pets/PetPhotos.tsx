@@ -1,9 +1,7 @@
 "use client";
 /**
- * F1c — PetPhotos component.
- * Reads photos from Supabase Storage via signed URLs (usePetPhotos hook).
- * New uploads go directly to Storage — never base64.
- * Shows loading skeleton while signing, broken-image icon on error.
+ * PetPhotos — fotos de la mascota desde Supabase Storage (URLs firmadas vía usePetPhotos).
+ * Las subidas nuevas van directo a Storage, nunca en base64.
  */
 
 import { useRef, useState } from "react";
@@ -12,45 +10,29 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { usePetPhotos } from "@/hooks/usePetPhotos";
 import { uploadPetPhoto } from "@/lib/storage/uploadPhoto";
 import { createClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
+import { Skeleton, showToast } from "@/components/ui";
 
-const FONT = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
 const MAX_PHOTOS = 20;
 
-/* ─── Skeleton tile ──────────────────────────────────────────────────────── */
-function SkeletonTile() {
+function BrokenTile() {
   return (
-    <div style={{
-      aspectRatio: "1", borderRadius: 10,
-      background: "rgba(255,255,255,0.06)",
-      animation: "pulse 1.4s ease-in-out infinite",
-    }} />
-  );
-}
-
-/* ─── Broken-image tile ──────────────────────────────────────────────────── */
-function BrokenTile({ accentColor }: { accentColor: string }) {
-  return (
-    <div style={{
-      aspectRatio: "1", borderRadius: 10,
-      background: "rgba(255,69,58,0.08)",
-      display: "flex", alignItems: "center", justifyContent: "center",
-    }}>
-      <ImageOff size={22} color="rgba(255,69,58,0.6)" />
+    <div className="flex aspect-square items-center justify-center rounded-card bg-danger-container text-danger" role="img" aria-label="Foto no disponible">
+      <ImageOff size={22} />
     </div>
   );
 }
 
-/* ─── Props ──────────────────────────────────────────────────────────────── */
 interface PetPhotosProps {
   petId: string;
-  /** Legacy base64 photos still in store — shown while migration hasn't run yet */
+  /** Fotos base64 heredadas del store, visibles mientras no corra la migración */
   legacyPhotos?: string[];
-  accentColor: string;
+  /** @deprecated los colores salen de los tokens */
+  accentColor?: string;
   canEdit: boolean;
 }
 
-/* ─── Component ──────────────────────────────────────────────────────────── */
-export function PetPhotos({ petId, legacyPhotos = [], accentColor, canEdit }: PetPhotosProps) {
+export function PetPhotos({ petId, legacyPhotos = [], canEdit }: PetPhotosProps) {
   const { user } = useAuthContext();
   const { photos, loading, refetch } = usePetPhotos(petId);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -58,230 +40,207 @@ export function PetPhotos({ petId, legacyPhotos = [], accentColor, canEdit }: Pe
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  // ── Upload handler ────────────────────────────────────────────────────────
   async function handleFiles(files: FileList | null) {
     if (!files || !user) return;
     setUploading(true);
     setUploadError(null);
-
     for (const file of Array.from(files)) {
       if (photos.length >= MAX_PHOTOS) break;
       try {
         await uploadPetPhoto(file, petId, user.id);
       } catch (err) {
-        setUploadError(err instanceof Error ? err.message : "Error al subir foto");
+        setUploadError(err instanceof Error ? err.message : "No se pudo subir la foto");
         break;
       }
     }
-
     await refetch();
     setUploading(false);
   }
 
-  // ── Delete handler ────────────────────────────────────────────────────────
   async function handleDelete(photoId: string, storagePath: string) {
     const supabase = createClient();
-    // Remove from storage
-    if (storagePath) {
-      await supabase.storage.from("paw-photos").remove([storagePath]);
-    }
-    // Remove DB row
-    await supabase.from("pet_photos").delete().eq("id", photoId);
+    if (storagePath) await supabase.storage.from("paw-photos").remove([storagePath]);
+    const { error } = await supabase.from("pet_photos").delete().eq("id", photoId);
+    if (error) showToast("No se pudo eliminar la foto", undefined, "error");
     await refetch();
-    // Close viewer if it was last photo
     if (photos.length <= 1) setViewer(null);
     else if (viewer !== null) setViewer(Math.min(viewer, photos.length - 2));
   }
 
-  // ── Decide which photo list to render ────────────────────────────────────
-  // If Supabase photos exist, use them. Fallback to legacy base64 for migration period.
   const hasSupabasePhotos = photos.length > 0;
-  const displayPhotos = hasSupabasePhotos ? photos : legacyPhotos.map((url, i) => ({
-    id: `legacy-${i}`,
-    storagePath: "",
-    signedUrl: url,
-    migrationFailed: false,
-  }));
+  const displayPhotos = hasSupabasePhotos
+    ? photos
+    : legacyPhotos.map((url, i) => ({ id: `legacy-${i}`, storagePath: "", signedUrl: url, migrationFailed: false }));
 
-  function prev() { setViewer((v) => (v !== null && v > 0 ? v - 1 : displayPhotos.length - 1)); }
-  function next() { setViewer((v) => (v !== null && v < displayPhotos.length - 1 ? v + 1 : 0)); }
+  function prev() {
+    setViewer((v) => (v !== null && v > 0 ? v - 1 : displayPhotos.length - 1));
+  }
+  function next() {
+    setViewer((v) => (v !== null && v < displayPhotos.length - 1 ? v + 1 : 0));
+  }
+
+  const current = viewer !== null ? displayPhotos[viewer] : null;
 
   return (
     <>
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-      `}</style>
+      <div className="grid grid-cols-3 gap-1">
+        {loading && Array.from({ length: 3 }).map((_, i) => <Skeleton key={`skel-${i}`} className="aspect-square rounded-card" />)}
 
-      {/* ── Grid ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 3 }}>
+        {!loading &&
+          displayPhotos.map((photo, i) => (
+            <div key={photo.id} className="relative aspect-square overflow-hidden rounded-card bg-surface-2">
+              {photo.migrationFailed || !photo.signedUrl ? (
+                <BrokenTile />
+              ) : (
+                <button type="button" onClick={() => setViewer(i)} aria-label={`Ver foto ${i + 1}`} className="block h-full w-full focus-visible:outline-2 focus-visible:outline-primary">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={photo.signedUrl}
+                    alt=""
+                    loading="lazy"
+                    className="block h-full w-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                    }}
+                  />
+                </button>
+              )}
+              {canEdit && hasSupabasePhotos && (
+                <button
+                  type="button"
+                  onClick={() => void handleDelete(photo.id, photo.storagePath)}
+                  aria-label={`Eliminar foto ${i + 1}`}
+                  className="absolute top-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-on/70 text-bg active:scale-95"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+          ))}
 
-        {/* Loading skeletons */}
-        {loading && Array.from({ length: 3 }).map((_, i) => <SkeletonTile key={`skel-${i}`} />)}
-
-        {/* Photo tiles */}
-        {!loading && displayPhotos.map((photo, i) => (
-          <div
-            key={photo.id}
-            style={{ position: "relative", aspectRatio: "1", overflow: "hidden", borderRadius: 10, cursor: "pointer" }}
-            onClick={() => !photo.migrationFailed && setViewer(i)}
-          >
-            {photo.migrationFailed || !photo.signedUrl ? (
-              <BrokenTile accentColor={accentColor} />
-            ) : (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={photo.signedUrl}
-                alt=""
-                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-              />
-            )}
-
-            {canEdit && hasSupabasePhotos && (
-              <button
-                onClick={(e) => { e.stopPropagation(); handleDelete(photo.id, photo.storagePath); }}
-                style={{
-                  position: "absolute", top: 5, right: 5,
-                  width: 22, height: 22, borderRadius: "50%",
-                  background: "rgba(0,0,0,0.6)", border: "none", cursor: "pointer",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}>
-                <X size={12} color="#fff" />
-              </button>
-            )}
-          </div>
-        ))}
-
-        {/* Add button */}
-        {canEdit && !loading && displayPhotos.length < MAX_PHOTOS && (
+        {canEdit && !loading && displayPhotos.length > 0 && displayPhotos.length < MAX_PHOTOS && (
           <button
+            type="button"
             onClick={() => inputRef.current?.click()}
             disabled={uploading}
-            style={{
-              aspectRatio: "1", borderRadius: 10, border: `2px dashed rgba(255,255,255,0.15)`,
-              background: "rgba(255,255,255,0.04)", cursor: "pointer",
-              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6,
-              opacity: uploading ? 0.5 : 1,
-            }}>
-            {uploading
-              ? <div style={{ width: 20, height: 20, borderRadius: "50%", border: `2px solid ${accentColor}`, borderTopColor: "transparent", animation: "spin 0.7s linear infinite" }} />
-              : <ImagePlus size={22} color={accentColor} />}
-            <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(235,235,245,0.4)", fontFamily: FONT }}>
-              {uploading ? "..." : "Agregar"}
-            </span>
+            aria-busy={uploading || undefined}
+            className="flex aspect-square flex-col items-center justify-center gap-1.5 rounded-card border-2 border-dashed border-outline-variant bg-surface-2 text-primary disabled:opacity-50"
+          >
+            {uploading ? <span className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" aria-hidden="true" /> : <ImagePlus size={22} aria-hidden="true" />}
+            <span className="text-[11px] font-bold text-on-variant">{uploading ? "Subiendo" : "Agregar"}</span>
           </button>
         )}
       </div>
 
-      {/* Upload error */}
       {uploadError && (
-        <p style={{ fontSize: 13, color: "#ff453a", marginTop: 8, fontFamily: FONT }}>{uploadError}</p>
-      )}
-
-      {/* Empty state */}
-      {!loading && displayPhotos.length === 0 && canEdit && (
-        <button
-          onClick={() => inputRef.current?.click()}
-          disabled={uploading}
-          style={{
-            width: "100%", padding: "32px 20px", borderRadius: 14,
-            border: `2px dashed rgba(255,255,255,0.1)`, background: "rgba(255,255,255,0.03)",
-            cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 10,
-          }}>
-          <div style={{ width: 52, height: 52, borderRadius: 16, background: `${accentColor}18`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <Camera size={24} color={accentColor} />
-          </div>
-          <div style={{ textAlign: "center" }}>
-            <p style={{ fontSize: 15, fontWeight: 600, color: "#fff", margin: 0, fontFamily: FONT }}>Agregar fotos</p>
-            <p style={{ fontSize: 13, color: "rgba(235,235,245,0.4)", margin: "4px 0 0", fontFamily: FONT }}>
-              Toca para seleccionar desde tu galería
-            </p>
-          </div>
-        </button>
-      )}
-
-      {!loading && displayPhotos.length === 0 && !canEdit && (
-        <p style={{ textAlign: "center", padding: "32px 0", fontSize: 14, color: "rgba(235,235,245,0.3)", fontFamily: FONT }}>
-          Sin fotos aún
+        <p className="mt-2 text-[13px] font-semibold text-danger" role="alert">
+          {uploadError}
         </p>
       )}
 
-      {/* Hidden file input */}
+      {!loading && displayPhotos.length === 0 && canEdit && (
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={uploading}
+          className="flex w-full flex-col items-center gap-2.5 rounded-card-lg border-2 border-dashed border-outline-variant bg-surface-2 px-5 py-8 disabled:opacity-50"
+        >
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-primary-container text-on-primary-container">
+            <Camera size={24} aria-hidden="true" />
+          </span>
+          <span className="text-[16px] font-bold text-on">{uploading ? "Subiendo fotos" : "Agregar fotos"}</span>
+          <span className="text-[13px] text-on-variant">Toca para elegir desde tu galería</span>
+        </button>
+      )}
+
+      {!loading && displayPhotos.length === 0 && !canEdit && <p className="py-8 text-center text-[14px] text-on-variant">Sin fotos aún</p>}
+
       <input
-        ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" multiple
-        style={{ display: "none" }}
-        onChange={(e) => handleFiles(e.target.files)}
-        onClick={(e) => { (e.target as HTMLInputElement).value = ""; }}
+        ref={inputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        multiple
+        className="hidden"
+        aria-hidden="true"
+        tabIndex={-1}
+        onChange={(e) => void handleFiles(e.target.files)}
+        onClick={(e) => {
+          (e.target as HTMLInputElement).value = "";
+        }}
       />
 
-      {/* ── Fullscreen viewer ── */}
-      {viewer !== null && displayPhotos[viewer] && (
-        <div
-          style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.95)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}
-          onClick={() => setViewer(null)}>
-
-          {/* Header */}
-          <div
-            style={{ position: "absolute", top: 0, left: 0, right: 0, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", background: "linear-gradient(to bottom, rgba(0,0,0,0.6), transparent)" }}
-            onClick={(e) => e.stopPropagation()}>
-            <span style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", fontFamily: FONT }}>
+      {viewer !== null && current && (
+        <div role="dialog" aria-modal="true" aria-label={`Foto ${viewer + 1} de ${displayPhotos.length}`} className="fixed inset-0 z-[55] flex flex-col items-center justify-center bg-on text-bg" onClick={() => setViewer(null)}>
+          <div className="absolute inset-x-0 top-0 flex items-center justify-between px-4 pt-[max(14px,env(safe-area-inset-top))] pb-3" onClick={(e) => e.stopPropagation()}>
+            <span className="text-[13px] font-semibold text-bg/70">
               {viewer + 1} / {displayPhotos.length}
             </span>
-            <div style={{ display: "flex", gap: 10 }}>
+            <div className="flex gap-2">
               {canEdit && hasSupabasePhotos && (
-                <button
-                  onClick={() => handleDelete(displayPhotos[viewer].id, displayPhotos[viewer].storagePath)}
-                  style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,69,58,0.2)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <Trash2 size={16} color="#ff453a" />
+                <button type="button" onClick={() => void handleDelete(current.id, current.storagePath)} aria-label="Eliminar foto" className="flex h-11 w-11 items-center justify-center rounded-full bg-danger-container text-danger active:scale-95">
+                  <Trash2 size={18} />
                 </button>
               )}
-              <button onClick={() => setViewer(null)}
-                style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(255,255,255,0.1)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <X size={18} color="#fff" />
+              <button type="button" onClick={() => setViewer(null)} aria-label="Cerrar" className="flex h-11 w-11 items-center justify-center rounded-full bg-bg/15 text-bg active:scale-95">
+                <X size={20} />
               </button>
             </div>
           </div>
 
-          {/* Image */}
-          <div style={{ maxWidth: "100vw", maxHeight: "80dvh", padding: "0 60px" }} onClick={(e) => e.stopPropagation()}>
-            {displayPhotos[viewer].migrationFailed || !displayPhotos[viewer].signedUrl ? (
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
-                <ImageOff size={48} color="rgba(255,69,58,0.5)" />
-                <p style={{ color: "rgba(255,255,255,0.4)", fontFamily: FONT, fontSize: 14 }}>
-                  No se pudo cargar la foto
-                </p>
+          <div className="max-h-[80dvh] max-w-full px-14" onClick={(e) => e.stopPropagation()}>
+            {current.migrationFailed || !current.signedUrl ? (
+              <div className="flex flex-col items-center gap-3 text-bg/70">
+                <ImageOff size={48} aria-hidden="true" />
+                <p className="text-[14px]">No se pudo cargar la foto</p>
               </div>
             ) : (
               // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={displayPhotos[viewer].signedUrl}
-                alt=""
-                style={{ maxWidth: "100%", maxHeight: "80dvh", objectFit: "contain", borderRadius: 12 }}
-              />
+              <img src={current.signedUrl} alt="" className="max-h-[80dvh] max-w-full rounded-card object-contain" draggable={false} />
             )}
           </div>
 
-          {/* Prev/Next */}
           {displayPhotos.length > 1 && (
             <>
-              <button onClick={(e) => { e.stopPropagation(); prev(); }}
-                style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", width: 40, height: 40, borderRadius: "50%", background: "rgba(255,255,255,0.1)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <ChevronLeft size={22} color="#fff" />
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  prev();
+                }}
+                aria-label="Foto anterior"
+                className="absolute top-1/2 left-2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-bg/15 text-bg active:scale-95"
+              >
+                <ChevronLeft size={22} />
               </button>
-              <button onClick={(e) => { e.stopPropagation(); next(); }}
-                style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", width: 40, height: 40, borderRadius: "50%", background: "rgba(255,255,255,0.1)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <ChevronRight size={22} color="#fff" />
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  next();
+                }}
+                aria-label="Foto siguiente"
+                className="absolute top-1/2 right-2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-bg/15 text-bg active:scale-95"
+              >
+                <ChevronRight size={22} />
               </button>
             </>
           )}
 
-          {/* Dot indicators */}
           {displayPhotos.length > 1 && displayPhotos.length <= 12 && (
-            <div style={{ position: "absolute", bottom: 24, display: "flex", gap: 6 }}>
-              {displayPhotos.map((_, i) => (
-                <div key={i} onClick={(e) => { e.stopPropagation(); setViewer(i); }}
-                  style={{ width: viewer === i ? 18 : 7, height: 7, borderRadius: 999, background: viewer === i ? "#fff" : "rgba(255,255,255,0.3)", cursor: "pointer", transition: "all 0.2s" }} />
+            <div className="absolute bottom-[max(24px,env(safe-area-inset-bottom))] flex gap-1.5" role="tablist" aria-label="Fotos">
+              {displayPhotos.map((p, i) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={viewer === i}
+                  aria-label={`Foto ${i + 1}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setViewer(i);
+                  }}
+                  className={cn("h-[7px] rounded-full transition-all duration-200", viewer === i ? "w-[18px] bg-bg" : "w-[7px] bg-bg/30")}
+                />
               ))}
             </div>
           )}

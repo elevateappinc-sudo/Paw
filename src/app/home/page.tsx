@@ -1,16 +1,20 @@
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import { HomeView } from '@/components/home/HomeView'
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { HomeScreen } from "@/components/home/HomeScreen";
+import { HomeEmpty } from "@/components/home/HomeEmpty";
 
 export default async function HomePage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
 
-  const { data: pets } = await supabase.from('pets').select('id, name, avatar_config').eq('user_id', user.id)
-  const hasPets = (pets?.length ?? 0) > 0
-  const isNewUser = Date.now() - new Date(user.created_at).getTime() < 24 * 60 * 60 * 1000
-  const onboardingCompleted = user.user_metadata?.onboarding_completed ?? false
+  const { count } = await supabase.from("pets").select("id", { count: "exact", head: true }).eq("user_id", user.id);
+  if (!count) return <HomeEmpty />;
 
-  return <HomeView hasPets={hasPets} isNewUser={isNewUser} onboardingCompleted={onboardingCompleted} userId={user.id} pets={pets ?? []} />
+  const meta = (user.user_metadata ?? {}) as { full_name?: string; name?: string; avatar_url?: string };
+  const displayName = meta.full_name || meta.name || user.email?.split("@")[0] || "Tú";
+
+  return <HomeScreen userName={displayName} userAvatarUrl={meta.avatar_url ?? null} />;
 }

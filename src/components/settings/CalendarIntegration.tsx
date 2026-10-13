@@ -1,19 +1,18 @@
 "use client";
-// PAW · CalendarIntegration Settings Component
-// Sprint 3 · T003
+// Paw · Integración con Google Calendar (ajustes)
 
 import { useState, useEffect, useCallback } from "react";
+import { Calendar, RefreshCw } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { Calendar, CheckCircle2, XCircle, Loader2, RefreshCw } from "lucide-react";
-
-const FONT = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
+import { cn } from "@/lib/utils";
+import { Button, Card, Divider, Row, SkeletonRow, Tag, Toggle, showToast } from "@/components/ui";
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
-  comida: "🍽️ Comida",
-  salida: "🚶 Salida",
-  cita_vet: "🏥 Cita veterinario",
-  entrenamiento: "🏋️ Entrenamiento",
+  comida: "Comidas",
+  salida: "Salidas",
+  cita_vet: "Citas veterinarias",
+  entrenamiento: "Entrenamiento",
 };
 
 const ALL_EVENT_TYPES = Object.keys(EVENT_TYPE_LABELS);
@@ -34,25 +33,17 @@ export function CalendarIntegration() {
   const [saving, setSaving] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
-  // Handle redirect query params from OAuth callback
+  // Resultado del callback OAuth (?gcal=connected|denied|error)
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const gcal = params.get("gcal");
-    if (gcal === "connected") {
-      setSuccess("✅ Google Calendar conectado correctamente.");
-      // Remove query param from URL without reload
-      window.history.replaceState({}, "", window.location.pathname);
-    } else if (gcal === "denied") {
-      setError("Acceso denegado. Puedes intentarlo de nuevo cuando quieras.");
-      window.history.replaceState({}, "", window.location.pathname);
-    } else if (gcal === "error") {
-      const reason = params.get("reason") ?? "unknown";
-      setError(`Error al conectar Google Calendar (${reason}). Intenta de nuevo.`);
-      window.history.replaceState({}, "", window.location.pathname);
-    }
+    if (!gcal) return;
+    if (gcal === "connected") showToast("Google Calendar conectado", undefined, "success");
+    else if (gcal === "denied") setError("Acceso denegado. Puedes intentarlo de nuevo cuando quieras.");
+    else if (gcal === "error") setError(`No se pudo conectar Google Calendar (${params.get("reason") ?? "desconocido"}). Inténtalo de nuevo.`);
+    window.history.replaceState({}, "", window.location.pathname);
   }, []);
 
   const fetchIntegration = useCallback(async () => {
@@ -63,21 +54,18 @@ export function CalendarIntegration() {
       .select("user_id, sync_enabled, synced_event_types, updated_at")
       .eq("user_id", user.id)
       .maybeSingle();
-
-    if (fetchError) {
-      console.error("CalendarIntegration fetch error:", fetchError);
-    }
+    if (fetchError) console.error("CalendarIntegration fetch error:", fetchError);
     setIntegration(data ?? null);
     setLoading(false);
   }, [user, supabase]);
 
   useEffect(() => {
-    fetchIntegration();
+    void fetchIntegration();
   }, [fetchIntegration]);
 
   const isConnected = !!integration;
 
-  async function handleConnect() {
+  function handleConnect() {
     window.location.href = "/auth/google-calendar";
   }
 
@@ -85,18 +73,11 @@ export function CalendarIntegration() {
     if (!user || !integration) return;
     setDisconnecting(true);
     setError("");
-    setSuccess("");
-
-    const { error: deleteError } = await supabase
-      .from("calendar_integrations")
-      .delete()
-      .eq("user_id", user.id);
-
-    if (deleteError) {
-      setError("Error al desconectar. Intenta de nuevo.");
-    } else {
+    const { error: deleteError } = await supabase.from("calendar_integrations").delete().eq("user_id", user.id);
+    if (deleteError) setError("No se pudo desconectar. Inténtalo de nuevo.");
+    else {
       setIntegration(null);
-      setSuccess("Google Calendar desconectado.");
+      showToast("Google Calendar desconectado");
     }
     setDisconnecting(false);
   }
@@ -105,17 +86,9 @@ export function CalendarIntegration() {
     if (!user || !integration) return;
     setSaving(true);
     setError("");
-
-    const { error: updateError } = await supabase
-      .from("calendar_integrations")
-      .update({ sync_enabled: enabled })
-      .eq("user_id", user.id);
-
-    if (updateError) {
-      setError("Error al guardar. Intenta de nuevo.");
-    } else {
-      setIntegration({ ...integration, sync_enabled: enabled });
-    }
+    const { error: updateError } = await supabase.from("calendar_integrations").update({ sync_enabled: enabled }).eq("user_id", user.id);
+    if (updateError) setError("No se pudo guardar. Inténtalo de nuevo.");
+    else setIntegration({ ...integration, sync_enabled: enabled });
     setSaving(false);
   }
 
@@ -123,192 +96,83 @@ export function CalendarIntegration() {
     if (!user || !integration) return;
     setSaving(true);
     setError("");
-
     const current = integration.synced_event_types ?? [];
-    const updated = checked
-      ? [...new Set([...current, type])]
-      : current.filter((t) => t !== type);
-
-    const { error: updateError } = await supabase
-      .from("calendar_integrations")
-      .update({ synced_event_types: updated })
-      .eq("user_id", user.id);
-
-    if (updateError) {
-      setError("Error al guardar. Intenta de nuevo.");
-    } else {
-      setIntegration({ ...integration, synced_event_types: updated });
-    }
+    const updated = checked ? [...new Set([...current, type])] : current.filter((t) => t !== type);
+    const { error: updateError } = await supabase.from("calendar_integrations").update({ synced_event_types: updated }).eq("user_id", user.id);
+    if (updateError) setError("No se pudo guardar. Inténtalo de nuevo.");
+    else setIntegration({ ...integration, synced_event_types: updated });
     setSaving(false);
   }
 
   if (loading) {
     return (
-      <div style={{ display: "flex", alignItems: "center", gap: 8, color: "rgba(235,235,245,0.4)", fontFamily: FONT, fontSize: 14 }}>
-        <Loader2 size={16} className="animate-spin" />
-        Cargando integración…
-      </div>
+      <Card padded={false} className="overflow-hidden" aria-busy="true">
+        <SkeletonRow />
+      </Card>
     );
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 20, fontFamily: FONT }}>
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <div style={{
-          width: 44, height: 44, borderRadius: 12,
-          background: isConnected ? "rgba(52,199,89,0.15)" : "rgba(255,255,255,0.06)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-        }}>
-          <Calendar size={22} color={isConnected ? "#34c759" : "rgba(235,235,245,0.4)"} />
-        </div>
-        <div>
-          <div style={{ fontSize: 16, fontWeight: 600, color: "rgba(235,235,245,0.9)" }}>
-            Google Calendar
-          </div>
-          <div style={{ fontSize: 12, color: "rgba(235,235,245,0.4)", marginTop: 2 }}>
-            {isConnected ? (
-              <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#34c759", display: "inline-block" }} />
-                Conectado
-              </span>
-            ) : "No conectado"}
-          </div>
-        </div>
+    <div className="flex flex-col gap-3">
+      <Card padded={false} className="overflow-hidden">
+        <Row
+          icon={<Calendar size={20} aria-hidden="true" />}
+          iconTone={isConnected ? "ok" : "container"}
+          title="Google Calendar"
+          subtitle={isConnected ? "Conectado" : "No conectado"}
+          trailing={
+            isConnected ? (
+              <Button variant="dangerTonal" size="sm" onClick={() => void handleDisconnect()} loading={disconnecting}>
+                Desconectar
+              </Button>
+            ) : (
+              <Button size="sm" onClick={handleConnect}>
+                Conectar
+              </Button>
+            )
+          }
+        />
+      </Card>
 
-        {/* Connect / Disconnect button */}
-        <div style={{ marginLeft: "auto" }}>
-          {isConnected ? (
-            <button
-              onClick={handleDisconnect}
-              disabled={disconnecting}
-              style={{
-                padding: "7px 16px", borderRadius: 10, fontSize: 13, fontWeight: 600,
-                background: "rgba(255,59,48,0.12)", color: "#ff3b30",
-                border: "1px solid rgba(255,59,48,0.2)", cursor: "pointer",
-                display: "flex", alignItems: "center", gap: 6,
-                opacity: disconnecting ? 0.6 : 1,
-              }}
-            >
-              {disconnecting ? <Loader2 size={13} className="animate-spin" /> : <XCircle size={13} />}
-              Desconectar
-            </button>
-          ) : (
-            <button
-              onClick={handleConnect}
-              style={{
-                padding: "7px 16px", borderRadius: 10, fontSize: 13, fontWeight: 600,
-                background: "rgba(10,132,255,0.15)", color: "#0a84ff",
-                border: "1px solid rgba(10,132,255,0.25)", cursor: "pointer",
-                display: "flex", alignItems: "center", gap: 6,
-              }}
-            >
-              <CheckCircle2 size={13} />
-              Conectar Google Calendar
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Settings — only shown when connected */}
-      {isConnected && (
-        <>
-          {/* Sync toggle */}
-          <div style={{
-            background: "rgba(255,255,255,0.04)", borderRadius: 14,
-            padding: "14px 16px", border: "1px solid rgba(255,255,255,0.08)",
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-          }}>
-            <div>
-              <div style={{ fontSize: 14, fontWeight: 500, color: "rgba(235,235,245,0.9)" }}>
-                Sincronización activa
-              </div>
-              <div style={{ fontSize: 12, color: "rgba(235,235,245,0.4)", marginTop: 2 }}>
-                Sincronizar eventos automáticamente
-              </div>
-            </div>
-            <button
-              onClick={() => handleToggleSync(!integration.sync_enabled)}
-              disabled={saving}
-              aria-label={integration.sync_enabled ? "Desactivar sync" : "Activar sync"}
-              style={{
-                width: 44, height: 26, borderRadius: 13, border: "none",
-                background: integration.sync_enabled ? "#34c759" : "rgba(255,255,255,0.1)",
-                cursor: "pointer", position: "relative", transition: "background 0.2s",
-                opacity: saving ? 0.6 : 1,
-              }}
-            >
-              <span style={{
-                position: "absolute", top: 3,
-                left: integration.sync_enabled ? 21 : 3,
-                width: 20, height: 20, borderRadius: "50%",
-                background: "white", transition: "left 0.2s",
-                boxShadow: "0 1px 4px rgba(0,0,0,0.3)",
-              }} />
-            </button>
+      {isConnected && integration && (
+        <Card padded={false} className="overflow-hidden">
+          <div className="px-4">
+            <Toggle label="Sincronización activa" description="Añade los eventos de Paw a tu calendario" checked={integration.sync_enabled} onChange={(v) => void handleToggleSync(v)} />
           </div>
-
-          {/* Event types */}
-          <div style={{
-            background: "rgba(255,255,255,0.04)", borderRadius: 14,
-            padding: "14px 16px", border: "1px solid rgba(255,255,255,0.08)",
-          }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: "rgba(235,235,245,0.6)", marginBottom: 12, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-              Tipos de evento a sincronizar
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {ALL_EVENT_TYPES.map((type) => {
-                const checked = (integration.synced_event_types ?? []).includes(type);
-                return (
-                  <label key={type} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={(e) => handleToggleEventType(type, e.target.checked)}
-                      disabled={saving || !integration.sync_enabled}
-                      style={{ width: 16, height: 16, accentColor: "#0a84ff", cursor: "pointer" }}
-                    />
-                    <span style={{ fontSize: 14, color: integration.sync_enabled ? "rgba(235,235,245,0.8)" : "rgba(235,235,245,0.35)" }}>
-                      {EVENT_TYPE_LABELS[type]}
-                    </span>
-                  </label>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Last sync info */}
-          <div style={{ fontSize: 12, color: "rgba(235,235,245,0.3)", display: "flex", alignItems: "center", gap: 6 }}>
-            <RefreshCw size={12} />
+          <Divider className="mx-0" />
+          <fieldset className="px-4 py-2" disabled={saving || !integration.sync_enabled}>
+            <legend className="pt-2 text-[13px] font-semibold text-on-variant">Tipos de evento a sincronizar</legend>
+            {ALL_EVENT_TYPES.map((type) => {
+              const checked = (integration.synced_event_types ?? []).includes(type);
+              return (
+                <label key={type} className={cn("flex min-h-[44px] cursor-pointer items-center gap-3", !integration.sync_enabled && "opacity-50")}>
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={(e) => void handleToggleEventType(type, e.target.checked)}
+                    className="h-5 w-5 rounded accent-primary"
+                  />
+                  <span className="text-[15px] text-on">{EVENT_TYPE_LABELS[type]}</span>
+                </label>
+              );
+            })}
+          </fieldset>
+          <Divider className="mx-0" />
+          <p className="flex items-center gap-1.5 px-4 py-3 text-[12px] text-on-variant">
+            <RefreshCw size={12} aria-hidden="true" />
             Última actualización:{" "}
             {integration.updated_at
-              ? new Date(integration.updated_at).toLocaleString("es-ES", {
-                  day: "2-digit", month: "short", year: "numeric",
-                  hour: "2-digit", minute: "2-digit",
-                })
+              ? new Date(integration.updated_at).toLocaleString("es-ES", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
               : "nunca"}
-          </div>
-        </>
+            {saving && <Tag size="xs">Guardando</Tag>}
+          </p>
+        </Card>
       )}
 
-      {/* Feedback messages */}
       {error && (
-        <div style={{
-          padding: "10px 14px", borderRadius: 10,
-          background: "rgba(255,59,48,0.1)", border: "1px solid rgba(255,59,48,0.2)",
-          color: "#ff6b6b", fontSize: 13,
-        }}>
+        <Card tone="danger" elevation={0} role="alert" className="py-3 text-[14px]">
           {error}
-        </div>
-      )}
-      {success && (
-        <div style={{
-          padding: "10px 14px", borderRadius: 10,
-          background: "rgba(52,199,89,0.1)", border: "1px solid rgba(52,199,89,0.2)",
-          color: "#34c759", fontSize: 13,
-        }}>
-          {success}
-        </div>
+        </Card>
       )}
     </div>
   );

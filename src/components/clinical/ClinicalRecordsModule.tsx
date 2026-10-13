@@ -1,28 +1,31 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useStore } from "@/store";
 import { createClient } from "@/lib/supabase/client";
-import {
-  Stethoscope, Plus, Pencil, Trash2, X, FileText, Image as ImageIcon,
-  Share2, Upload, ChevronDown, Loader2, Link, Eye,
-} from "lucide-react";
+import { Stethoscope, Plus, Pencil, Trash2, FileText, Image as ImageIcon, Share2, Upload, Link as LinkIcon, Eye, ChevronRight, Check } from "lucide-react";
+import { motion } from "motion/react";
 import type { ClinicalRecord, ClinicalDocument, VisitType } from "@/types";
+import { PageHeader, Button, Card, Row, Divider, Sheet, Input, Select, Textarea, EmptyState, Skeleton, SkeletonRow, Tag } from "@/components/ui";
+import { showToast } from "@/components/ui/Toast";
+import { fadeUp, stagger } from "@/lib/motion";
 
-// ─── Constants ──────────────────────────────────────────────────────────────
+// ─── Constantes ──────────────────────────────────────────────────────────────
 
 const VISIT_TYPE_LABELS: Record<VisitType, string> = {
   consulta_general: "Consulta general",
   emergencia: "Emergencia",
   cirugia: "Cirugía",
-  control_rutina: "Control rutina",
+  control_rutina: "Control de rutina",
   peluqueria: "Peluquería",
   otro: "Otro",
 };
 
+const VISIT_OPTIONS = (Object.keys(VISIT_TYPE_LABELS) as VisitType[]).map((k) => ({ value: k, label: VISIT_TYPE_LABELS[k] }));
+
 const ALLOWED_TYPES = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
 const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function today(): string {
   return new Date().toISOString().split("T")[0];
@@ -34,161 +37,43 @@ function formatDate(d: string): string {
   return `${day}/${m}/${y}`;
 }
 
-const inputS: React.CSSProperties = {
-  width: "100%",
-  padding: "14px 16px",
-  fontSize: 16,
-  color: "#fff",
-  background: "transparent",
-  border: "none",
-  outline: "none",
-  fontFamily: "inherit",
-  boxSizing: "border-box",
-  colorScheme: "dark",
-};
+// ─── DocumentItem ────────────────────────────────────────────────────────────
 
-const labelS: React.CSSProperties = {
-  fontSize: 11,
-  fontWeight: 600,
-  textTransform: "uppercase",
-  letterSpacing: "0.06em",
-  color: "rgba(235,235,245,0.5)",
-  marginBottom: 6,
-  display: "block",
-};
-
-const fieldRowS: React.CSSProperties = {
-  borderBottom: "1px solid rgba(84,84,88,0.65)",
-};
-
-// ─── DocumentUpload ──────────────────────────────────────────────────────────
-
-function DocumentItem({
-  doc,
-  onDelete,
-}: {
-  doc: ClinicalDocument;
-  onDelete: (doc: ClinicalDocument) => void;
-}) {
+function DocumentItem({ doc, onDelete }: { doc: ClinicalDocument; onDelete: (doc: ClinicalDocument) => void }) {
   const [lightbox, setLightbox] = useState(false);
   const isPDF = doc.file_type === "application/pdf";
 
   return (
     <>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          padding: "10px 14px",
-        }}
-      >
-        <div
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 9,
-            background: "rgba(10,132,255,0.12)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-          }}
-        >
-          {isPDF ? (
-            <FileText size={16} color="#0a84ff" />
-          ) : (
-            <ImageIcon size={16} color="#0a84ff" />
-          )}
+      <div className="flex items-center gap-3 px-4 py-2.5">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-info-container text-info">
+          {isPDF ? <FileText size={18} /> : <ImageIcon size={18} />}
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <p
-            style={{
-              fontSize: 14,
-              fontWeight: 600,
-              color: "#fff",
-              margin: 0,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {doc.file_name}
-          </p>
-          {doc.file_size_bytes && (
-            <p
-              style={{
-                fontSize: 12,
-                color: "rgba(235,235,245,0.4)",
-                margin: "2px 0 0",
-              }}
-            >
-              {(doc.file_size_bytes / 1024).toFixed(0)} KB
-            </p>
-          )}
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[14px] font-bold text-on">{doc.file_name}</p>
+          {doc.file_size_bytes && <p className="text-[12px] text-on-variant">{(doc.file_size_bytes / 1024).toFixed(0)} KB</p>}
         </div>
-        <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-          <button
+        <div className="flex shrink-0 gap-1">
+          <Button
+            variant="secondary"
+            size="icon"
+            aria-label={`Ver ${doc.file_name}`}
             onClick={() => {
               if (isPDF) window.open(doc.file_url, "_blank");
               else setLightbox(true);
             }}
-            style={{
-              width: 30,
-              height: 30,
-              borderRadius: 8,
-              background: "rgba(255,255,255,0.06)",
-              border: "none",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
           >
-            <Eye size={13} color="rgba(235,235,245,0.5)" />
-          </button>
-          <button
-            onClick={() => onDelete(doc)}
-            style={{
-              width: 30,
-              height: 30,
-              borderRadius: 8,
-              background: "rgba(255,69,58,0.1)",
-              border: "none",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Trash2 size={13} color="#ff453a" />
-          </button>
+            <Eye size={18} />
+          </Button>
+          <Button variant="dangerTonal" size="icon" aria-label={`Eliminar ${doc.file_name}`} onClick={() => onDelete(doc)}>
+            <Trash2 size={18} />
+          </Button>
         </div>
       </div>
       {lightbox && (
-        <div
-          onClick={() => setLightbox(false)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 200,
-            background: "rgba(0,0,0,0.92)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
+        <div role="dialog" aria-label={doc.file_name} onClick={() => setLightbox(false)} className="fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(34,28,23,0.92)] p-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={doc.file_url}
-            alt={doc.file_name}
-            style={{
-              maxWidth: "90vw",
-              maxHeight: "90vh",
-              borderRadius: 12,
-              objectFit: "contain",
-            }}
-          />
+          <img src={doc.file_url} alt={doc.file_name} className="max-h-[90vh] max-w-[90vw] rounded-card object-contain" />
         </div>
       )}
     </>
@@ -198,29 +83,19 @@ function DocumentItem({
 // ─── ClinicalRecordForm ──────────────────────────────────────────────────────
 
 interface RecordFormProps {
+  open: boolean;
   petId: string;
   userId: string;
   vacunas: { id: string; nombre: string }[];
-  accentColor: string;
   editRecord?: ClinicalRecord;
   onClose: () => void;
   onSaved: () => void;
 }
 
-function ClinicalRecordForm({
-  petId,
-  userId,
-  vacunas,
-  accentColor,
-  editRecord,
-  onClose,
-  onSaved,
-}: RecordFormProps) {
+function ClinicalRecordForm({ open, petId, userId, vacunas, editRecord, onClose, onSaved }: RecordFormProps) {
   const supabase = createClient();
   const [visitDate, setVisitDate] = useState(editRecord?.visit_date ?? today());
-  const [visitType, setVisitType] = useState<VisitType>(
-    editRecord?.visit_type ?? "consulta_general"
-  );
+  const [visitType, setVisitType] = useState<VisitType>(editRecord?.visit_type ?? "consulta_general");
   const [vetName, setVetName] = useState(editRecord?.vet_name ?? "");
   const [clinicName, setClinicName] = useState(editRecord?.clinic_name ?? "");
   const [diagnosis, setDiagnosis] = useState(editRecord?.diagnosis ?? "");
@@ -229,6 +104,19 @@ function ClinicalRecordForm({
   const [vaccineId, setVaccineId] = useState(editRecord?.vaccine_id ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    setVisitDate(editRecord?.visit_date ?? today());
+    setVisitType(editRecord?.visit_type ?? "consulta_general");
+    setVetName(editRecord?.vet_name ?? "");
+    setClinicName(editRecord?.clinic_name ?? "");
+    setDiagnosis(editRecord?.diagnosis ?? "");
+    setTreatment(editRecord?.treatment ?? "");
+    setNotes(editRecord?.notes ?? "");
+    setVaccineId(editRecord?.vaccine_id ?? "");
+    setError(null);
+  }, [open, editRecord]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -260,306 +148,43 @@ function ClinicalRecordForm({
       return;
     }
 
+    setSaving(false);
     onSaved();
     onClose();
   }
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 100,
-        display: "flex",
-        alignItems: "flex-end",
-        background: "rgba(0,0,0,0.7)",
-        backdropFilter: "blur(8px)",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxHeight: "90dvh",
-          overflowY: "auto",
-          background: "#1c1c1e",
-          borderRadius: "20px 20px 0 0",
-          fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif",
-        }}
-      >
-        <div style={{ display: "flex", justifyContent: "center", padding: "12px 0 4px" }}>
-          <div
-            style={{
-              width: 36,
-              height: 4,
-              borderRadius: 2,
-              background: "rgba(255,255,255,0.2)",
-            }}
-          />
+    <Sheet open={open} onClose={onClose} title={editRecord ? "Editar visita" : "Nueva visita"}>
+      <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-3 pb-2">
+        <Input label="Fecha de visita" type="date" value={visitDate} onChange={(e) => setVisitDate(e.target.value)} required />
+        <Select label="Tipo" value={visitType} onChange={(e) => setVisitType(e.target.value as VisitType)} options={VISIT_OPTIONS} required />
+        <Input label="Veterinario (opcional)" value={vetName} onChange={(e) => setVetName(e.target.value)} />
+        <Input label="Clínica (opcional)" value={clinicName} onChange={(e) => setClinicName(e.target.value)} />
+        <Textarea label="Diagnóstico" value={diagnosis} onChange={(e) => setDiagnosis(e.target.value)} placeholder="Lo que dijo el veterinario" rows={2} />
+        <Textarea label="Tratamiento" value={treatment} onChange={(e) => setTreatment(e.target.value)} placeholder="Medicamentos, indicaciones" rows={2} />
+        <Textarea label="Notas" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Observaciones" rows={2} />
+        {vacunas.length > 0 && (
+          <Select label="Vincular vacuna (opcional)" value={vaccineId} onChange={(e) => setVaccineId(e.target.value)} placeholder="Ninguna" options={vacunas.map((v) => ({ value: v.id, label: v.nombre }))} />
+        )}
+        {error && <p role="alert" className="text-[13px] font-semibold text-danger">{error}</p>}
+        <div className="flex gap-2">
+          <Button type="button" variant="secondary" onClick={onClose} className="flex-1">Cancelar</Button>
+          <Button type="submit" loading={saving} className="flex-[2]">{editRecord ? "Guardar" : "Agregar"}</Button>
         </div>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "12px 20px 16px",
-          }}
-        >
-          <h2 style={{ fontSize: 20, fontWeight: 700, color: "#fff", margin: 0 }}>
-            {editRecord ? "Editar visita" : "Nueva visita"}
-          </h2>
-          <button
-            onClick={onClose}
-            style={{
-              width: 30,
-              height: 30,
-              borderRadius: "50%",
-              background: "rgba(255,255,255,0.1)",
-              border: "none",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <X size={15} color="rgba(235,235,245,0.6)" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} style={{ padding: "0 20px 40px" }}>
-          {/* Required fields */}
-          <div
-            style={{
-              background: "#2c2c2e",
-              borderRadius: 13,
-              overflow: "hidden",
-              marginBottom: 12,
-            }}
-          >
-            {/* visit_date */}
-            <div>
-              <input
-                type="date"
-                value={visitDate}
-                onChange={(e) => setVisitDate(e.target.value)}
-                required
-                placeholder="Fecha de visita"
-                style={inputS}
-              />
-            </div>
-            <div style={fieldRowS} />
-            {/* visit_type */}
-            <div style={{ position: "relative" }}>
-              <select
-                value={visitType}
-                onChange={(e) => setVisitType(e.target.value as VisitType)}
-                required
-                style={{
-                  ...inputS,
-                  appearance: "none",
-                  WebkitAppearance: "none",
-                  cursor: "pointer",
-                }}
-              >
-                {(Object.keys(VISIT_TYPE_LABELS) as VisitType[]).map((k) => (
-                  <option key={k} value={k} style={{ background: "#2c2c2e" }}>
-                    {VISIT_TYPE_LABELS[k]}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown
-                size={14}
-                color="rgba(235,235,245,0.4)"
-                style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}
-              />
-            </div>
-          </div>
-
-          {/* Optional fields */}
-          <div
-            style={{
-              background: "#2c2c2e",
-              borderRadius: 13,
-              overflow: "hidden",
-              marginBottom: 12,
-            }}
-          >
-            <input
-              type="text"
-              value={vetName}
-              onChange={(e) => setVetName(e.target.value)}
-              placeholder="Nombre del veterinario"
-              style={inputS}
-            />
-            <div style={fieldRowS} />
-            <input
-              type="text"
-              value={clinicName}
-              onChange={(e) => setClinicName(e.target.value)}
-              placeholder="Clínica veterinaria"
-              style={inputS}
-            />
-          </div>
-
-          {/* Textareas */}
-          <div style={{ marginBottom: 8 }}>
-            <label style={labelS}>Diagnóstico</label>
-            <textarea
-              value={diagnosis}
-              onChange={(e) => setDiagnosis(e.target.value)}
-              placeholder="Diagnóstico del veterinario..."
-              rows={2}
-              style={{
-                ...inputS,
-                background: "#2c2c2e",
-                borderRadius: 13,
-                resize: "none",
-              }}
-            />
-          </div>
-          <div style={{ marginBottom: 8 }}>
-            <label style={labelS}>Tratamiento</label>
-            <textarea
-              value={treatment}
-              onChange={(e) => setTreatment(e.target.value)}
-              placeholder="Medicamentos, indicaciones..."
-              rows={2}
-              style={{
-                ...inputS,
-                background: "#2c2c2e",
-                borderRadius: 13,
-                resize: "none",
-              }}
-            />
-          </div>
-          <div style={{ marginBottom: 12 }}>
-            <label style={labelS}>Notas adicionales</label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Observaciones..."
-              rows={2}
-              style={{
-                ...inputS,
-                background: "#2c2c2e",
-                borderRadius: 13,
-                resize: "none",
-              }}
-            />
-          </div>
-
-          {/* Vaccine link */}
-          {vacunas.length > 0 && (
-            <div
-              style={{
-                background: "#2c2c2e",
-                borderRadius: 13,
-                overflow: "hidden",
-                marginBottom: 20,
-                position: "relative",
-              }}
-            >
-              <select
-                value={vaccineId}
-                onChange={(e) => setVaccineId(e.target.value)}
-                style={{ ...inputS, appearance: "none", WebkitAppearance: "none", cursor: "pointer" }}
-              >
-                <option value="" style={{ background: "#2c2c2e" }}>
-                  Vincular vacuna (opcional)
-                </option>
-                {vacunas.map((v) => (
-                  <option key={v.id} value={v.id} style={{ background: "#2c2c2e" }}>
-                    {v.nombre}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown
-                size={14}
-                color="rgba(235,235,245,0.4)"
-                style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}
-              />
-            </div>
-          )}
-
-          {error && (
-            <p
-              style={{
-                fontSize: 14,
-                color: "#ff453a",
-                marginBottom: 12,
-                textAlign: "center",
-              }}
-            >
-              {error}
-            </p>
-          )}
-
-          <div style={{ display: "flex", gap: 10 }}>
-            <button
-              type="button"
-              onClick={onClose}
-              style={{
-                flex: 1,
-                padding: "15px",
-                borderRadius: 13,
-                background: "rgba(255,255,255,0.08)",
-                border: "none",
-                cursor: "pointer",
-                fontSize: 16,
-                fontWeight: 600,
-                color: "rgba(235,235,245,0.6)",
-                fontFamily: "inherit",
-              }}
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              style={{
-                flex: 2,
-                padding: "15px",
-                borderRadius: 13,
-                background: saving ? "rgba(10,132,255,0.5)" : accentColor,
-                border: "none",
-                cursor: saving ? "not-allowed" : "pointer",
-                fontSize: 16,
-                fontWeight: 600,
-                color: "#fff",
-                fontFamily: "inherit",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-              }}
-            >
-              {saving && <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} />}
-              {editRecord ? "Guardar" : "Agregar"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+      </form>
+    </Sheet>
   );
 }
 
 // ─── DocumentsPanel ──────────────────────────────────────────────────────────
 
-function DocumentsPanel({
-  record,
-  userId,
-  accentColor,
-  onClose,
-}: {
-  record: ClinicalRecord;
-  userId: string;
-  accentColor: string;
-  onClose: () => void;
-}) {
+function DocumentsPanel({ open, record, userId, onClose }: { open: boolean; record: ClinicalRecord; userId: string; onClose: () => void }) {
   const supabase = createClient();
   const [docs, setDocs] = useState<ClinicalDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement | null>(null);
 
   const loadDocs = useCallback(async () => {
     const { data } = await supabase
@@ -572,8 +197,8 @@ function DocumentsPanel({
   }, [record.id, supabase]);
 
   useEffect(() => {
-    void loadDocs();
-  }, [loadDocs]);
+    if (open) void loadDocs();
+  }, [open, loadDocs]);
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -585,16 +210,14 @@ function DocumentsPanel({
       return;
     }
     if (file.size > MAX_SIZE_BYTES) {
-      setUploadError("El archivo supera el límite de 10MB.");
+      setUploadError("El archivo supera el límite de 10 MB.");
       return;
     }
 
     setUploading(true);
     const storagePath = `${userId}/${record.id}/${Date.now()}-${file.name}`;
 
-    const { error: storageErr } = await supabase.storage
-      .from("clinical-docs")
-      .upload(storagePath, file, { contentType: file.type });
+    const { error: storageErr } = await supabase.storage.from("clinical-docs").upload(storagePath, file, { contentType: file.type });
 
     if (storageErr) {
       setUploadError("No pudimos cargar el documento. Intenta de nuevo.");
@@ -602,13 +225,9 @@ function DocumentsPanel({
       return;
     }
 
-    const { data: urlData } = supabase.storage
-      .from("clinical-docs")
-      .getPublicUrl(storagePath);
-    // For private buckets, use signed URL instead
-    const { data: signedData } = await supabase.storage
-      .from("clinical-docs")
-      .createSignedUrl(storagePath, 60 * 60 * 24 * 365); // 1 year
+    const { data: urlData } = supabase.storage.from("clinical-docs").getPublicUrl(storagePath);
+    // Bucket privado: URL firmada
+    const { data: signedData } = await supabase.storage.from("clinical-docs").createSignedUrl(storagePath, 60 * 60 * 24 * 365);
 
     const fileUrl = signedData?.signedUrl ?? urlData?.publicUrl ?? "";
 
@@ -623,7 +242,6 @@ function DocumentsPanel({
 
     if (dbErr) {
       setUploadError("No pudimos cargar el documento. Intenta de nuevo.");
-      // Attempt to remove orphan from storage
       await supabase.storage.from("clinical-docs").remove([storagePath]);
       setUploading(false);
       return;
@@ -635,12 +253,9 @@ function DocumentsPanel({
   }
 
   async function handleDelete(doc: ClinicalDocument) {
-    const { error: storageErr } = await supabase.storage
-      .from("clinical-docs")
-      .remove([doc.storage_path]);
+    const { error: storageErr } = await supabase.storage.from("clinical-docs").remove([doc.storage_path]);
 
     if (storageErr) {
-      // Enqueue for later cleanup
       await supabase.from("storage_cleanup_queue").insert({
         storage_path: doc.storage_path,
         record_type: "clinical_document",
@@ -653,182 +268,47 @@ function DocumentsPanel({
   }
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 110,
-        display: "flex",
-        alignItems: "flex-end",
-        background: "rgba(0,0,0,0.7)",
-        backdropFilter: "blur(8px)",
-      }}
+    <Sheet
+      open={open}
+      onClose={onClose}
+      title="Documentos"
+      subtitle={`${VISIT_TYPE_LABELS[record.visit_type]} · ${formatDate(record.visit_date)}`}
+      footer={
+        <>
+          <Button loading={uploading} full size="lg" leading={<Upload size={18} />} onClick={() => fileRef.current?.click()}>
+            {uploading ? "Subiendo…" : "Agregar documento"}
+          </Button>
+          <input ref={fileRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" onChange={(e) => void handleFileChange(e)} disabled={uploading} className="sr-only" aria-label="Elegir archivo" />
+        </>
+      }
     >
-      <div
-        style={{
-          width: "100%",
-          maxHeight: "80dvh",
-          overflowY: "auto",
-          background: "#1c1c1e",
-          borderRadius: "20px 20px 0 0",
-          fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif",
-        }}
-      >
-        <div style={{ display: "flex", justifyContent: "center", padding: "12px 0 4px" }}>
-          <div
-            style={{
-              width: 36,
-              height: 4,
-              borderRadius: 2,
-              background: "rgba(255,255,255,0.2)",
-            }}
-          />
+      {loading ? (
+        <div className="rounded-card bg-surface-2">
+          <SkeletonRow />
+          <SkeletonRow />
         </div>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "12px 20px 16px",
-          }}
-        >
-          <h2 style={{ fontSize: 20, fontWeight: 700, color: "#fff", margin: 0 }}>
-            Documentos
-          </h2>
-          <button
-            onClick={onClose}
-            style={{
-              width: 30,
-              height: 30,
-              borderRadius: "50%",
-              background: "rgba(255,255,255,0.1)",
-              border: "none",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <X size={15} color="rgba(235,235,245,0.6)" />
-          </button>
-        </div>
-
-        <div style={{ padding: "0 20px 40px" }}>
-          {loading ? (
-            <div style={{ textAlign: "center", padding: "32px 0", color: "rgba(235,235,245,0.3)" }}>
-              Cargando...
+      ) : docs.length === 0 ? (
+        <EmptyState compact tone="neutral" icon={<FileText size={24} />} title="Sin documentos" description="Sube recetas, exámenes o fotos de esta visita." />
+      ) : (
+        <Card padded={false} tone="container" elevation={0} className="overflow-hidden">
+          {docs.map((doc, i) => (
+            <div key={doc.id}>
+              {i > 0 && <Divider />}
+              <DocumentItem doc={doc} onDelete={handleDelete} />
             </div>
-          ) : docs.length === 0 ? (
-            <div
-              style={{
-                textAlign: "center",
-                padding: "32px 24px",
-                background: "#2c2c2e",
-                borderRadius: 16,
-                marginBottom: 16,
-              }}
-            >
-              <FileText size={32} color="rgba(235,235,245,0.2)" />
-              <p style={{ fontSize: 15, color: "rgba(235,235,245,0.4)", marginTop: 8 }}>
-                Sin documentos adjuntos
-              </p>
-            </div>
-          ) : (
-            <div
-              style={{
-                background: "#2c2c2e",
-                borderRadius: 13,
-                overflow: "hidden",
-                marginBottom: 16,
-              }}
-            >
-              {docs.map((doc, i) => (
-                <div key={doc.id}>
-                  {i > 0 && (
-                    <div
-                      style={{
-                        height: 1,
-                        background: "rgba(84,84,88,0.65)",
-                        marginLeft: 60,
-                      }}
-                    />
-                  )}
-                  <DocumentItem doc={doc} onDelete={handleDelete} />
-                </div>
-              ))}
-            </div>
-          )}
-
-          {uploadError && (
-            <p
-              style={{
-                fontSize: 14,
-                color: "#ff453a",
-                marginBottom: 12,
-                textAlign: "center",
-              }}
-            >
-              {uploadError}
-            </p>
-          )}
-
-          <label
-            style={{
-              width: "100%",
-              padding: "16px",
-              borderRadius: 13,
-              border: "none",
-              background: uploading ? "rgba(10,132,255,0.5)" : accentColor,
-              color: "#fff",
-              fontSize: 17,
-              fontWeight: 600,
-              cursor: uploading ? "not-allowed" : "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 8,
-              fontFamily: "inherit",
-              boxSizing: "border-box",
-            }}
-          >
-            {uploading ? (
-              <>
-                <Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} />
-                Subiendo...
-              </>
-            ) : (
-              <>
-                <Upload size={18} /> Agregar documento
-              </>
-            )}
-            <input
-              type="file"
-              accept=".pdf,.jpg,.jpeg,.png,.webp"
-              onChange={handleFileChange}
-              disabled={uploading}
-              style={{ display: "none" }}
-            />
-          </label>
-        </div>
-      </div>
-    </div>
+          ))}
+        </Card>
+      )}
+      {uploadError && <p role="alert" className="mt-3 text-[13px] font-semibold text-danger">{uploadError}</p>}
+    </Sheet>
   );
 }
 
-// ─── RecordDetail ─────────────────────────────────────────────────────────────
+// ─── RecordDetail ────────────────────────────────────────────────────────────
 
-function RecordDetail({
-  record,
-  userId,
-  accentColor,
-  vacunas,
-  onClose,
-  onDeleted,
-  onEdited,
-}: {
+function RecordDetail({ record, userId, vacunas, onClose, onDeleted, onEdited }: {
   record: ClinicalRecord;
   userId: string;
-  accentColor: string;
   vacunas: { id: string; nombre: string }[];
   onClose: () => void;
   onDeleted: () => void;
@@ -837,239 +317,71 @@ function RecordDetail({
   const supabase = createClient();
   const [showDocs, setShowDocs] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   async function handleDelete() {
-    if (!window.confirm("¿Eliminar este registro?")) return;
     setDeleting(true);
     await supabase.from("clinical_records").delete().eq("id", record.id);
+    setDeleting(false);
     onDeleted();
     onClose();
   }
 
   const vacuna = vacunas.find((v) => v.id === record.vaccine_id);
+  const fields = [
+    { label: "Diagnóstico", value: record.diagnosis },
+    { label: "Tratamiento", value: record.treatment },
+    { label: "Notas", value: record.notes },
+    { label: "Vacuna vinculada", value: vacuna?.nombre },
+  ].filter((f) => f.value);
 
   return (
     <>
-      <div
-        style={{
-          position: "fixed",
-          inset: 0,
-          zIndex: 100,
-          display: "flex",
-          alignItems: "flex-end",
-          background: "rgba(0,0,0,0.7)",
-          backdropFilter: "blur(8px)",
-        }}
-      >
-        <div
-          style={{
-            width: "100%",
-            maxHeight: "90dvh",
-            overflowY: "auto",
-            background: "#1c1c1e",
-            borderRadius: "20px 20px 0 0",
-            fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif",
-          }}
-        >
-          <div
-            style={{ display: "flex", justifyContent: "center", padding: "12px 0 4px" }}
-          >
-            <div
-              style={{
-                width: 36,
-                height: 4,
-                borderRadius: 2,
-                background: "rgba(255,255,255,0.2)",
-              }}
-            />
-          </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "12px 20px 16px",
-            }}
-          >
-            <h2 style={{ fontSize: 20, fontWeight: 700, color: "#fff", margin: 0 }}>
-              {VISIT_TYPE_LABELS[record.visit_type]}
-            </h2>
-            <button
-              onClick={onClose}
-              style={{
-                width: 30,
-                height: 30,
-                borderRadius: "50%",
-                background: "rgba(255,255,255,0.1)",
-                border: "none",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <X size={15} color="rgba(235,235,245,0.6)" />
-            </button>
-          </div>
-
-          <div style={{ padding: "0 20px 40px" }}>
-            <p
-              style={{
-                fontSize: 14,
-                color: "rgba(235,235,245,0.5)",
-                marginBottom: 20,
-                marginTop: 0,
-              }}
-            >
-              {formatDate(record.visit_date)}
-              {record.vet_name && ` · ${record.vet_name}`}
-              {record.clinic_name && ` · ${record.clinic_name}`}
-            </p>
-
-            {[
-              { label: "Diagnóstico", value: record.diagnosis },
-              { label: "Tratamiento", value: record.treatment },
-              { label: "Notas", value: record.notes },
-              { label: "Vacuna vinculada", value: vacuna?.nombre },
-            ]
-              .filter((f) => f.value)
-              .map((f) => (
-                <div key={f.label} style={{ marginBottom: 16 }}>
-                  <p
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 600,
-                      letterSpacing: "0.06em",
-                      textTransform: "uppercase",
-                      color: "rgba(235,235,245,0.4)",
-                      margin: "0 0 4px",
-                    }}
-                  >
-                    {f.label}
-                  </p>
-                  <p style={{ fontSize: 15, color: "#fff", margin: 0 }}>{f.value}</p>
-                </div>
-              ))}
-
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 10,
-                marginTop: 8,
-              }}
-            >
-              <button
-                onClick={() => setShowDocs(true)}
-                style={{
-                  width: "100%",
-                  padding: "14px",
-                  borderRadius: 13,
-                  background: "rgba(10,132,255,0.12)",
-                  border: "1px solid rgba(10,132,255,0.2)",
-                  cursor: "pointer",
-                  fontSize: 16,
-                  fontWeight: 600,
-                  color: "#0a84ff",
-                  fontFamily: "inherit",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                }}
-              >
-                <FileText size={18} /> Documentos
-              </button>
-
-              <div style={{ display: "flex", gap: 10 }}>
-                <button
-                  onClick={() => setShowEdit(true)}
-                  style={{
-                    flex: 1,
-                    padding: "14px",
-                    borderRadius: 13,
-                    background: "rgba(255,255,255,0.06)",
-                    border: "none",
-                    cursor: "pointer",
-                    fontSize: 16,
-                    fontWeight: 600,
-                    color: "rgba(235,235,245,0.6)",
-                    fontFamily: "inherit",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 6,
-                  }}
-                >
-                  <Pencil size={16} /> Editar
-                </button>
-                <button
-                  onClick={handleDelete}
-                  disabled={deleting}
-                  style={{
-                    flex: 1,
-                    padding: "14px",
-                    borderRadius: 13,
-                    background: "rgba(255,69,58,0.12)",
-                    border: "none",
-                    cursor: "pointer",
-                    fontSize: 16,
-                    fontWeight: 600,
-                    color: "#ff453a",
-                    fontFamily: "inherit",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 6,
-                  }}
-                >
-                  <Trash2 size={16} /> Eliminar
-                </button>
-              </div>
+      <Sheet
+        open
+        onClose={onClose}
+        title={VISIT_TYPE_LABELS[record.visit_type]}
+        subtitle={[formatDate(record.visit_date), record.vet_name, record.clinic_name].filter(Boolean).join(" · ")}
+        footer={
+          <div className="flex flex-col gap-2">
+            <Button variant="tonal" full onClick={() => setShowDocs(true)} leading={<FileText size={18} />}>Documentos</Button>
+            <div className="flex gap-2">
+              <Button variant="secondary" className="flex-1" onClick={() => setShowEdit(true)} leading={<Pencil size={16} />}>Editar</Button>
+              {confirmDelete ? (
+                <Button variant="danger" className="flex-1" loading={deleting} onClick={() => void handleDelete()} leading={<Check size={16} />}>Confirmar</Button>
+              ) : (
+                <Button variant="dangerTonal" className="flex-1" onClick={() => setConfirmDelete(true)} leading={<Trash2 size={16} />}>Eliminar</Button>
+              )}
             </div>
           </div>
-        </div>
-      </div>
+        }
+      >
+        {fields.length === 0 ? (
+          <p className="py-4 text-[14px] text-on-variant">Sin detalles adicionales.</p>
+        ) : (
+          <div className="flex flex-col gap-4 pb-2">
+            {fields.map((f) => (
+              <div key={f.label}>
+                <p className="text-[12px] font-bold uppercase tracking-wide text-on-variant">{f.label}</p>
+                <p className="mt-1 whitespace-pre-wrap text-[15px] leading-relaxed text-on">{f.value}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </Sheet>
 
-      {showDocs && (
-        <DocumentsPanel
-          record={record}
-          userId={userId}
-          accentColor={accentColor}
-          onClose={() => setShowDocs(false)}
-        />
-      )}
+      <DocumentsPanel open={showDocs} record={record} userId={userId} onClose={() => setShowDocs(false)} />
       {showEdit && (
-        <ClinicalRecordForm
-          petId={record.pet_id}
-          userId={userId}
-          vacunas={vacunas}
-          accentColor={accentColor}
-          editRecord={record}
-          onClose={() => setShowEdit(false)}
-          onSaved={onEdited}
-        />
+        <ClinicalRecordForm open={showEdit} petId={record.pet_id} userId={userId} vacunas={vacunas} editRecord={record} onClose={() => setShowEdit(false)} onSaved={onEdited} />
       )}
     </>
   );
 }
 
-// ─── ShareModal ──────────────────────────────────────────────────────────────
+// ─── ShareSheet ──────────────────────────────────────────────────────────────
 
-function ShareModal({
-  petId,
-  userId,
-  petName,
-  accentColor,
-  onClose,
-}: {
-  petId: string;
-  userId: string;
-  petName: string;
-  accentColor: string;
-  onClose: () => void;
-}) {
+function ShareSheet({ open, petId, userId, petName, onClose }: { open: boolean; petId: string; userId: string; petName: string; onClose: () => void }) {
   const supabase = createClient();
   const [link, setLink] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -1077,20 +389,13 @@ function ShareModal({
 
   async function generateLink() {
     setLoading(true);
-    // Store a temporary share token in a supabase table
     const token = crypto.randomUUID();
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
-    const { error } = await supabase.from("share_tokens").insert({
-      token,
-      pet_id: petId,
-      user_id: userId,
-      expires_at: expiresAt,
-    });
+    const { error } = await supabase.from("share_tokens").insert({ token, pet_id: petId, user_id: userId, expires_at: expiresAt });
 
     if (error) {
-      // Table might not exist yet; build link with signed approach instead
-      // Fallback: build a URL with encoded petId and expiry (best-effort)
+      // La tabla puede no existir todavía: enlace de respaldo
       const fallback = `${window.location.origin}/shared/${token}?pet=${petId}&exp=${Date.now() + 86400000}`;
       setLink(fallback);
     } else {
@@ -1103,209 +408,98 @@ function ShareModal({
     if (!link) return;
     navigator.clipboard.writeText(link).then(() => {
       setCopied(true);
+      showToast("Enlace copiado", undefined, "success");
       setTimeout(() => setCopied(false), 2000);
     });
   }
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 120,
-        display: "flex",
-        alignItems: "flex-end",
-        background: "rgba(0,0,0,0.7)",
-        backdropFilter: "blur(8px)",
-      }}
+    <Sheet
+      open={open}
+      onClose={onClose}
+      title="Compartir historial"
+      subtitle={`Enlace de solo lectura, válido 24 horas, con el historial de ${petName}.`}
+      footer={
+        link ? (
+          <Button full size="lg" onClick={copyLink} leading={copied ? <Check size={18} /> : <LinkIcon size={18} />}>{copied ? "Copiado" : "Copiar enlace"}</Button>
+        ) : (
+          <Button full size="lg" onClick={() => void generateLink()} loading={loading} leading={<Share2 size={18} />}>Generar enlace</Button>
+        )
+      }
     >
-      <div
-        style={{
-          width: "100%",
-          background: "#1c1c1e",
-          borderRadius: "20px 20px 0 0",
-          fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif",
-          padding: "0 0 40px",
-        }}
-      >
-        <div
-          style={{ display: "flex", justifyContent: "center", padding: "12px 0 4px" }}
-        >
-          <div
-            style={{
-              width: 36,
-              height: 4,
-              borderRadius: 2,
-              background: "rgba(255,255,255,0.2)",
-            }}
-          />
+      {link && (
+        <div className="flex items-center gap-2 rounded-control bg-surface-2 px-4 py-3">
+          <LinkIcon size={16} className="shrink-0 text-on-variant" aria-hidden="true" />
+          <p className="min-w-0 flex-1 truncate text-[13px] text-on-variant">{link}</p>
         </div>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "12px 20px 16px",
-          }}
-        >
-          <h2 style={{ fontSize: 20, fontWeight: 700, color: "#fff", margin: 0 }}>
-            Compartir historial
-          </h2>
-          <button
-            onClick={onClose}
-            style={{
-              width: 30,
-              height: 30,
-              borderRadius: "50%",
-              background: "rgba(255,255,255,0.1)",
-              border: "none",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <X size={15} color="rgba(235,235,245,0.6)" />
-          </button>
-        </div>
+      )}
+    </Sheet>
+  );
+}
 
-        <div style={{ padding: "0 20px" }}>
-          <p
-            style={{
-              fontSize: 15,
-              color: "rgba(235,235,245,0.5)",
-              marginBottom: 20,
-              marginTop: 0,
-            }}
-          >
-            Genera un enlace de solo lectura válido 24 horas para compartir el
-            historial clínico de {petName}.
-          </p>
+// ─── Skeleton ────────────────────────────────────────────────────────────────
 
-          {link ? (
-            <>
-              <div
-                style={{
-                  background: "#2c2c2e",
-                  borderRadius: 13,
-                  padding: "14px 16px",
-                  marginBottom: 12,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                }}
-              >
-                <Link size={16} color="rgba(235,235,245,0.4)" />
-                <p
-                  style={{
-                    fontSize: 13,
-                    color: "rgba(235,235,245,0.6)",
-                    margin: 0,
-                    flex: 1,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {link}
-                </p>
-              </div>
-              <button
-                onClick={copyLink}
-                style={{
-                  width: "100%",
-                  padding: "16px",
-                  borderRadius: 13,
-                  background: copied ? "#30d158" : accentColor,
-                  border: "none",
-                  cursor: "pointer",
-                  fontSize: 17,
-                  fontWeight: 600,
-                  color: "#fff",
-                  fontFamily: "inherit",
-                }}
-              >
-                {copied ? "¡Copiado!" : "Copiar enlace"}
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={generateLink}
-              disabled={loading}
-              style={{
-                width: "100%",
-                padding: "16px",
-                borderRadius: 13,
-                background: loading ? "rgba(10,132,255,0.5)" : accentColor,
-                border: "none",
-                cursor: loading ? "not-allowed" : "pointer",
-                fontSize: 17,
-                fontWeight: 600,
-                color: "#fff",
-                fontFamily: "inherit",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-              }}
-            >
-              {loading ? (
-                <Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} />
-              ) : (
-                <Share2 size={18} />
-              )}
-              Generar enlace
-            </button>
-          )}
+export function ClinicalRecordsSkeleton({ embedded }: { embedded?: boolean }) {
+  return (
+    <div className="flex flex-col gap-3 px-4 pb-8" aria-busy="true">
+      {!embedded && (
+        <div className="flex items-end justify-between pt-[max(14px,env(safe-area-inset-top))] pb-2">
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-3 w-16" />
+            <Skeleton className="h-8 w-44" />
+          </div>
+          <Skeleton className="h-11 w-11 rounded-full" />
         </div>
+      )}
+      <Skeleton className="h-[120px] w-full rounded-card-lg" />
+      <div className="rounded-card-lg bg-surface">
+        <SkeletonRow trailing={false} />
+        <SkeletonRow trailing={false} />
+        <SkeletonRow trailing={false} />
       </div>
     </div>
   );
 }
 
-// ─── Main Module ─────────────────────────────────────────────────────────────
+// ─── Módulo principal ────────────────────────────────────────────────────────
 
-export function ClinicalRecordsModule() {
+export function ClinicalRecordsModule({ embedded = false }: { embedded?: boolean }) {
   const { selectedPetId, pets, vacunas: storeVacunas } = useStore();
   const supabase = createClient();
   const pet = pets.find((p) => p.id === selectedPetId);
-  const accentColor = pet?.color ?? "#0a84ff";
 
   const [userId, setUserId] = useState<string | null>(null);
   const [records, setRecords] = useState<ClinicalRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Filters
   const [filterType, setFilterType] = useState<VisitType | "">("");
   const [filterFrom, setFilterFrom] = useState("");
   const [filterTo, setFilterTo] = useState("");
 
-  // Modals
   const [showForm, setShowForm] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<ClinicalRecord | null>(null);
   const [showShare, setShowShare] = useState(false);
 
-  // Vacunas for this pet (from local store)
-  const petVacunas = storeVacunas
-    .filter((v) => v.petId === selectedPetId)
-    .map((v) => ({ id: v.id, nombre: v.nombre }));
+  const petVacunas = storeVacunas.filter((v) => v.petId === selectedPetId).map((v) => ({ id: v.id, nombre: v.nombre }));
 
-  // Load user
   useEffect(() => {
     supabase.auth.getUser().then(({ data }: { data: { user: { id: string } | null } }) => {
       setUserId(data.user?.id ?? null);
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadRecords = useCallback(async () => {
     if (!selectedPetId) return;
     setLoading(true);
-    const { data } = await supabase
+    setError(null);
+    const { data, error: err } = await supabase
       .from("clinical_records")
       .select("*")
       .eq("pet_id", selectedPetId)
       .order("visit_date", { ascending: false });
+    if (err) setError("No pudimos cargar el historial.");
     setRecords(data ?? []);
     setLoading(false);
   }, [selectedPetId, supabase]);
@@ -1314,7 +508,6 @@ export function ClinicalRecordsModule() {
     void loadRecords();
   }, [loadRecords]);
 
-  // Apply filters
   const filtered = records.filter((r) => {
     if (filterType && r.visit_type !== filterType) return false;
     if (filterFrom && r.visit_date < filterFrom) return false;
@@ -1322,363 +515,82 @@ export function ClinicalRecordsModule() {
     return true;
   });
 
+  const shareButton = (
+    <Button variant="secondary" size="icon" aria-label="Compartir historial" onClick={() => setShowShare(true)}>
+      <Share2 size={20} />
+    </Button>
+  );
+
   return (
-    <>
-      <style>{`
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-      `}</style>
+    <div className="pb-8">
+      {!embedded && <PageHeader back backHref="/salud" eyebrow={pet?.name ?? "Mascota"} title="Historial clínico" actions={shareButton} />}
 
-      <div style={{ paddingBottom: 24 }}>
-        {/* Hero */}
-        <div style={{ padding: "56px 24px 24px" }}>
-          <p
-            style={{
-              fontSize: 12,
-              fontWeight: 600,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              color: "rgba(235,235,245,0.4)",
-              margin: "0 0 8px",
-            }}
-          >
-            {pet?.name ?? "Mascota"}
-          </p>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <h1
-              style={{
-                fontSize: 34,
-                fontWeight: 700,
-                color: "#fff",
-                margin: 0,
-                letterSpacing: -0.5,
-              }}
-            >
-              Historial Clínico
-            </h1>
-            <button
-              onClick={() => setShowShare(true)}
-              title="Compartir historial"
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 12,
-                background: "rgba(255,255,255,0.08)",
-                border: "none",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-              }}
-            >
-              <Share2 size={18} color="rgba(235,235,245,0.6)" />
-            </button>
-          </div>
-          <p
-            style={{
-              fontSize: 15,
-              color: "rgba(235,235,245,0.4)",
-              marginTop: 6,
-              marginBottom: 0,
-            }}
-          >
-            Visitas veterinarias y documentos
-          </p>
-        </div>
+      {loading ? (
+        <ClinicalRecordsSkeleton embedded />
+      ) : (
+        <div className="flex flex-col gap-4 px-4">
+          {embedded && <div className="flex justify-end">{shareButton}</div>}
 
-        <div style={{ padding: "0 16px" }}>
-          {/* Filters */}
-          <div
-            style={{
-              background: "#1c1c1e",
-              borderRadius: 13,
-              overflow: "hidden",
-              marginBottom: 16,
-            }}
-          >
-            <div style={{ position: "relative" }}>
-              <select
-                value={filterType}
-                onChange={(e) => setFilterType(e.target.value as VisitType | "")}
-                style={{
-                  ...inputS,
-                  background: "transparent",
-                  appearance: "none",
-                  WebkitAppearance: "none",
-                  cursor: "pointer",
-                  fontSize: 15,
-                }}
-              >
-                <option value="" style={{ background: "#1c1c1e" }}>
-                  Todos los tipos
-                </option>
-                {(Object.keys(VISIT_TYPE_LABELS) as VisitType[]).map((k) => (
-                  <option key={k} value={k} style={{ background: "#1c1c1e" }}>
-                    {VISIT_TYPE_LABELS[k]}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown
-                size={14}
-                color="rgba(235,235,245,0.4)"
-                style={{
-                  position: "absolute",
-                  right: 16,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  pointerEvents: "none",
-                }}
-              />
+          <Card tone="container" elevation={0} className="flex flex-col gap-2">
+            <Select aria-label="Tipo de visita" value={filterType} onChange={(e) => setFilterType(e.target.value as VisitType | "")} placeholder="Todos los tipos" options={VISIT_OPTIONS} />
+            <div className="grid grid-cols-2 gap-2">
+              <Input label="Desde" type="date" value={filterFrom} onChange={(e) => setFilterFrom(e.target.value)} />
+              <Input label="Hasta" type="date" value={filterTo} onChange={(e) => setFilterTo(e.target.value)} />
             </div>
-            <div
-              style={{
-                height: 1,
-                background: "rgba(84,84,88,0.65)",
-                marginLeft: 16,
-              }}
-            />
-            <div style={{ display: "flex", gap: 0 }}>
-              <input
-                type="date"
-                value={filterFrom}
-                onChange={(e) => setFilterFrom(e.target.value)}
-                placeholder="Desde"
-                style={{ ...inputS, flex: 1, fontSize: 14 }}
-              />
-              <div
-                style={{
-                  width: 1,
-                  background: "rgba(84,84,88,0.65)",
-                  margin: "8px 0",
-                }}
-              />
-              <input
-                type="date"
-                value={filterTo}
-                onChange={(e) => setFilterTo(e.target.value)}
-                placeholder="Hasta"
-                style={{ ...inputS, flex: 1, fontSize: 14 }}
-              />
-            </div>
-          </div>
+          </Card>
 
-          {/* Records list */}
-          {loading ? (
-            <div
-              style={{
-                textAlign: "center",
-                padding: "48px 0",
-                color: "rgba(235,235,245,0.3)",
-              }}
-            >
-              Cargando...
-            </div>
+          {error ? (
+            <EmptyState tone="danger" title="No pudimos cargar" description={error} action={<Button full onClick={() => void loadRecords()}>Reintentar</Button>} />
           ) : filtered.length === 0 ? (
-            <div
-              style={{
-                textAlign: "center",
-                padding: "48px 24px",
-                background: "#1c1c1e",
-                borderRadius: 20,
-                marginBottom: 20,
-              }}
-            >
-              <div
-                style={{
-                  marginBottom: 14,
-                  display: "flex",
-                  justifyContent: "center",
-                }}
-              >
-                <Stethoscope size={40} color="rgba(235,235,245,0.2)" />
-              </div>
-              <p
-                style={{
-                  fontSize: 17,
-                  fontWeight: 600,
-                  color: "#fff",
-                  margin: 0,
-                }}
-              >
-                {records.length === 0
-                  ? `Aún no hay registros clínicos. Agrega la primera visita de ${pet?.name ?? "tu mascota"}.`
-                  : "No hay registros con esos filtros"}
-              </p>
-            </div>
+            <EmptyState
+              compact
+              icon={<Stethoscope size={26} />}
+              title={records.length === 0 ? "Sin visitas registradas" : "Nada con esos filtros"}
+              description={records.length === 0 ? `Guarda cada visita de ${pet?.name ?? "tu mascota"} al veterinario con sus documentos.` : undefined}
+              action={records.length === 0 ? <Button full onClick={() => setShowForm(true)} leading={<Plus size={18} />}>Nueva visita</Button> : undefined}
+            />
           ) : (
             <>
-              <p
-                style={{
-                  fontSize: 12,
-                  fontWeight: 600,
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  color: "rgba(235,235,245,0.4)",
-                  marginBottom: 10,
-                }}
-              >
+              <p className="text-[13px] font-bold uppercase tracking-wide text-on-variant">
                 {filtered.length} visita{filtered.length !== 1 ? "s" : ""}
               </p>
-              <div
-                style={{
-                  background: "#1c1c1e",
-                  borderRadius: 16,
-                  overflow: "hidden",
-                  marginBottom: 20,
-                }}
-              >
-                {filtered.map((r, i) => (
-                  <div key={r.id}>
-                    {i > 0 && (
-                      <div
-                        style={{
-                          height: 1,
-                          background: "rgba(84,84,88,0.65)",
-                          marginLeft: 60,
-                        }}
+              <motion.div variants={stagger()} initial="hidden" animate="show">
+                <Card padded={false} elevation={0} className="overflow-hidden">
+                  {filtered.map((r, i) => (
+                    <motion.div key={r.id} variants={fadeUp}>
+                      {i > 0 && <Divider />}
+                      <Row
+                        icon={<Stethoscope size={20} />}
+                        iconTone="primary"
+                        title={VISIT_TYPE_LABELS[r.visit_type]}
+                        subtitle={[formatDate(r.visit_date), r.vet_name, r.diagnosis].filter(Boolean).join(" · ")}
+                        trailing={
+                          <span className="flex items-center gap-2">
+                            {r.visit_type === "emergencia" && <Tag tone="danger" size="xs">Urgencia</Tag>}
+                            <ChevronRight size={18} className="text-on-variant" />
+                          </span>
+                        }
+                        onClick={() => setSelectedRecord(r)}
                       />
-                    )}
-                    <button
-                      onClick={() => setSelectedRecord(r)}
-                      style={{
-                        width: "100%",
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        padding: "14px 16px",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 12,
-                        textAlign: "left",
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: 44,
-                          height: 44,
-                          borderRadius: 12,
-                          flexShrink: 0,
-                          background: `${accentColor}18`,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <Stethoscope size={20} color={accentColor} />
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <p
-                          style={{
-                            fontSize: 16,
-                            fontWeight: 600,
-                            color: "#fff",
-                            margin: 0,
-                          }}
-                        >
-                          {VISIT_TYPE_LABELS[r.visit_type]}
-                        </p>
-                        <p
-                          style={{
-                            fontSize: 13,
-                            color: "rgba(235,235,245,0.5)",
-                            margin: "2px 0 0",
-                          }}
-                        >
-                          {formatDate(r.visit_date)}
-                          {r.vet_name && ` · ${r.vet_name}`}
-                        </p>
-                        {r.diagnosis && (
-                          <p
-                            style={{
-                              fontSize: 12,
-                              color: "rgba(235,235,245,0.35)",
-                              margin: "2px 0 0",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            {r.diagnosis}
-                          </p>
-                        )}
-                      </div>
-                      <ChevronDown
-                        size={14}
-                        color="rgba(235,235,245,0.25)"
-                        style={{ transform: "rotate(-90deg)", flexShrink: 0 }}
-                      />
-                    </button>
-                  </div>
-                ))}
-              </div>
+                    </motion.div>
+                  ))}
+                </Card>
+              </motion.div>
+              <Button full size="lg" onClick={() => setShowForm(true)} leading={<Plus size={20} />}>Nueva visita</Button>
             </>
           )}
-
-          {/* Add button */}
-          <button
-            onClick={() => setShowForm(true)}
-            style={{
-              width: "100%",
-              padding: "16px",
-              borderRadius: 13,
-              border: "none",
-              background: accentColor,
-              color: "#fff",
-              fontSize: 17,
-              fontWeight: 600,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 8,
-              fontFamily:
-                "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif",
-            }}
-          >
-            <Plus size={20} /> Nueva visita
-          </button>
         </div>
-      </div>
+      )}
 
-      {/* Modals */}
-      {showForm && userId && (
-        <ClinicalRecordForm
-          petId={selectedPetId!}
-          userId={userId}
-          vacunas={petVacunas}
-          accentColor={accentColor}
-          onClose={() => setShowForm(false)}
-          onSaved={() => void loadRecords()}
-        />
+      {userId && selectedPetId && (
+        <ClinicalRecordForm open={showForm} petId={selectedPetId} userId={userId} vacunas={petVacunas} onClose={() => setShowForm(false)} onSaved={() => void loadRecords()} />
       )}
 
       {selectedRecord && userId && (
-        <RecordDetail
-          record={selectedRecord}
-          userId={userId}
-          accentColor={accentColor}
-          vacunas={petVacunas}
-          onClose={() => setSelectedRecord(null)}
-          onDeleted={() => void loadRecords()}
-          onEdited={() => void loadRecords()}
-        />
+        <RecordDetail record={selectedRecord} userId={userId} vacunas={petVacunas} onClose={() => setSelectedRecord(null)} onDeleted={() => void loadRecords()} onEdited={() => void loadRecords()} />
       )}
 
-      {showShare && pet && userId && (
-        <ShareModal
-          petId={selectedPetId!}
-          userId={userId}
-          petName={pet.name}
-          accentColor={accentColor}
-          onClose={() => setShowShare(false)}
-        />
-      )}
-    </>
+      {pet && userId && selectedPetId && <ShareSheet open={showShare} petId={selectedPetId} userId={userId} petName={pet.name} onClose={() => setShowShare(false)} />}
+    </div>
   );
 }

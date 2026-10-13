@@ -126,6 +126,7 @@ export const useStore = create<PawStore>()((set, get) => ({
           emoji: (r.emoji as string) ?? "🐾",
           color: (r.color as string) ?? "#0a84ff",
           avatar_config: (r.avatar_config as Pet["avatar_config"]) ?? null,
+          photoUrl: (r.photo_url as string) ?? null,
           sharedWith: (r.shared_with as string[]) ?? [],
           photos: [],
           createdAt: r.created_at as string,

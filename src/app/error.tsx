@@ -1,39 +1,28 @@
 "use client";
+import { AlertCircle } from "lucide-react";
+import { Button, EmptyState } from "@/components/ui";
+import { SOSButton } from "@/components/layout/SOSButton";
 
-export default function Error({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-}) {
+export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
-    <div style={{
-      minHeight: "100dvh", background: "#000000",
-      display: "flex", flexDirection: "column",
-      alignItems: "center", justifyContent: "center",
-      padding: 32, fontFamily: "monospace", color: "#fff"
-    }}>
-      <h2 style={{ color: "#FF7A45", marginBottom: 16 }}>Error al cargar</h2>
-      <pre style={{
-        background: "#111", padding: 16, borderRadius: 8,
-        maxWidth: 600, overflowX: "auto", fontSize: 12,
-        color: "#EF4444", whiteSpace: "pre-wrap"
-      }}>
-        {error.message}
-        {"\n\n"}
-        {error.stack}
-      </pre>
-      <button
-        onClick={reset}
-        style={{
-          marginTop: 24, padding: "12px 24px",
-          background: "#FF7A45", color: "#000",
-          border: "none", borderRadius: 8, cursor: "pointer"
-        }}
-      >
-        Reintentar
-      </button>
-    </div>
+    <main className="flex min-h-dvh flex-col bg-bg px-5 pt-[max(14px,env(safe-area-inset-top))]">
+      <div className="flex justify-end">
+        <SOSButton />
+      </div>
+      <div className="flex flex-1 items-center justify-center">
+        <EmptyState
+          tone="danger"
+          icon={<AlertCircle size={26} />}
+          title="Algo salió mal"
+          description="No pudimos cargar esta pantalla. Tus datos están a salvo; vuelve a intentarlo."
+          action={
+            <Button full size="lg" onClick={reset}>
+              Reintentar
+            </Button>
+          }
+          secondary={error.digest ? <span className="text-[12px] font-semibold text-on-variant">Código {error.digest}</span> : undefined}
+        />
+      </div>
+    </main>
   );
 }

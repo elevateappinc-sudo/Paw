@@ -1,9 +1,7 @@
-// src/app/login/page.tsx
+import type { Metadata } from "next";
 import { AuthPage } from "@/components/auth/AuthPage";
 
-export const metadata = {
-  title: "PAW — Iniciar sesión",
-};
+export const metadata: Metadata = { title: "Iniciar sesión" };
 
 export default function LoginPage() {
   return <AuthPage />;

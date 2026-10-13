@@ -1,243 +1,180 @@
 "use client";
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { Pencil, Trash2, ChevronDown, Dumbbell, Video, Upload } from "lucide-react";
 import { useStore } from "@/store";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { formatDate } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
+import { Button, ProgressBar, showToast } from "@/components/ui";
 import { TareaItem } from "./TareaItem";
 import { ClaseForm } from "./ClaseForm";
 import { VideoFullscreen } from "@/components/gallery/VideoFullscreen";
 import { useVideoUpload, type VideoEntry } from "@/hooks/useVideoUpload";
-import { Pencil, Trash2, ChevronDown, ChevronUp, Dumbbell, Video, Upload } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import type { ClaseEntrenamiento } from "@/types";
-
-const FONT = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
 
 interface ClaseCardProps {
   clase: ClaseEntrenamiento;
+  /** @deprecated los colores salen de los tokens */
   accentColor?: string;
-  // kept for backwards compat, not used visually
   isFirst?: boolean;
   isLast?: boolean;
 }
 
-export function ClaseCard({ clase, accentColor = "#0a84ff" }: ClaseCardProps) {
+function DetailBlock({ label, tone, children }: { label: string; tone: "warn" | "ok" | "primary"; children: React.ReactNode }) {
+  const toneClass = { warn: "text-warn", ok: "text-ok", primary: "text-primary" }[tone];
+  return (
+    <div>
+      <p className={cn("mb-1 text-[11px] font-bold uppercase tracking-wider", toneClass)}>{label}</p>
+      {children}
+    </div>
+  );
+}
+
+export function ClaseCard({ clase }: ClaseCardProps) {
   const { deleteClass } = useStore();
   const { user } = useAuthContext();
+  const reduce = useReducedMotion();
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
   const [sessionVideo, setSessionVideo] = useState<VideoEntry | null>(null);
   const [showVideoFullscreen, setShowVideoFullscreen] = useState(false);
-  const [videoWarning, setVideoWarning] = useState<string | null>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
-  const { upload: uploadVideo, progress: videoProgress, isUploading: videoUploading, error: videoError } = useVideoUpload();
+  const { upload: uploadVideo, progress: videoProgress, isUploading: videoUploading } = useVideoUpload();
 
   const completedTareas = clase.tareas.filter((t) => t.estado === "completado").length;
   const progress = clase.tareas.length > 0 ? completedTareas / clase.tareas.length : 0;
 
+  async function handleDelete() {
+    try {
+      await deleteClass(clase.id);
+    } catch {
+      showToast("No se pudo eliminar la clase", () => void handleDelete(), "error");
+    }
+  }
+
   return (
     <>
-      <div style={{ fontFamily: FONT }}>
-        {/* Main row */}
-        <button
-          type="button"
-          onClick={() => setExpanded((e) => !e)}
-          style={{
-            width: "100%", display: "flex", alignItems: "center", gap: 12,
-            padding: "14px 16px", background: "transparent", border: "none",
-            cursor: "pointer", fontFamily: FONT, textAlign: "left",
-          }}
-        >
-          {/* Icon */}
-          <div style={{
-            width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-            background: `${accentColor}18`,
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
-            <Dumbbell size={20} color={accentColor} />
-          </div>
-
-          {/* Content */}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 15, fontWeight: 600, color: "#fff", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {clase.temas}
-            </p>
-            <p style={{ fontSize: 12, color: "rgba(235,235,245,0.5)", margin: "2px 0 0" }}>
-              {formatDate(clase.fecha)}{clase.entrenador ? ` · ${clase.entrenador}` : ""}
-            </p>
-            {/* Progress bar */}
-            {clase.tareas.length > 0 && (
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
-                <div style={{ flex: 1, height: 3, borderRadius: 999, background: "rgba(255,255,255,0.07)", overflow: "hidden" }}>
-                  <div style={{
-                    height: "100%", borderRadius: 999,
-                    width: `${progress * 100}%`,
-                    background: progress === 1 ? "#30d158" : accentColor,
-                    transition: "width 0.3s",
-                  }} />
-                </div>
-                <span style={{ fontSize: 11, color: "rgba(235,235,245,0.4)", flexShrink: 0 }}>
-                  {completedTareas}/{clase.tareas.length}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Actions */}
-          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-            <button
-              type="button"
-              onClick={(e) => { e.stopPropagation(); setEditing(true); }}
-              style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,255,255,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-            >
-              <Pencil size={12} color="rgba(235,235,245,0.5)" />
-            </button>
-            <button
-              type="button"
-              onClick={(e) => { e.stopPropagation(); deleteClass(clase.id); }}
-              style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,69,58,0.12)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-            >
-              <Trash2 size={12} color="#ff453a" />
-            </button>
-            {expanded
-              ? <ChevronUp size={15} color="rgba(235,235,245,0.4)" />
-              : <ChevronDown size={15} color="rgba(235,235,245,0.4)" />}
-          </div>
-        </button>
-
-        {/* Expanded detail */}
-        {expanded && (
-          <div style={{ borderTop: "1px solid rgba(84,84,88,0.35)", padding: "16px 16px 20px" }}>
-            {clase.ejercicios && (
-              <div style={{ marginBottom: 14 }}>
-                <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#ff9f0a", margin: "0 0 6px" }}>
-                  Ejercicios
-                </p>
-                <p style={{ fontSize: 14, color: "rgba(235,235,245,0.75)", margin: 0, whiteSpace: "pre-line" }}>
-                  {clase.ejercicios}
-                </p>
-              </div>
-            )}
-            {clase.avances && (
-              <div style={{ marginBottom: clase.tareas.length > 0 ? 14 : 0 }}>
-                <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#30d158", margin: "0 0 6px" }}>
-                  Avances
-                </p>
-                <p style={{ fontSize: 14, color: "rgba(235,235,245,0.75)", margin: 0, whiteSpace: "pre-line" }}>
-                  {clase.avances}
-                </p>
-              </div>
-            )}
-            {clase.tareas.length > 0 && (
-              <div>
-                <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: accentColor, margin: "0 0 8px" }}>
-                  Tareas ({completedTareas}/{clase.tareas.length})
-                </p>
-                <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 12, overflow: "hidden" }}>
-                  {clase.tareas.map((t, i) => (
-                    <div key={t.id}>
-                      {i > 0 && <div style={{ height: 1, background: "rgba(84,84,88,0.35)", marginLeft: 44 }} />}
-                      <TareaItem tarea={t} claseId={clase.id} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* ── Video Section ── */}
-            <div style={{ marginTop: 14 }}>
-              <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(235,235,245,0.4)", margin: "0 0 8px" }}>
-                Video de sesión
-              </p>
-
-              {videoError && (
-                <div style={{ background: "rgba(255,69,58,0.12)", border: "1px solid rgba(255,69,58,0.25)", borderRadius: 8, padding: "8px 12px", marginBottom: 8, fontSize: 12, color: "#ff453a", fontFamily: FONT }}>
-                  {videoError}
-                </div>
-              )}
-              {videoWarning && (
-                <div style={{ background: "rgba(255,159,10,0.12)", border: "1px solid rgba(255,159,10,0.25)", borderRadius: 8, padding: "8px 12px", marginBottom: 8, fontSize: 12, color: "#ff9f0a", fontFamily: FONT }}>
-                  ⚠️ {videoWarning}
-                </div>
-              )}
-
-              {videoUploading && (
-                <div style={{ height: 3, borderRadius: 999, background: "rgba(255,255,255,0.08)", marginBottom: 8, overflow: "hidden" }}>
-                  <div style={{ height: "100%", borderRadius: 999, background: accentColor, width: `${videoProgress}%`, transition: "width 0.3s" }} />
-                </div>
-              )}
-
-              {sessionVideo ? (
-                <button
-                  type="button"
-                  onClick={() => setShowVideoFullscreen(true)}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 8,
-                    padding: "10px 14px", borderRadius: 10, width: "100%",
-                    background: `${accentColor}18`, border: `1px solid ${accentColor}40`,
-                    cursor: "pointer", fontFamily: FONT,
-                  }}
-                >
-                  <Video size={16} color={accentColor} />
-                  <span style={{ flex: 1, fontSize: 13, color: accentColor, fontWeight: 600, textAlign: "left" }}>
-                    Ver video
-                    {sessionVideo.durationSeconds !== undefined && sessionVideo.durationSeconds !== null
-                      ? ` · ${Math.floor(sessionVideo.durationSeconds / 60)}:${String(sessionVideo.durationSeconds % 60).padStart(2, "0")}`
-                      : ""}
-                  </span>
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => videoInputRef.current?.click()}
-                  disabled={videoUploading}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 8,
-                    padding: "10px 14px", borderRadius: 10, width: "100%",
-                    background: "rgba(255,255,255,0.04)", border: "1px solid rgba(84,84,88,0.5)",
-                    cursor: videoUploading ? "not-allowed" : "pointer", fontFamily: FONT,
-                  }}
-                >
-                  <Upload size={16} color="rgba(235,235,245,0.4)" />
-                  <span style={{ fontSize: 13, color: "rgba(235,235,245,0.5)", fontWeight: 500 }}>
-                    {videoUploading ? `Subiendo ${videoProgress}%` : "Adjuntar video (MP4)"}
-                  </span>
-                </button>
-              )}
-
-              <input
-                ref={videoInputRef}
-                type="file"
-                accept="video/mp4"
-                style={{ display: "none" }}
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  e.currentTarget.value = "";
-                  if (!file || !user) return;
-                  const result = await uploadVideo(file, {
-                    petId: clase.petId,
-                    userId: user.id,
-                    onWarning: (msg) => { setVideoWarning(msg); setTimeout(() => setVideoWarning(null), 6000); },
-                  });
-                  if (result) {
-                    // Also update training_sessions.video_url
-                    const supabase = createClient();
-                    await supabase.from("training_sessions").update({
-                      video_url: result.videoUrl,
-                      video_storage_path: result.storagePath,
-                    }).eq("id", clase.id);
-                    setSessionVideo(result);
-                  }
-                }}
-              />
+      <div>
+        <div className="flex items-center gap-3 px-4 py-3">
+          <button
+            type="button"
+            onClick={() => setExpanded((e) => !e)}
+            aria-expanded={expanded}
+            className="flex min-h-[44px] min-w-0 flex-1 items-center gap-3 text-left"
+          >
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-primary-container text-on-primary-container">
+              <Dumbbell size={20} aria-hidden="true" />
             </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[16px] font-bold text-on">{clase.temas}</p>
+              <p className="text-[13px] text-on-variant">
+                {formatDate(clase.fecha)}
+                {clase.entrenador ? ` · ${clase.entrenador}` : ""}
+              </p>
+              {clase.tareas.length > 0 && (
+                <div className="mt-1.5 flex items-center gap-2">
+                  <ProgressBar value={progress} tone={progress === 1 ? "ok" : "primary"} className="h-1" />
+                  <span className="shrink-0 text-[11px] font-semibold text-on-variant">
+                    {completedTareas}/{clase.tareas.length}
+                  </span>
+                </div>
+              )}
+            </div>
+            <ChevronDown size={18} className={cn("shrink-0 text-on-variant transition-transform duration-200", expanded && "rotate-180")} aria-hidden="true" />
+          </button>
+          <div className="flex shrink-0 items-center gap-1">
+            <Button variant="secondary" size="icon" aria-label="Editar clase" onClick={() => setEditing(true)} className="min-h-[40px] min-w-[40px]">
+              <Pencil size={15} />
+            </Button>
+            <Button variant="dangerTonal" size="icon" aria-label="Eliminar clase" onClick={() => void handleDelete()} className="min-h-[40px] min-w-[40px] border-transparent">
+              <Trash2 size={15} />
+            </Button>
           </div>
-        )}
+        </div>
+
+        <AnimatePresence initial={false}>
+          {expanded && (
+            <motion.div
+              initial={reduce ? false : { height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={reduce ? undefined : { height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden"
+            >
+              <div className="flex flex-col gap-4 border-t border-outline-variant px-4 pt-4 pb-5">
+                {clase.ejercicios && (
+                  <DetailBlock label="Ejercicios" tone="warn">
+                    <p className="whitespace-pre-line text-[14px] text-on">{clase.ejercicios}</p>
+                  </DetailBlock>
+                )}
+                {clase.avances && (
+                  <DetailBlock label="Avances" tone="ok">
+                    <p className="whitespace-pre-line text-[14px] text-on">{clase.avances}</p>
+                  </DetailBlock>
+                )}
+                {clase.tareas.length > 0 && (
+                  <DetailBlock label={`Tareas (${completedTareas}/${clase.tareas.length})`} tone="primary">
+                    <ul className="overflow-hidden rounded-control bg-surface-2">
+                      {clase.tareas.map((t, i) => (
+                        <li key={t.id} className={i > 0 ? "border-t border-outline-variant" : undefined}>
+                          <TareaItem tarea={t} claseId={clase.id} />
+                        </li>
+                      ))}
+                    </ul>
+                  </DetailBlock>
+                )}
+
+                <div>
+                  <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-on-variant">Video de sesión</p>
+                  {videoUploading && <ProgressBar value={videoProgress / 100} className="mb-2" />}
+                  {sessionVideo ? (
+                    <Button variant="tonal" full leading={<Video size={16} />} onClick={() => setShowVideoFullscreen(true)}>
+                      Ver video
+                      {sessionVideo.durationSeconds !== undefined && sessionVideo.durationSeconds !== null
+                        ? ` · ${Math.floor(sessionVideo.durationSeconds / 60)}:${String(sessionVideo.durationSeconds % 60).padStart(2, "0")}`
+                        : ""}
+                    </Button>
+                  ) : (
+                    <Button variant="outline" full leading={<Upload size={16} />} onClick={() => videoInputRef.current?.click()} loading={videoUploading}>
+                      {videoUploading ? `Subiendo ${videoProgress}%` : "Adjuntar video (MP4)"}
+                    </Button>
+                  )}
+                  <input
+                    ref={videoInputRef}
+                    type="file"
+                    accept="video/mp4"
+                    className="hidden"
+                    aria-hidden="true"
+                    tabIndex={-1}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      e.currentTarget.value = "";
+                      if (!file || !user) return;
+                      const result = await uploadVideo(file, {
+                        petId: clase.petId,
+                        userId: user.id,
+                        onWarning: (msg) => showToast(msg),
+                      });
+                      if (result) {
+                        const supabase = createClient();
+                        await supabase.from("training_sessions").update({ video_url: result.videoUrl, video_storage_path: result.storagePath }).eq("id", clase.id);
+                        setSessionVideo(result);
+                        showToast("Video adjuntado", undefined, "success");
+                      } else {
+                        showToast("No se pudo subir el video", undefined, "error");
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {sessionVideo && showVideoFullscreen && (
           <VideoFullscreen
             video={sessionVideo}
-            accentColor={accentColor}
             onClose={() => setShowVideoFullscreen(false)}
             onDeleted={() => {
               setSessionVideo(null);
@@ -249,9 +186,7 @@ export function ClaseCard({ clase, accentColor = "#0a84ff" }: ClaseCardProps) {
         )}
       </div>
 
-      {editing && (
-        <ClaseForm editClase={clase} onClose={() => setEditing(false)} accentColor={accentColor} />
-      )}
+      {editing && <ClaseForm open editClase={clase} onClose={() => setEditing(false)} />}
     </>
   );
 }

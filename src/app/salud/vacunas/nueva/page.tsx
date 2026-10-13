@@ -1,8 +1,6 @@
-'use client'
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { redirect } from "next/navigation";
+
+/** Nuevo registro: botón + en /salud */
 export default function NuevaVacunaPage() {
-  const router = useRouter()
-  useEffect(() => { router.replace('/salud/vacunas?nueva=1') }, [router])
-  return null
+  redirect("/salud");
 }

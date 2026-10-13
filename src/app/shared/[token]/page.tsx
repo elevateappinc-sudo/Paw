@@ -1,12 +1,16 @@
+import type { Metadata } from "next";
+import { Clock, Lock, Stethoscope } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { Stethoscope } from "lucide-react";
+import { Card, Divider, EmptyState, Tag } from "@/components/ui";
 import type { ClinicalRecord } from "@/types";
+
+export const metadata: Metadata = { title: "Historial compartido" };
 
 const VISIT_TYPE_LABELS: Record<string, string> = {
   consulta_general: "Consulta general",
   emergencia: "Emergencia",
   cirugia: "Cirugía",
-  control_rutina: "Control rutina",
+  control_rutina: "Control de rutina",
   peluqueria: "Peluquería",
   otro: "Otro",
 };
@@ -21,245 +25,85 @@ interface PageProps {
   params: Promise<{ token: string }>;
 }
 
+function Unavailable({ icon, description }: { icon: React.ReactNode; description: string }) {
+  return (
+    <main className="flex min-h-dvh items-center justify-center bg-bg px-5">
+      <EmptyState tone="neutral" icon={icon} title="Este historial ya no está disponible" description={description} />
+    </main>
+  );
+}
+
+function Field({ label, value }: { label: string; value: string }) {
+  return (
+    <p className="mt-1.5 text-[14px] text-on">
+      <span className="mr-1 text-[11px] font-bold uppercase tracking-wider text-on-variant">{label}</span>
+      {value}
+    </p>
+  );
+}
+
 export default async function SharedHistorialPage({ params }: PageProps) {
   const { token } = await params;
   const supabase = await createClient();
 
-  // Look up the share token
-  const { data: tokenData, error: tokenError } = await supabase
-    .from("share_tokens")
-    .select("*")
-    .eq("token", token)
-    .single();
+  const { data: tokenData, error: tokenError } = await supabase.from("share_tokens").select("*").eq("token", token).single();
 
   if (tokenError || !tokenData) {
-    return (
-      <div
-        style={{
-          minHeight: "100dvh",
-          background: "#000",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif",
-        }}
-      >
-        <div style={{ textAlign: "center", padding: "0 24px" }}>
-          <p style={{ fontSize: 48, marginBottom: 16 }}>🔒</p>
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: "#fff", margin: "0 0 12px" }}>
-            Este historial ya no está disponible
-          </h1>
-          <p style={{ fontSize: 15, color: "rgba(235,235,245,0.5)", margin: 0 }}>
-            El enlace expiró o no es válido.
-          </p>
-        </div>
-      </div>
-    );
+    return <Unavailable icon={<Lock size={24} />} description="El enlace expiró o no es válido." />;
   }
 
-  // Check expiry
   const expiresAt = new Date(tokenData.expires_at as string);
   if (expiresAt < new Date()) {
-    return (
-      <div
-        style={{
-          minHeight: "100dvh",
-          background: "#000",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif",
-        }}
-      >
-        <div style={{ textAlign: "center", padding: "0 24px" }}>
-          <p style={{ fontSize: 48, marginBottom: 16 }}>⏰</p>
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: "#fff", margin: "0 0 12px" }}>
-            Este historial ya no está disponible
-          </h1>
-          <p style={{ fontSize: 15, color: "rgba(235,235,245,0.5)", margin: 0 }}>
-            El enlace de 24 horas ha expirado.
-          </p>
-        </div>
-      </div>
-    );
+    return <Unavailable icon={<Clock size={24} />} description="El enlace de 24 horas ha expirado." />;
   }
 
-  // Fetch pet
-  const { data: pet } = await supabase
-    .from("pets")
-    .select("name, emoji, color")
-    .eq("id", tokenData.pet_id as string)
-    .single();
-
-  // Fetch records
-  const { data: records } = await supabase
-    .from("clinical_records")
-    .select("*")
-    .eq("pet_id", tokenData.pet_id as string)
-    .order("visit_date", { ascending: false });
+  const { data: pet } = await supabase.from("pets").select("name, emoji, color").eq("id", tokenData.pet_id as string).single();
+  const { data: records } = await supabase.from("clinical_records").select("*").eq("pet_id", tokenData.pet_id as string).order("visit_date", { ascending: false });
 
   const petName = (pet as { name: string } | null)?.name ?? "Mascota";
-  const accentColor = (pet as { color: string } | null)?.color ?? "#0a84ff";
+  const list = (records ?? []) as ClinicalRecord[];
 
   return (
-    <div
-      style={{
-        minHeight: "100dvh",
-        background: "#000",
-        fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif",
-        paddingBottom: 40,
-      }}
-    >
-      {/* Header */}
-      <div style={{ padding: "56px 24px 32px" }}>
-        <p
-          style={{
-            fontSize: 12,
-            fontWeight: 600,
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-            color: "rgba(235,235,245,0.4)",
-            margin: "0 0 8px",
-          }}
-        >
-          {petName}
-        </p>
-        <h1
-          style={{
-            fontSize: 34,
-            fontWeight: 700,
-            color: "#fff",
-            margin: 0,
-            letterSpacing: -0.5,
-          }}
-        >
-          Historial Clínico
-        </h1>
-        <p style={{ fontSize: 14, color: "rgba(235,235,245,0.35)", marginTop: 6, marginBottom: 0 }}>
+    <main className="mx-auto min-h-dvh w-full max-w-[640px] bg-bg pb-10">
+      <header className="px-4 pt-[max(24px,env(safe-area-inset-top))] pb-4">
+        <div className="text-[13px] font-semibold text-on-variant">{petName}</div>
+        <h1 className="font-display text-[30px] leading-[1.1] text-on">Historial clínico</h1>
+        <Tag className="mt-2" tone="info" size="xs">
           Solo lectura · compartido
-        </p>
-      </div>
+        </Tag>
+      </header>
 
-      <div style={{ padding: "0 16px" }}>
-        {!records || records.length === 0 ? (
-          <div
-            style={{
-              textAlign: "center",
-              padding: "48px 24px",
-              background: "#1c1c1e",
-              borderRadius: 20,
-            }}
-          >
-            <Stethoscope size={40} color="rgba(235,235,245,0.2)" />
-            <p style={{ fontSize: 17, fontWeight: 600, color: "#fff", marginTop: 16 }}>
-              Sin registros clínicos
-            </p>
-          </div>
+      <div className="px-4">
+        {list.length === 0 ? (
+          <Card>
+            <EmptyState compact tone="neutral" icon={<Stethoscope size={24} />} title="Sin registros clínicos" />
+          </Card>
         ) : (
-          <div
-            style={{
-              background: "#1c1c1e",
-              borderRadius: 16,
-              overflow: "hidden",
-            }}
-          >
-            {(records as ClinicalRecord[]).map((r, i) => (
-              <div key={r.id}>
-                {i > 0 && (
-                  <div
-                    style={{
-                      height: 1,
-                      background: "rgba(84,84,88,0.65)",
-                      marginLeft: 60,
-                    }}
-                  />
-                )}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "flex-start",
-                    gap: 12,
-                    padding: "16px",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: 12,
-                      flexShrink: 0,
-                      background: `${accentColor}18`,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Stethoscope size={20} color={accentColor} />
+          <Card padded={false} className="overflow-hidden">
+            {list.map((r, i) => (
+              <article key={r.id}>
+                {i > 0 && <Divider className="ml-[72px] mr-0" />}
+                <div className="flex items-start gap-3 px-4 py-4">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-primary-container text-on-primary-container">
+                    <Stethoscope size={20} aria-hidden="true" />
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: 16, fontWeight: 600, color: "#fff", margin: 0 }}>
-                      {VISIT_TYPE_LABELS[r.visit_type] ?? r.visit_type}
-                    </p>
-                    <p
-                      style={{
-                        fontSize: 13,
-                        color: "rgba(235,235,245,0.5)",
-                        margin: "2px 0 0",
-                      }}
-                    >
+                  <div className="min-w-0 flex-1">
+                    <h2 className="text-[16px] font-bold text-on">{VISIT_TYPE_LABELS[r.visit_type] ?? r.visit_type}</h2>
+                    <p className="text-[13px] text-on-variant">
                       {formatDate(r.visit_date)}
                       {r.vet_name && ` · ${r.vet_name}`}
                       {r.clinic_name && ` · ${r.clinic_name}`}
                     </p>
-                    {r.diagnosis && (
-                      <p
-                        style={{
-                          fontSize: 14,
-                          color: "rgba(235,235,245,0.65)",
-                          margin: "6px 0 0",
-                        }}
-                      >
-                        <strong style={{ color: "rgba(235,235,245,0.4)", fontSize: 11 }}>
-                          DIAGNÓSTICO:
-                        </strong>{" "}
-                        {r.diagnosis}
-                      </p>
-                    )}
-                    {r.treatment && (
-                      <p
-                        style={{
-                          fontSize: 14,
-                          color: "rgba(235,235,245,0.65)",
-                          margin: "4px 0 0",
-                        }}
-                      >
-                        <strong style={{ color: "rgba(235,235,245,0.4)", fontSize: 11 }}>
-                          TRATAMIENTO:
-                        </strong>{" "}
-                        {r.treatment}
-                      </p>
-                    )}
-                    {r.notes && (
-                      <p
-                        style={{
-                          fontSize: 14,
-                          color: "rgba(235,235,245,0.65)",
-                          margin: "4px 0 0",
-                        }}
-                      >
-                        <strong style={{ color: "rgba(235,235,245,0.4)", fontSize: 11 }}>
-                          NOTAS:
-                        </strong>{" "}
-                        {r.notes}
-                      </p>
-                    )}
+                    {r.diagnosis && <Field label="Diagnóstico" value={r.diagnosis} />}
+                    {r.treatment && <Field label="Tratamiento" value={r.treatment} />}
+                    {r.notes && <Field label="Notas" value={r.notes} />}
                   </div>
                 </div>
-              </div>
+              </article>
             ))}
-          </div>
+          </Card>
         )}
       </div>
-    </div>
+    </main>
   );
 }

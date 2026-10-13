@@ -1,12 +1,12 @@
 "use client";
 import { useState } from "react";
+import { ChevronDown, ChevronUp, Pencil, Trash2, X } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useStore } from "@/store";
 import { formatCurrency, formatDate, getMonthKey, getMonthLabel } from "@/lib/utils";
-import { Pencil, Trash2, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Button, Card, Divider, Row, Tag, showToast } from "@/components/ui";
 import { GastoForm } from "./GastoForm";
 import type { Gasto } from "@/types";
-
-const FONT = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
 
 interface MonthDetailProps {
   month: string;
@@ -14,15 +14,12 @@ interface MonthDetailProps {
 }
 
 export function MonthDetail({ month, onClose }: MonthDetailProps) {
-  const { gastos, deleteGasto, selectedPetId, pets } = useStore();
+  const { gastos, deleteGasto, selectedPetId } = useStore();
   const [editGasto, setEditGasto] = useState<Gasto | null>(null);
   const [expandedConcepto, setExpandedConcepto] = useState<string | null>(null);
+  const reduce = useReducedMotion();
 
-  const pet = pets.find((p) => p.id === selectedPetId);
-  const accentColor = pet?.color ?? "#0a84ff";
-
-  const petGastos = gastos.filter((g) => g.petId === selectedPetId);
-  const monthGastos = petGastos.filter((g) => getMonthKey(g.fecha) === month);
+  const monthGastos = gastos.filter((g) => g.petId === selectedPetId && getMonthKey(g.fecha) === month);
 
   const byConcepto: Record<string, Gasto[]> = {};
   for (const g of monthGastos) {
@@ -32,118 +29,90 @@ export function MonthDetail({ month, onClose }: MonthDetailProps) {
 
   const total = monthGastos.reduce((sum, g) => sum + g.monto, 0);
 
+  async function handleDelete(id: string) {
+    try {
+      await deleteGasto(id);
+    } catch {
+      showToast("No se pudo eliminar el gasto", () => void handleDelete(id), "error");
+    }
+  }
+
   return (
-    <>
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, fontFamily: FONT }}>
-        <div>
-          <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(235,235,245,0.4)", margin: 0 }}>
-            Detalle
-          </p>
-          <h2 style={{ fontSize: 18, fontWeight: 700, color: "#fff", margin: "4px 0 0" }}>{getMonthLabel(month)}</h2>
+    <Card padded={false} className="overflow-hidden">
+      <div className="flex items-center justify-between gap-3 px-4 pt-4 pb-2">
+        <div className="min-w-0">
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-on-variant">Detalle</div>
+          <h3 className="font-display text-[18px] capitalize leading-tight text-on">{getMonthLabel(month)}</h3>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ fontSize: 17, fontWeight: 700, color: accentColor }}>{formatCurrency(total)}</span>
-          <button onClick={onClose}
-            style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(255,255,255,0.08)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <X size={14} color="rgba(235,235,245,0.5)" />
-          </button>
+        <div className="flex items-center gap-2">
+          <span className="text-[17px] font-bold text-primary">{formatCurrency(total)}</span>
+          <Button variant="secondary" size="icon" onClick={onClose} aria-label="Cerrar detalle del mes" className="min-h-[36px] min-w-[36px]">
+            <X size={16} />
+          </Button>
         </div>
       </div>
 
-      {monthGastos.length === 0 && (
-        <p style={{ textAlign: "center", padding: "32px 0", fontSize: 14, color: "rgba(235,235,245,0.3)", fontFamily: FONT }}>
-          No hay gastos en este mes
-        </p>
-      )}
+      {monthGastos.length === 0 && <p className="px-4 py-8 text-center text-[14px] text-on-variant">No hay gastos en este mes</p>}
 
-      {/* Groups */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {Object.entries(byConcepto).map(([concepto, items]) => {
-          const subtotal = items.reduce((s, g) => s + g.monto, 0);
-          const isExpanded = expandedConcepto === concepto;
-
-          return (
-            <div key={concepto} style={{ background: "#2c2c2e", borderRadius: 13, overflow: "hidden" }}>
-              {/* Group header */}
-              <button
-                onClick={() => setExpandedConcepto(isExpanded ? null : concepto)}
-                style={{
-                  width: "100%", display: "flex", alignItems: "center", gap: 12,
-                  padding: "13px 16px", background: "transparent", border: "none",
-                  cursor: "pointer", fontFamily: FONT,
-                }}
-              >
-                <div style={{
-                  width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                  background: `${accentColor}18`,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 14, fontWeight: 700, color: accentColor,
-                }}>
-                  {concepto.charAt(0)}
-                </div>
-                <div style={{ flex: 1, textAlign: "left" }}>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: "#fff", margin: 0 }}>{concepto}</p>
-                  <p style={{ fontSize: 12, color: "rgba(235,235,245,0.5)", margin: 0 }}>
-                    {items.length} registro{items.length !== 1 ? "s" : ""}
-                  </p>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{formatCurrency(subtotal)}</span>
-                  {isExpanded
-                    ? <ChevronUp size={15} color="rgba(235,235,245,0.4)" />
-                    : <ChevronDown size={15} color="rgba(235,235,245,0.4)" />}
-                </div>
-              </button>
-
-              {/* Expanded items */}
+      {Object.entries(byConcepto).map(([concepto, items], idx) => {
+        const subtotal = items.reduce((s, g) => s + g.monto, 0);
+        const isExpanded = expandedConcepto === concepto;
+        return (
+          <div key={concepto}>
+            {idx > 0 && <Divider />}
+            <Row
+              icon={<span className="text-[15px] font-bold">{concepto.charAt(0).toUpperCase()}</span>}
+              iconTone="primary"
+              title={concepto}
+              subtitle={`${items.length} registro${items.length !== 1 ? "s" : ""}`}
+              onClick={() => setExpandedConcepto(isExpanded ? null : concepto)}
+              trailing={
+                <span className="flex items-center gap-2 text-[15px] font-bold text-on">
+                  {formatCurrency(subtotal)}
+                  {isExpanded ? <ChevronUp size={16} className="text-on-variant" /> : <ChevronDown size={16} className="text-on-variant" />}
+                </span>
+              }
+            />
+            <AnimatePresence initial={false}>
               {isExpanded && (
-                <div style={{ borderTop: "1px solid rgba(84,84,88,0.35)" }}>
+                <motion.div
+                  initial={reduce ? false : { height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={reduce ? undefined : { height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden bg-surface-2/60"
+                >
                   {items.map((g, i) => (
                     <div key={g.id}>
-                      {i > 0 && <div style={{ height: 1, background: "rgba(84,84,88,0.25)", marginLeft: 16 }} />}
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px" }}>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                            <span style={{ fontSize: 14, fontWeight: 600, color: "#fff", fontFamily: FONT }}>
-                              {formatCurrency(g.monto)}
-                            </span>
-                            <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 999, background: "rgba(255,255,255,0.07)", color: "rgba(235,235,245,0.5)" }}>
-                              {formatDate(g.fecha)}
-                            </span>
-                            <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 999, background: `${accentColor}18`, color: accentColor }}>
-                              {g.quien}
-                            </span>
+                      {i > 0 && <Divider className="ml-4 mr-0" />}
+                      <div className="flex items-center justify-between gap-2 px-4 py-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="text-[14px] font-bold text-on">{formatCurrency(g.monto)}</span>
+                            <Tag size="xs">{formatDate(g.fecha)}</Tag>
+                            <Tag size="xs" tone="primary">{g.quien}</Tag>
                           </div>
-                          {g.notas && (
-                            <p style={{ fontSize: 12, marginTop: 4, color: "rgba(235,235,245,0.3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: FONT }}>
-                              {g.notas}
-                            </p>
-                          )}
+                          {g.notas && <p className="mt-1 truncate text-[12px] text-on-variant">{g.notas}</p>}
                         </div>
-                        <div style={{ display: "flex", gap: 6, marginLeft: 8 }}>
-                          <button onClick={() => setEditGasto(g)}
-                            style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,255,255,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <Pencil size={12} color="rgba(235,235,245,0.5)" />
-                          </button>
-                          <button onClick={() => deleteGasto(g.id)}
-                            style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,69,58,0.12)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <Trash2 size={12} color="#ff453a" />
-                          </button>
+                        <div className="flex shrink-0 gap-1">
+                          <Button variant="secondary" size="icon" aria-label={`Editar gasto de ${g.concepto}`} onClick={() => setEditGasto(g)}>
+                            <Pencil size={15} />
+                          </Button>
+                          <Button variant="dangerTonal" size="icon" aria-label={`Eliminar gasto de ${g.concepto}`} onClick={() => void handleDelete(g.id)} className="border-transparent">
+                            <Trash2 size={15} />
+                          </Button>
                         </div>
                       </div>
                     </div>
                   ))}
-                </div>
+                </motion.div>
               )}
-            </div>
-          );
-        })}
-      </div>
+            </AnimatePresence>
+          </div>
+        );
+      })}
 
-      {editGasto && (
-        <GastoForm editGasto={editGasto} onClose={() => setEditGasto(null)} accentColor={accentColor} />
-      )}
-    </>
+      {editGasto && <GastoForm key={editGasto.id} open onClose={() => setEditGasto(null)} editGasto={editGasto} />}
+    </Card>
   );
 }

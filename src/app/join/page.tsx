@@ -1,25 +1,34 @@
 "use client";
 import { useEffect, useState, Suspense } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { CheckCircle, XCircle, Clock, LogIn, PawPrint } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { PawPrint, CheckCircle, XCircle, Clock, LogIn } from "lucide-react";
-
-const FONT = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
-const ACCENT = "#0a84ff";
+import { cn } from "@/lib/utils";
+import { Button, Card, EmptyState, Skeleton } from "@/components/ui";
 
 type JoinState = "loading" | "needs-auth" | "invalid-token" | "already-member" | "own-pet" | "pending" | "ready" | "error";
 
-interface BusinessInfo { id: string; name: string; description: string | null; owner_id: string; }
-interface PetInfo { id: string; name: string; emoji: string; owner_id: string; }
+interface BusinessInfo {
+  id: string;
+  name: string;
+  description: string | null;
+  owner_id: string;
+}
+interface PetInfo {
+  id: string;
+  name: string;
+  emoji: string;
+  owner_id: string;
+}
 
-function StatusCard({ icon, title, message, children }: { icon: React.ReactNode; title: string; message: string; children?: React.ReactNode }) {
+function JoinSkeleton() {
   return (
-    <div style={{ textAlign: "center", background: "rgba(255,255,255,0.06)", borderRadius: 20, padding: "32px 24px" }}>
-      <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>{icon}</div>
-      <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#fff" }}>{title}</h2>
-      <p style={{ margin: "10px 0 0", fontSize: 15, color: "rgba(235,235,245,0.6)", lineHeight: 1.5 }}>{message}</p>
-      {children}
+    <div className="flex w-full max-w-[400px] flex-col items-center gap-6" aria-busy="true" aria-label="Cargando">
+      <Skeleton className="h-16 w-16 rounded-card-lg" />
+      <Skeleton className="h-[200px] w-full rounded-card-lg" />
     </div>
   );
 }
@@ -36,8 +45,14 @@ function JoinContent() {
   const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
-    if (!token) { setState("invalid-token"); return; }
-    if (!user) { setState("needs-auth"); return; }
+    if (!token) {
+      setState("invalid-token");
+      return;
+    }
+    if (!user) {
+      setState("needs-auth");
+      return;
+    }
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, user]);
@@ -46,12 +61,19 @@ function JoinContent() {
     setState("loading");
     const supabase = createClient();
     const { data: biz } = await supabase.from("businesses").select("id, name, description, owner_id").eq("qr_token", token!).single();
-    if (!biz) { setState("invalid-token"); return; }
+    if (!biz) {
+      setState("invalid-token");
+      return;
+    }
     const bizData = biz as BusinessInfo;
     setBusiness(bizData);
     const { data: pets } = await supabase.from("pets").select("id, name, emoji, user_id").eq("user_id", bizData.owner_id);
-    const list: PetInfo[] = ((pets ?? []) as Array<{ id: string; name: string; emoji: string; user_id: string }>)
-      .map((p) => ({ id: p.id, name: p.name, emoji: p.emoji, owner_id: p.user_id }));
+    const list: PetInfo[] = ((pets ?? []) as Array<{ id: string; name: string; emoji: string; user_id: string }>).map((p) => ({
+      id: p.id,
+      name: p.name,
+      emoji: p.emoji,
+      owner_id: p.user_id,
+    }));
     setOwnerPets(list);
     if (list.length === 1) setSelectedPetId(list[0].id);
     setState("ready");
@@ -62,79 +84,140 @@ function JoinContent() {
     setJoining(true);
     const supabase = createClient();
     const targetPet = ownerPets.find((p) => p.id === selectedPetId);
-    if (targetPet?.owner_id === user.id) { setState("own-pet"); setJoining(false); return; }
+    if (targetPet?.owner_id === user.id) {
+      setState("own-pet");
+      setJoining(false);
+      return;
+    }
     const { data: existing } = await supabase.from("pet_members").select("id, status").eq("pet_id", selectedPetId).eq("member_id", user.id).single();
     if (existing) {
       const ex = existing as { id: string; status: string };
-      if (ex.status === "active") { setState("already-member"); setJoining(false); return; }
-      if (ex.status === "pending") { setState("pending"); setJoining(false); return; }
+      if (ex.status === "active") {
+        setState("already-member");
+        setJoining(false);
+        return;
+      }
+      if (ex.status === "pending") {
+        setState("pending");
+        setJoining(false);
+        return;
+      }
     }
     const { error } = await supabase.from("pet_members").insert({ pet_id: selectedPetId, member_id: user.id, business_id: business.id, status: "pending" });
     if (error) {
       if (error.code === "23505") setState("already-member");
-      else { setErrorMsg(error.message); setState("error"); }
+      else {
+        setErrorMsg(error.message);
+        setState("error");
+      }
     } else {
       setState("pending");
     }
     setJoining(false);
   }
 
+  if (state === "loading") return <JoinSkeleton />;
+
   return (
-    <div style={{ minHeight: "100dvh", background: "#000", fontFamily: FONT, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 20px" }}>
-      <div style={{ width: "100%", maxWidth: 400 }}>
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: 32 }}>
-          <div style={{ width: 64, height: 64, borderRadius: 18, background: "linear-gradient(145deg, #0a84ff, #0052cc)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <PawPrint size={30} color="#fff" />
-          </div>
-        </div>
-
-        {state === "loading" && <p style={{ textAlign: "center", color: "rgba(235,235,245,0.5)" }}>Cargando\u2026</p>}
-        {state === "invalid-token" && <StatusCard icon={<XCircle size={40} color="#ff453a" />} title="QR no v\u00e1lido" message="Este c\u00f3digo QR ya no es v\u00e1lido. Solicita el actualizado al negocio." />}
-        {state === "needs-auth" && (
-          <StatusCard icon={<LogIn size={40} color={ACCENT} />} title="Inicia sesi\u00f3n primero" message="Necesitas una cuenta en PAW para vincularte.">
-            <a href="/" style={{ display: "block", marginTop: 16, textAlign: "center", color: ACCENT, fontSize: 15, fontWeight: 600, textDecoration: "none" }}>Ir a la app \u2192</a>
-          </StatusCard>
-        )}
-        {state === "already-member" && <StatusCard icon={<CheckCircle size={40} color="#34c759" />} title="Acceso existente" message="Ya tienes acceso a esta mascota" />}
-        {state === "own-pet" && <StatusCard icon={<XCircle size={40} color="#ff9f0a" />} title="No permitido" message="No puedes vincularte a tu propia mascota" />}
-        {state === "pending" && <StatusCard icon={<Clock size={40} color="#ff9f0a" />} title="Solicitud enviada" message="Solicitud enviada. El due\u00f1o debe aceptar para que tengas acceso." />}
-        {state === "error" && <StatusCard icon={<XCircle size={40} color="#ff453a" />} title="Error" message={errorMsg || "Ocurri\u00f3 un error inesperado."} />}
-
-        {state === "ready" && business && (
-          <div>
-            <div style={{ textAlign: "center", marginBottom: 24 }}>
-              <h1 style={{ fontSize: 24, fontWeight: 700, color: "#fff", margin: 0 }}>Vincularte a {business.name}</h1>
-              {business.description && <p style={{ color: "rgba(235,235,245,0.5)", fontSize: 14, marginTop: 8 }}>{business.description}</p>}
-            </div>
-            {ownerPets.length > 1 && (
-              <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 14, overflow: "hidden", marginBottom: 16 }}>
-                <p style={{ padding: "12px 16px 8px", margin: 0, fontSize: 12, color: "rgba(235,235,245,0.5)", textTransform: "uppercase", letterSpacing: 1 }}>Selecciona la mascota</p>
-                {ownerPets.map((p) => (
-                  <button key={p.id} onClick={() => setSelectedPetId(p.id)}
-                    style={{ width: "100%", padding: "12px 16px", background: selectedPetId === p.id ? `${ACCENT}22` : "none", border: "none", borderTop: "1px solid rgba(84,84,88,0.4)", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, textAlign: "left" }}>
-                    <span style={{ fontSize: 24 }}>{p.emoji}</span>
-                    <span style={{ fontSize: 16, color: "#fff", fontWeight: selectedPetId === p.id ? 600 : 400 }}>{p.name}</span>
-                    {selectedPetId === p.id && <CheckCircle size={16} color={ACCENT} style={{ marginLeft: "auto" }} />}
-                  </button>
-                ))}
-              </div>
-            )}
-            {ownerPets.length === 0 && <p style={{ textAlign: "center", color: "rgba(235,235,245,0.5)", fontSize: 14, marginBottom: 16 }}>Este negocio no tiene mascotas registradas.</p>}
-            <button onClick={handleJoin} disabled={joining || !selectedPetId}
-              style={{ width: "100%", padding: "14px", borderRadius: 14, background: selectedPetId ? ACCENT : "rgba(255,255,255,0.06)", border: "none", color: "#fff", fontSize: 16, fontWeight: 600, cursor: joining || !selectedPetId ? "not-allowed" : "pointer", opacity: joining ? 0.6 : 1 }}>
-              {joining ? "Enviando solicitud\u2026" : "Solicitar acceso"}
-            </button>
-          </div>
-        )}
+    <div className="flex w-full max-w-[400px] flex-col gap-6">
+      <div className="flex justify-center">
+        <Image src="/icon.svg" alt="Paw" width={64} height={64} priority className="h-16 w-16 rounded-card-lg shadow-2" />
       </div>
+
+      {state === "invalid-token" && (
+        <Card elevation={2}>
+          <EmptyState compact tone="danger" icon={<XCircle size={26} />} title="Código no válido" description="Este código QR ya no es válido. Pide al negocio el actualizado." />
+        </Card>
+      )}
+      {state === "needs-auth" && (
+        <Card elevation={2}>
+          <EmptyState
+            compact
+            icon={<LogIn size={26} />}
+            title="Inicia sesión primero"
+            description="Necesitas una cuenta en Paw para vincularte."
+            action={
+              <Link href="/login" className="block">
+                <Button full>Ir a iniciar sesión</Button>
+              </Link>
+            }
+          />
+        </Card>
+      )}
+      {state === "already-member" && (
+        <Card elevation={2}>
+          <EmptyState compact tone="info" icon={<CheckCircle size={26} />} title="Ya tienes acceso" description="Esta mascota ya está vinculada a tu cuenta." secondary={<Link href="/home">Ir al inicio</Link>} />
+        </Card>
+      )}
+      {state === "own-pet" && (
+        <Card elevation={2}>
+          <EmptyState compact tone="warn" icon={<XCircle size={26} />} title="No permitido" description="No puedes vincularte a tu propia mascota." />
+        </Card>
+      )}
+      {state === "pending" && (
+        <Card elevation={2}>
+          <EmptyState compact tone="warn" icon={<Clock size={26} />} title="Solicitud enviada" description="La persona dueña debe aceptarla para que tengas acceso." secondary={<Link href="/home">Ir al inicio</Link>} />
+        </Card>
+      )}
+      {state === "error" && (
+        <Card elevation={2}>
+          <EmptyState compact tone="danger" icon={<XCircle size={26} />} title="Algo salió mal" description={errorMsg || "Ocurrió un error inesperado."} action={<Button full onClick={() => void load()}>Reintentar</Button>} />
+        </Card>
+      )}
+
+      {state === "ready" && business && (
+        <Card elevation={2} className="flex flex-col gap-4">
+          <div className="text-center">
+            <h1 className="font-display text-[24px] leading-tight text-on">Vincularte a {business.name}</h1>
+            {business.description && <p className="mt-2 text-[14px] text-on-variant">{business.description}</p>}
+          </div>
+
+          {ownerPets.length > 1 && (
+            <fieldset>
+              <legend className="mb-2 text-[13px] font-semibold text-on-variant">Elige la mascota</legend>
+              <div className="flex flex-col gap-2" role="radiogroup">
+                {ownerPets.map((p) => {
+                  const on = selectedPetId === p.id;
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={on}
+                      onClick={() => setSelectedPetId(p.id)}
+                      className={cn(
+                        "flex min-h-[56px] items-center gap-3 rounded-control border px-4 text-left transition-colors",
+                        on ? "border-primary bg-primary-container text-on-primary-container" : "border-outline-variant bg-surface text-on"
+                      )}
+                    >
+                      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-2 text-on-variant">
+                        <PawPrint size={18} aria-hidden="true" />
+                      </span>
+                      <span className="flex-1 text-[16px] font-bold">{p.name}</span>
+                      {on && <CheckCircle size={18} aria-hidden="true" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </fieldset>
+          )}
+          {ownerPets.length === 0 && <p className="text-center text-[14px] text-on-variant">Este negocio no tiene mascotas registradas.</p>}
+
+          <Button size="lg" full onClick={() => void handleJoin()} loading={joining} disabled={!selectedPetId}>
+            Solicitar acceso
+          </Button>
+        </Card>
+      )}
     </div>
   );
 }
 
 export default function JoinPage() {
   return (
-    <Suspense fallback={<div style={{ minHeight: "100dvh", background: "#000", display: "flex", alignItems: "center", justifyContent: "center" }}><PawPrint size={40} color="#0a84ff" /></div>}>
-      <JoinContent />
-    </Suspense>
+    <main className="flex min-h-dvh flex-col items-center justify-center bg-bg px-5 py-8">
+      <Suspense fallback={<JoinSkeleton />}>
+        <JoinContent />
+      </Suspense>
+    </main>
   );
 }
