@@ -55,12 +55,12 @@ export function ResenasTab({ business }: { business: Business }) {
   if (loading) {
     return (
       <div className="flex flex-col gap-3">
-        <Skeleton className="h-[110px] rounded-card-lg" />
-        <Skeleton className="h-[110px] rounded-card-lg" />
+        <Skeleton className="h-[110px] rounded-md" />
+        <Skeleton className="h-[110px] rounded-md" />
       </div>
     );
   }
-  if (error) return <EmptyState tone="danger" compact title="Algo salió mal" description={error} action={<Button full onClick={load}>Reintentar</Button>} />;
+  if (error) return <EmptyState compact title="Algo salió mal" description={error} action={<Button full onClick={load}>Reintentar</Button>} />;
   if (reviews.length === 0) return <EmptyState compact title="Aún no tienes reseñas" description="Pide a tus clientes que te califiquen desde la app después de una cita." />;
 
   return (
@@ -69,23 +69,23 @@ export function ResenasTab({ business }: { business: Business }) {
         <Card key={r.id}>
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <div className="truncate text-[15px] font-bold text-on">
+              <div className="truncate text-body font-semibold text-text">
                 {r.users?.display_name ?? "Cliente"}
-                {r.pets?.name ? <span className="font-semibold text-on-variant"> · {r.pets.name}</span> : null}
+                {r.pets?.name ? <span className="font-semibold text-text-secondary"> · {r.pets.name}</span> : null}
               </div>
-              <div className="text-[12px] text-on-variant">{relativeTime(r.created_at)}</div>
+              <div className="text-label text-text-secondary">{relativeTime(r.created_at)}</div>
             </div>
             <Rating value={Number(r.rating)} />
           </div>
-          {r.body && <p className="mt-2 text-[15px] text-on">{r.body}</p>}
+          {r.body && <p className="mt-2 text-body text-text">{r.body}</p>}
           {r.reply ? (
-            <div className="mt-3 rounded-control bg-surface-2 px-3 py-2 text-[14px] text-on">
-              <div className="text-[11px] font-semibold text-on-variant">Tu respuesta</div>
+            <div className="mt-3 rounded-md bg-surface-elevated px-3 py-2 text-body text-text">
+              <div className="text-label font-semibold text-text-secondary">Tu respuesta</div>
               {r.reply}
-              <button type="button" onClick={() => openReply(r)} className="mt-1 block text-[13px] font-bold text-primary">Editar</button>
+              <button type="button" onClick={() => openReply(r)} className="mt-1 block text-small font-semibold text-primary-text">Editar</button>
             </div>
           ) : (
-            <Button variant="tonal" size="sm" className="mt-3" leading={<MessageSquareReply size={16} aria-hidden="true" />} onClick={() => openReply(r)}>
+            <Button variant="secondary" size="sm" className="mt-3" leading={<MessageSquareReply size={16} aria-hidden="true" />} onClick={() => openReply(r)}>
               Responder
             </Button>
           )}
@@ -99,7 +99,7 @@ export function ResenasTab({ business }: { business: Business }) {
         subtitle={target ? `${target.users?.display_name ?? "Cliente"} · ${target.rating} de 5` : undefined}
         footer={<Button full size="lg" onClick={submit} loading={saving} disabled={!reply.trim()}>Publicar respuesta</Button>}
       >
-        {target?.body && <p className="mb-3 rounded-control bg-surface-2 px-3 py-2 text-[14px] text-on-variant">{target.body}</p>}
+        {target?.body && <p className="mb-3 rounded-md bg-surface-elevated px-3 py-2 text-body text-text-secondary">{target.body}</p>}
         <Textarea label="Tu respuesta" placeholder="Gracias por tu visita…" value={reply} onChange={(e) => setReply(e.target.value)} rows={4} />
       </Sheet>
     </div>

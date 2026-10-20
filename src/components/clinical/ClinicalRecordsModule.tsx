@@ -2,7 +2,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useStore } from "@/store";
 import { createClient } from "@/lib/supabase/client";
-import { Stethoscope, Plus, Pencil, Trash2, FileText, Image as ImageIcon, Share2, Upload, Link as LinkIcon, Eye, ChevronRight, Check } from "lucide-react";
+import { Plus, Pencil, Trash2, FileText, Image as ImageIcon, Share2, Upload, Link as LinkIcon, Eye, ChevronRight, Check } from "lucide-react";
+import { PetHealth } from "@/components/icons/pet";
 import { motion } from "motion/react";
 import type { ClinicalRecord, ClinicalDocument, VisitType } from "@/types";
 import { PageHeader, Button, Card, Row, Divider, Sheet, Input, Select, Textarea, EmptyState, Skeleton, SkeletonRow, Tag } from "@/components/ui";
@@ -45,13 +46,13 @@ function DocumentItem({ doc, onDelete }: { doc: ClinicalDocument; onDelete: (doc
 
   return (
     <>
-      <div className="flex items-center gap-3 px-4 py-2.5">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-info-container text-info">
+      <div className="flex items-center gap-3 px-4 py-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-info-soft text-info-text">
           {isPDF ? <FileText size={18} /> : <ImageIcon size={18} />}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[14px] font-bold text-on">{doc.file_name}</p>
-          {doc.file_size_bytes && <p className="text-[12px] text-on-variant">{(doc.file_size_bytes / 1024).toFixed(0)} KB</p>}
+          <p className="truncate text-body font-semibold text-text">{doc.file_name}</p>
+          {doc.file_size_bytes && <p className="text-label text-text-secondary">{(doc.file_size_bytes / 1024).toFixed(0)} KB</p>}
         </div>
         <div className="flex shrink-0 gap-1">
           <Button
@@ -71,9 +72,9 @@ function DocumentItem({ doc, onDelete }: { doc: ClinicalDocument; onDelete: (doc
         </div>
       </div>
       {lightbox && (
-        <div role="dialog" aria-label={doc.file_name} onClick={() => setLightbox(false)} className="fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(34,28,23,0.92)] p-4">
+        <div role="dialog" aria-label={doc.file_name} onClick={() => setLightbox(false)} className="fixed inset-0 z-[200] flex items-center justify-center bg-scrim-strong p-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={doc.file_url} alt={doc.file_name} className="max-h-[90vh] max-w-[90vw] rounded-card object-contain" />
+          <img src={doc.file_url} alt={doc.file_name} className="max-h-[90vh] max-w-[90vw] rounded-md object-contain" />
         </div>
       )}
     </>
@@ -166,7 +167,7 @@ function ClinicalRecordForm({ open, petId, userId, vacunas, editRecord, onClose,
         {vacunas.length > 0 && (
           <Select label="Vincular vacuna (opcional)" value={vaccineId} onChange={(e) => setVaccineId(e.target.value)} placeholder="Ninguna" options={vacunas.map((v) => ({ value: v.id, label: v.nombre }))} />
         )}
-        {error && <p role="alert" className="text-[13px] font-semibold text-danger">{error}</p>}
+        {error && <p role="alert" className="text-small font-semibold text-overdue-text">{error}</p>}
         <div className="flex gap-2">
           <Button type="button" variant="secondary" onClick={onClose} className="flex-1">Cancelar</Button>
           <Button type="submit" loading={saving} className="flex-[2]">{editRecord ? "Guardar" : "Agregar"}</Button>
@@ -283,7 +284,7 @@ function DocumentsPanel({ open, record, userId, onClose }: { open: boolean; reco
       }
     >
       {loading ? (
-        <div className="rounded-card bg-surface-2">
+        <div className="rounded-md bg-surface-elevated">
           <SkeletonRow />
           <SkeletonRow />
         </div>
@@ -299,7 +300,7 @@ function DocumentsPanel({ open, record, userId, onClose }: { open: boolean; reco
           ))}
         </Card>
       )}
-      {uploadError && <p role="alert" className="mt-3 text-[13px] font-semibold text-danger">{uploadError}</p>}
+      {uploadError && <p role="alert" className="mt-3 text-small font-semibold text-overdue-text">{uploadError}</p>}
     </Sheet>
   );
 }
@@ -345,11 +346,11 @@ function RecordDetail({ record, userId, vacunas, onClose, onDeleted, onEdited }:
         subtitle={[formatDate(record.visit_date), record.vet_name, record.clinic_name].filter(Boolean).join(" · ")}
         footer={
           <div className="flex flex-col gap-2">
-            <Button variant="tonal" full onClick={() => setShowDocs(true)} leading={<FileText size={18} />}>Documentos</Button>
+            <Button variant="secondary" full onClick={() => setShowDocs(true)} leading={<FileText size={18} />}>Documentos</Button>
             <div className="flex gap-2">
               <Button variant="secondary" className="flex-1" onClick={() => setShowEdit(true)} leading={<Pencil size={16} />}>Editar</Button>
               {confirmDelete ? (
-                <Button variant="danger" className="flex-1" loading={deleting} onClick={() => void handleDelete()} leading={<Check size={16} />}>Confirmar</Button>
+                <Button variant="destructive" className="flex-1" loading={deleting} onClick={() => void handleDelete()} leading={<Check size={16} />}>Confirmar</Button>
               ) : (
                 <Button variant="dangerTonal" className="flex-1" onClick={() => setConfirmDelete(true)} leading={<Trash2 size={16} />}>Eliminar</Button>
               )}
@@ -358,13 +359,13 @@ function RecordDetail({ record, userId, vacunas, onClose, onDeleted, onEdited }:
         }
       >
         {fields.length === 0 ? (
-          <p className="py-4 text-[14px] text-on-variant">Sin detalles adicionales.</p>
+          <p className="py-4 text-body text-text-secondary">Sin detalles adicionales.</p>
         ) : (
           <div className="flex flex-col gap-4 pb-2">
             {fields.map((f) => (
               <div key={f.label}>
-                <p className="text-[12px] font-bold uppercase tracking-wide text-on-variant">{f.label}</p>
-                <p className="mt-1 whitespace-pre-wrap text-[15px] leading-relaxed text-on">{f.value}</p>
+                <p className="text-label font-semibold uppercase tracking-wide text-text-secondary">{f.label}</p>
+                <p className="mt-1 whitespace-pre-wrap text-body leading-relaxed text-text">{f.value}</p>
               </div>
             ))}
           </div>
@@ -428,9 +429,9 @@ function ShareSheet({ open, petId, userId, petName, onClose }: { open: boolean; 
       }
     >
       {link && (
-        <div className="flex items-center gap-2 rounded-control bg-surface-2 px-4 py-3">
-          <LinkIcon size={16} className="shrink-0 text-on-variant" aria-hidden="true" />
-          <p className="min-w-0 flex-1 truncate text-[13px] text-on-variant">{link}</p>
+        <div className="flex items-center gap-2 rounded-md bg-surface-elevated px-4 py-3">
+          <LinkIcon size={16} className="shrink-0 text-text-secondary" aria-hidden="true" />
+          <p className="min-w-0 flex-1 truncate text-small text-text-secondary">{link}</p>
         </div>
       )}
     </Sheet>
@@ -443,7 +444,7 @@ export function ClinicalRecordsSkeleton({ embedded }: { embedded?: boolean }) {
   return (
     <div className="flex flex-col gap-3 px-4 pb-8" aria-busy="true">
       {!embedded && (
-        <div className="flex items-end justify-between pt-[max(14px,env(safe-area-inset-top))] pb-2">
+        <div className="flex items-end justify-between pt-[max(16px,env(safe-area-inset-top))] pb-2">
           <div className="flex flex-col gap-2">
             <Skeleton className="h-3 w-16" />
             <Skeleton className="h-8 w-44" />
@@ -451,8 +452,8 @@ export function ClinicalRecordsSkeleton({ embedded }: { embedded?: boolean }) {
           <Skeleton className="h-11 w-11 rounded-full" />
         </div>
       )}
-      <Skeleton className="h-[120px] w-full rounded-card-lg" />
-      <div className="rounded-card-lg bg-surface">
+      <Skeleton className="h-[120px] w-full rounded-md" />
+      <div className="rounded-md bg-surface">
         <SkeletonRow trailing={false} />
         <SkeletonRow trailing={false} />
         <SkeletonRow trailing={false} />
@@ -540,18 +541,18 @@ export function ClinicalRecordsModule({ embedded = false }: { embedded?: boolean
           </Card>
 
           {error ? (
-            <EmptyState tone="danger" title="No pudimos cargar" description={error} action={<Button full onClick={() => void loadRecords()}>Reintentar</Button>} />
+            <EmptyState title="No pudimos cargar" description={error} action={<Button full onClick={() => void loadRecords()}>Reintentar</Button>} />
           ) : filtered.length === 0 ? (
             <EmptyState
               compact
-              icon={<Stethoscope size={26} />}
+              icon={<PetHealth size={26} />}
               title={records.length === 0 ? "Sin visitas registradas" : "Nada con esos filtros"}
               description={records.length === 0 ? `Guarda cada visita de ${pet?.name ?? "tu mascota"} al veterinario con sus documentos.` : undefined}
               action={records.length === 0 ? <Button full onClick={() => setShowForm(true)} leading={<Plus size={18} />}>Nueva visita</Button> : undefined}
             />
           ) : (
             <>
-              <p className="text-[13px] font-bold uppercase tracking-wide text-on-variant">
+              <p className="text-small font-semibold uppercase tracking-wide text-text-secondary">
                 {filtered.length} visita{filtered.length !== 1 ? "s" : ""}
               </p>
               <motion.div variants={stagger()} initial="hidden" animate="show">
@@ -560,14 +561,14 @@ export function ClinicalRecordsModule({ embedded = false }: { embedded?: boolean
                     <motion.div key={r.id} variants={fadeUp}>
                       {i > 0 && <Divider />}
                       <Row
-                        icon={<Stethoscope size={20} />}
+                        icon={<PetHealth size={20} />}
                         iconTone="primary"
                         title={VISIT_TYPE_LABELS[r.visit_type]}
                         subtitle={[formatDate(r.visit_date), r.vet_name, r.diagnosis].filter(Boolean).join(" · ")}
                         trailing={
                           <span className="flex items-center gap-2">
-                            {r.visit_type === "emergencia" && <Tag tone="danger" size="xs">Urgencia</Tag>}
-                            <ChevronRight size={18} className="text-on-variant" />
+                            {r.visit_type === "emergencia" && <Tag tone="warn" size="xs">Urgencia</Tag>}
+                            <ChevronRight size={18} className="text-text-secondary" />
                           </span>
                         }
                         onClick={() => setSelectedRecord(r)}

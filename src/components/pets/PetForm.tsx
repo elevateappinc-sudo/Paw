@@ -10,16 +10,14 @@ import { PetAvatar } from "./PetAvatar";
 import { AvatarSelector } from "./AvatarSelector";
 import { SPECIES_VARIANTS } from "@/lib/avatar";
 
-/** Colores de mascota: dato de la mascota (no del tema), por eso van en línea. */
+/** Colores de mascota: se guarda la variable de tokens.css, así se adapta a claro y oscuro. */
 const COLORS = [
-  { value: "#357050", label: "Salvia" },
-  { value: "#2f6f8f", label: "Lago" },
-  { value: "#8a5a00", label: "Ámbar" },
-  { value: "#b3261e", label: "Rojo" },
-  { value: "#6b4fbb", label: "Lila" },
-  { value: "#c2410c", label: "Terracota" },
-  { value: "#0f766e", label: "Verde azulado" },
-  { value: "#7e7268", label: "Piedra" },
+  { value: "var(--color-pet-lavanda)", label: "Lavanda" },
+  { value: "var(--color-pet-rosa)", label: "Rosa" },
+  { value: "var(--color-pet-menta)", label: "Menta" },
+  { value: "var(--color-pet-cielo)", label: "Cielo" },
+  { value: "var(--color-pet-durazno)", label: "Durazno" },
+  { value: "var(--color-pet-ciruela)", label: "Ciruela" },
 ];
 const SPECIES = [
   { value: "perro", label: "Perro" },
@@ -124,10 +122,10 @@ export function PetForm({ onClose, editPet, open = true }: PetFormProps) {
           </div>
         }
       >
-        <form id="pet-form" onSubmit={handleSubmit} className="flex flex-col gap-5 pt-1">
+        <form id="pet-form" onSubmit={handleSubmit} className="flex flex-col gap-6 pt-1">
           <div className="flex justify-center">
-            <div className="rounded-full p-[3px]" style={{ background: color }}>
-              <div className="overflow-hidden rounded-full border-[3px] border-surface bg-surface-3">
+            <div className="rounded-full p-1" style={{ background: color }}>
+              <div className="overflow-hidden rounded-full border-4 border-surface bg-border">
                 <PetAvatar pet={previewPet} size="lg" style={{ borderRadius: "50%" }} />
               </div>
             </div>
@@ -136,7 +134,7 @@ export function PetForm({ onClose, editPet, open = true }: PetFormProps) {
           <Input label="Nombre" required placeholder="Cómo se llama" value={name} onChange={(e) => setName(e.target.value)} />
 
           <fieldset>
-            <legend className="mb-1.5 text-[13px] font-semibold text-on-variant">Especie</legend>
+            <legend className="mb-2 text-small font-semibold text-text-secondary">Especie</legend>
             <ChipRow>
               {SPECIES.map((s) => (
                 <Chip key={s.value} selected={species === s.value} onClick={() => handleSpeciesClick(s.value)}>
@@ -152,8 +150,8 @@ export function PetForm({ onClose, editPet, open = true }: PetFormProps) {
           </div>
 
           <fieldset>
-            <legend className="mb-1.5 text-[13px] font-semibold text-on-variant">Color de la mascota</legend>
-            <div className="flex flex-wrap gap-2.5" role="radiogroup" aria-label="Color de la mascota">
+            <legend className="mb-2 text-small font-semibold text-text-secondary">Color de la mascota</legend>
+            <div className="flex flex-wrap gap-3" role="radiogroup" aria-label="Color de la mascota">
               {COLORS.map((c) => {
                 const on = color === c.value;
                 return (
@@ -164,7 +162,7 @@ export function PetForm({ onClose, editPet, open = true }: PetFormProps) {
                     aria-checked={on}
                     aria-label={c.label}
                     onClick={() => setColor(c.value)}
-                    className={cn("flex h-10 w-10 items-center justify-center rounded-full text-white transition-transform active:scale-95", on && "ring-2 ring-primary ring-offset-2 ring-offset-surface")}
+                    className={cn("flex h-11 w-11 items-center justify-center rounded-full text-on-primary transition-transform active:scale-95", on && "ring-2 ring-primary ring-offset-2 ring-offset-surface")}
                     style={{ background: c.value }}
                   >
                     {on && <Check size={18} aria-hidden="true" />}
@@ -175,7 +173,7 @@ export function PetForm({ onClose, editPet, open = true }: PetFormProps) {
           </fieldset>
 
           <fieldset>
-            <legend className="mb-2 text-[13px] font-semibold text-on-variant">Avatar</legend>
+            <legend className="mb-2 text-small font-semibold text-text-secondary">Avatar</legend>
             <AvatarSelector pet={previewPet} value={avatarConfig} onChange={setAvatarConfig} />
           </fieldset>
         </form>
@@ -183,12 +181,12 @@ export function PetForm({ onClose, editPet, open = true }: PetFormProps) {
 
       <Sheet open={pendingSpecies !== null} onClose={() => setPendingSpecies(null)} title="¿Cambiar la especie?">
         <div className="flex flex-col gap-4 pb-2">
-          <p className="text-[15px] leading-relaxed text-on-variant">Al cambiar la especie, el avatar vuelve al predeterminado. ¿Quieres continuar?</p>
+          <p className="text-body text-text-secondary">Al cambiar la especie, el avatar vuelve al predeterminado. ¿Quieres continuar?</p>
           <div className="flex gap-2">
             <Button variant="secondary" onClick={() => setPendingSpecies(null)} className="flex-1">
               Cancelar
             </Button>
-            <Button variant="danger" onClick={() => pendingSpecies && applySpeciesChange(pendingSpecies)} className="flex-1">
+            <Button onClick={() => pendingSpecies && applySpeciesChange(pendingSpecies)} className="flex-1">
               Cambiar
             </Button>
           </div>

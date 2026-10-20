@@ -1,32 +1,30 @@
 "use client";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
+import { PetGrooming } from "@/components/icons/pet";
 
 export interface Promo {
   title: string;
   subtitle: string;
 }
 
-export const DEFAULT_PROMO: Promo = { title: "Primer baño con 20 % menos", subtitle: "En peluquerías cerca de ti esta semana" };
+export const DEFAULT_PROMO: Promo = { title: "Primer baño con 20 % menos", subtitle: "En peluquerías cerca de ti" };
 
-/** El único elemento fuerte de la pantalla */
+/**
+ * Promoción compacta: una línea con ícono, sin competir con el contenido.
+ * Fondo primario suave (no sólido) para no invadir.
+ */
 export function PromoBanner({ promo }: { promo: Promo }) {
   return (
-    <div className="relative overflow-hidden rounded-card-lg bg-primary p-5 text-on-primary shadow-2">
-      <span aria-hidden="true" className="pointer-events-none absolute -right-10 -top-14 h-44 w-44 rounded-full bg-on-primary/15" />
-      <span aria-hidden="true" className="pointer-events-none absolute -bottom-16 right-16 h-36 w-36 rounded-full bg-on-primary/10" />
-      <span aria-hidden="true" className="pointer-events-none absolute -left-8 bottom-2 h-20 w-20 rounded-full bg-on-primary/10" />
-      <div className="relative max-w-[78%]">
-        <h2 className="font-display text-[24px] leading-[1.1] text-on-primary">{promo.title}</h2>
-        <p className="mt-1.5 text-[14px] font-semibold text-on-primary/85">{promo.subtitle}</p>
-        <Link
-          href="/explorar?cat=peluqueria"
-          className="mt-4 inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-surface px-5 text-[14px] font-bold text-primary shadow-1 active:scale-95"
-        >
-          Ver groomers
-          <ArrowRight size={16} aria-hidden="true" />
-        </Link>
-      </div>
-    </div>
+    <Link href="/explorar?cat=peluqueria" className="pressable flex min-h-16 items-center gap-3 rounded-lg bg-primary-soft px-4 py-3">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary">
+        <PetGrooming size={20} aria-hidden="true" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-body font-semibold text-primary-text">{promo.title}</span>
+        <span className="block truncate text-small text-text-secondary">{promo.subtitle}</span>
+      </span>
+      <ChevronRight size={18} className="shrink-0 text-primary-text" aria-hidden="true" />
+    </Link>
   );
 }

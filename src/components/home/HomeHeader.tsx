@@ -1,51 +1,46 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronDown } from "lucide-react";
 import { SOSButton } from "@/components/layout/SOSButton";
 
-const ZONE_KEY = "paw.zone";
+function greeting(hour: number): string {
+  if (hour < 12) return "Buenos días";
+  if (hour < 19) return "Buenas tardes";
+  return "Buenas noches";
+}
 
-/** Cabecera estilo Rappi: "CERCA DE" + zona, SOS y avatar del usuario */
-export function HomeHeader({ userName, userAvatarUrl }: { userName: string; userAvatarUrl: string | null }) {
-  const [zone, setZone] = useState("Tu zona");
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(ZONE_KEY);
-      if (saved) setZone(saved);
-    } catch {
-      /* sin almacenamiento */
-    }
-  }, []);
-
-  const initials = userName
-    .split(" ")
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? "")
-    .join("");
+/**
+ * Cabecera: saludo según la hora con el nombre, una línea sobre la mascota
+ * activa, SOS arriba a la derecha y avatar del usuario.
+ */
+export function HomeHeader({ userName, userAvatarUrl, petName }: { userName: string; userAvatarUrl: string | null; petName?: string | null }) {
+  const first = userName.trim().split(/\s+/)[0] || "";
+  const initial = first.charAt(0).toLocaleUpperCase("es") || "T";
+  // La hora se calcula en el navegador para no desfasar el HTML del servidor
+  const [hello, setHello] = useState("Hola");
+  useEffect(() => setHello(greeting(new Date().getHours())), []);
 
   return (
-    <header className="flex items-end justify-between gap-3 px-4 pt-[max(14px,env(safe-area-inset-top))] pb-2">
-      <Link href="/explorar" className="min-w-0 rounded-control active:opacity-80" aria-label={`Cerca de ${zone}, cambiar zona`}>
-        <div className="text-[11px] font-black uppercase tracking-[0.12em] text-on-variant">Cerca de</div>
-        <div className="flex items-center gap-1">
-          <span className="truncate font-display text-[26px] leading-[1.1] text-on">{zone}</span>
-          <ChevronDown size={22} className="shrink-0 text-primary" aria-hidden="true" />
-        </div>
-      </Link>
+    <header className="flex items-center justify-between gap-3 px-4 pt-[max(16px,env(safe-area-inset-top))] pb-2">
+      <div className="min-w-0">
+        <h1 className="truncate text-title text-text">
+          <span className="font-normal">{hello}</span>
+          {first && <span className="font-semibold">, {first}</span>}
+        </h1>
+        {petName && <p className="truncate text-small text-text-secondary">¿Cómo está {petName} hoy?</p>}
+      </div>
       <div className="flex shrink-0 items-center gap-2">
         <SOSButton />
         <Link
           href="/settings"
           aria-label={`Cuenta de ${userName}`}
-          className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-primary-container text-[13px] font-black text-on-primary-container active:scale-95"
+          className="pressable flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-primary-soft text-subtitle font-semibold text-primary-text"
         >
           {userAvatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={userAvatarUrl} alt="" className="h-full w-full object-cover" />
           ) : (
-            initials || "T"
+            <span aria-hidden="true">{initial}</span>
           )}
         </Link>
       </div>

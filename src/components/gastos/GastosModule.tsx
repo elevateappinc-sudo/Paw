@@ -74,7 +74,7 @@ export function GastosModule() {
         back
         actions={
           petGastos.length > 0 ? (
-            <Button size="icon" variant="tonal" onClick={() => setShowForm(true)} aria-label="Nuevo gasto">
+            <Button size="icon" variant="secondary" onClick={() => setShowForm(true)} aria-label="Nuevo gasto">
               <Plus size={20} />
             </Button>
           ) : undefined
@@ -84,7 +84,6 @@ export function GastosModule() {
       {error && petGastos.length === 0 ? (
         <div className="px-4">
           <EmptyState
-            tone="danger"
             icon={<Wallet size={24} />}
             title="No pudimos cargar los gastos"
             description="Revisa tu conexión e inténtalo otra vez."
@@ -137,13 +136,13 @@ export function GastosModule() {
               <Card padded={false} className="overflow-hidden">
                 {recentGastos.map((g, i) => (
                   <div key={g.id}>
-                    {i > 0 && <Divider className="ml-[72px] mr-0" />}
+                    {i > 0 && <Divider className="ml-18 mr-0" />}
                     <Row
-                      icon={<span className="text-[16px] font-bold">{g.concepto.charAt(0).toUpperCase()}</span>}
+                      icon={<span className="text-subtitle font-semibold">{g.concepto.charAt(0).toUpperCase()}</span>}
                       iconTone="primary"
                       title={g.concepto}
                       subtitle={`${formatDate(g.fecha)} · ${g.quien}`}
-                      trailing={<span className="text-[15px] font-bold text-on">{formatCurrency(g.monto)}</span>}
+                      trailing={<span className="text-body font-semibold text-text">{formatCurrency(g.monto)}</span>}
                     />
                   </div>
                 ))}

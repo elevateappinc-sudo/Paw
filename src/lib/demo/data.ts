@@ -77,28 +77,28 @@ export function buildDataset(): Dataset {
 
   const pets: Row[] = [
     {
-      id: P.luna, user_id: U.andrea, name: "Luna", species: "perro", breed: "Golden retriever", birth_date: yearsAgo(3, 7), weight: 28.4, emoji: "🐾", color: "#357050",
+      id: P.luna, user_id: U.andrea, name: "Luna", species: "perro", breed: "Golden retriever", birth_date: yearsAgo(3, 7), weight: 28.4, emoji: "🐾", color: "var(--color-pet-lavanda)",
       avatar_config: null, sex: "female", neutered: true, microchip: "941000024118", allergies: ["Pollo"], conditions: ["Dermatitis atópica"], blood_type: "DEA 1.1 negativo",
       emergency_contact: { name: "Carlos Ruiz", phone: "+57 315 555 0980" }, photo_url: IMG.luna, activity_level: "medium",
       food: { brand: "Royal Canin", product: "Medium Adult", bag_kg: 15, opened_at: day(-17), grams_per_day: 320, meals: [{ time: "08:00", grams: 120 }, { time: "14:00", grams: 80 }, { time: "20:00", grams: 120 }], snacks_per_day: 3, changes: [{ date: monthsAgo(2), from: "Royal Canin Pollo", to: "Royal Canin Salmón", reason: "Picor en la piel" }] },
       reproductive: null, created_at: monthsAgo(8), updated_at: day(0),
     },
     {
-      id: P.milo, user_id: U.andrea, name: "Milo", species: "gato", breed: "Europeo gris", birth_date: monthsAgo(4), weight: 1.9, emoji: "🐾", color: "#2F6F8F",
+      id: P.milo, user_id: U.andrea, name: "Milo", species: "gato", breed: "Europeo gris", birth_date: monthsAgo(4), weight: 1.9, emoji: "🐾", color: "var(--color-pet-cielo)",
       avatar_config: null, sex: "male", neutered: false, microchip: "941000031207", allergies: [], conditions: [], blood_type: "A",
       emergency_contact: { name: "Carlos Ruiz", phone: "+57 315 555 0980" }, photo_url: IMG.milo, activity_level: "high",
       food: { brand: "Hill's", product: "Science Diet Kitten", bag_kg: 3, opened_at: day(-9), grams_per_day: 55, meals: [{ time: "07:30", grams: 15 }, { time: "12:00", grams: 10 }, { time: "17:00", grams: 15 }, { time: "21:30", grams: 15 }], snacks_per_day: 1, changes: [] },
       reproductive: null, created_at: monthsAgo(2), updated_at: day(0),
     },
     {
-      id: P.coco, user_id: U.andrea, name: "Coco", species: "perro", breed: "Mestizo", birth_date: yearsAgo(5, 2), weight: 12.1, emoji: "🐾", color: "#8A5A00",
+      id: P.coco, user_id: U.andrea, name: "Coco", species: "perro", breed: "Mestizo", birth_date: yearsAgo(5, 2), weight: 12.1, emoji: "🐾", color: "var(--color-pet-durazno)",
       avatar_config: null, sex: "male", neutered: true, microchip: null, allergies: [], conditions: [], blood_type: null,
       emergency_contact: null, photo_url: IMG.coco, activity_level: "high",
       food: { brand: "Pro Plan", product: "Small Adult", bag_kg: 7.5, opened_at: day(-30), grams_per_day: 180, meals: [{ time: "08:00", grams: 90 }, { time: "19:00", grams: 90 }], snacks_per_day: 2, changes: [] },
       reproductive: null, created_at: monthsAgo(5), updated_at: day(0),
     },
     // mascota de otra usuaria (para la alerta de perdida)
-    { id: P.tomas, user_id: U.marcela, name: "Tomás", species: "perro", breed: "Beagle", birth_date: yearsAgo(4), weight: 11, emoji: "🐾", color: "#357050", avatar_config: null, sex: "male", neutered: true, microchip: null, allergies: [], conditions: [], blood_type: null, emergency_contact: null, photo_url: IMG.tomas, activity_level: "medium", food: null, reproductive: null, created_at: monthsAgo(3), updated_at: day(0) },
+    { id: P.tomas, user_id: U.marcela, name: "Tomás", species: "perro", breed: "Beagle", birth_date: yearsAgo(4), weight: 11, emoji: "🐾", color: "var(--color-pet-lavanda)", avatar_config: null, sex: "male", neutered: true, microchip: null, allergies: [], conditions: [], blood_type: null, emergency_contact: null, photo_url: IMG.tomas, activity_level: "medium", food: null, reproductive: null, created_at: monthsAgo(3), updated_at: day(0) },
   ];
 
   const pet_members: Row[] = [

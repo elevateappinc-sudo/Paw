@@ -49,22 +49,22 @@ export function IOSInstallBanner() {
           animate={{ y: 0, opacity: 1 }}
           exit={reduce ? { opacity: 0 } : { y: 40, opacity: 0 }}
           transition={{ duration: 0.25 }}
-          className="fixed inset-x-0 bottom-0 z-[70] mx-auto flex w-full max-w-[640px] items-center gap-3 rounded-t-sheet border-t border-outline-variant bg-surface px-5 pt-4 pb-[max(28px,env(safe-area-inset-bottom))] shadow-3"
+          className="fixed inset-x-0 bottom-0 z-[70] mx-auto flex w-full max-w-[640px] items-center gap-3 rounded-t-xl border-t border-border bg-surface px-5 pt-4 pb-[max(28px,env(safe-area-inset-bottom))] shadow-3"
         >
           <PawIllustration className="h-10 w-10 shrink-0" />
           <div className="min-w-0 flex-1">
-            <p className="text-[15px] font-bold leading-snug text-on">Instala Paw en tu iPhone para recibir recordatorios</p>
-            <p className="mt-1 text-[13px] leading-snug text-on-variant">
+            <p className="text-body font-semibold leading-snug text-text">Instala Paw en tu iPhone para recibir recordatorios</p>
+            <p className="mt-1 text-small leading-snug text-text-secondary">
               Toca{" "}
-              <Share size={14} className="inline align-middle text-primary" aria-label="Compartir" />
-              {" "}y luego <strong className="text-primary">«Agregar a inicio»</strong>
+              <Share size={14} className="inline align-middle text-primary-text" aria-label="Compartir" />
+              {" "}y luego <strong className="text-primary-text">«Agregar a inicio»</strong>
             </p>
           </div>
           <button
             type="button"
             onClick={dismiss}
             aria-label="Cerrar aviso"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-2 text-on active:scale-95"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-elevated text-text active:scale-95"
           >
             <X size={18} />
           </button>

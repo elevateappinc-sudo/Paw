@@ -1,16 +1,26 @@
 "use client";
-import { FileText } from "lucide-react";
-import { Button, Card, InfoCell, Skeleton } from "@/components/ui";
-import { PetAvatar } from "@/components/pets/PetAvatar";
+import { CircleAlert, Cpu, Droplet, FileText, type LucideIcon } from "lucide-react";
+import { Skeleton } from "@/components/ui";
+import { PetHealth, PetMedication, PetVaccine } from "@/components/icons/pet";
 import type { Pet } from "@/types";
 import type { SosPetDetails } from "./sosData";
 import { medicationLabel } from "./sosData";
 import { formatDate } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
-function joinOrDash(list: string[] | null | undefined, empty: string): string {
-  return list && list.length ? list.join(", ") : empty;
+interface Fact {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+  /** dato que el veterinario debe ver primero (alergias, medicación) */
+  important?: boolean;
 }
 
+/**
+ * Ficha médica (estilo Ficha Médica de iOS): solo los datos que existen,
+ * cada uno con su ícono. Lo importante (alergias, medicación) va primero
+ * y en el color de advertencia.
+ */
 export function PetEmergencyCard({ pet, details, loading, onSummary, summaryLoading }: {
   pet: Pet;
   details: SosPetDetails | null;
@@ -19,53 +29,67 @@ export function PetEmergencyCard({ pet, details, loading, onSummary, summaryLoad
   summaryLoading: boolean;
 }) {
   const row = details?.pet ?? null;
-  const subtitle = [pet.name, row?.breed ?? pet.breed, row?.weight ? `${row.weight} kg` : pet.weight ? `${pet.weight} kg` : null].filter(Boolean).join(" · ");
   const meds = details?.medications ?? [];
 
+  const facts: Fact[] = [
+    row?.allergies?.length ? { icon: CircleAlert, label: "Alergias", value: row.allergies.join(", "), important: true } : null,
+    meds.length ? { icon: PetMedication, label: "Medicación", value: meds.map(medicationLabel).join("; "), important: true } : null,
+    row?.conditions?.length ? { icon: PetHealth, label: "Condiciones", value: row.conditions.join(", ") } : null,
+    row?.blood_type ? { icon: Droplet, label: "Sangre", value: row.blood_type } : null,
+    details?.lastVaccine ? { icon: PetVaccine, label: "Última vacuna", value: `${details.lastVaccine.name} · ${formatDate(details.lastVaccine.last_done_at)}` } : null,
+    row?.microchip ? { icon: Cpu, label: "Microchip", value: row.microchip } : null,
+  ].filter((f): f is Fact => f !== null);
+
+  const weight = row?.weight ?? pet.weight;
+
   return (
-    <Card>
-      <div className="flex items-center gap-3">
-        {row?.photo_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={row.photo_url} alt={pet.name} className="h-14 w-14 shrink-0 rounded-full object-cover" />
-        ) : (
-          <PetAvatar pet={pet} size="md" style={{ width: 56, height: 56, borderRadius: "50%" }} />
-        )}
-        <div className="min-w-0">
-          <div className="font-display text-[18px] leading-tight text-on">Ficha de {pet.name}</div>
-          <div className="truncate text-[13px] text-on-variant">{subtitle}</div>
-        </div>
+    <section aria-labelledby="sos-ficha" className="overflow-hidden rounded-lg border border-border bg-surface">
+      <div className="flex items-center justify-between gap-3 px-4 pt-4 pb-2">
+        <h2 id="sos-ficha" className="text-subtitle font-semibold text-text">
+          Ficha médica
+        </h2>
+        {weight ? <span className="text-small text-text-secondary">{weight} kg</span> : null}
       </div>
 
       {loading && !details ? (
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          {[0, 1, 2, 3, 4, 5].map((i) => (
-            <Skeleton key={i} className="h-[58px] rounded-control" />
+        <div className="flex flex-col gap-3 px-4 pb-4" aria-hidden="true">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="flex items-center gap-3">
+              <Skeleton className="h-8 w-8 rounded-sm" />
+              <Skeleton className="h-4 flex-1" />
+            </div>
           ))}
         </div>
+      ) : facts.length === 0 ? (
+        <p className="px-4 pb-4 text-small text-text-secondary">Sin alergias ni medicación registradas.</p>
       ) : (
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <InfoCell label="Alergias" tone={row?.allergies?.length ? "warn" : undefined} value={joinOrDash(row?.allergies, "Ninguna conocida")} />
-          <InfoCell label="Grupo sanguíneo" value={row?.blood_type ?? "Sin dato"} />
-          <InfoCell
-            label="Medicación activa"
-            tone={meds.length ? "warn" : undefined}
-            value={meds.length ? meds.map(medicationLabel).join("; ") : "Ninguna"}
-            className="col-span-2"
-          />
-          <InfoCell label="Condiciones" value={joinOrDash(row?.conditions, "Ninguna conocida")} />
-          <InfoCell label="Microchip" value={row?.microchip ?? "Sin registrar"} />
-          <InfoCell
-            label="Última vacuna"
-            value={details?.lastVaccine ? `${details.lastVaccine.name} · ${formatDate(details.lastVaccine.last_done_at)}` : "Sin registro"}
-            className="col-span-2"
-          />
-        </div>
+        <ul className="flex flex-col">
+          {facts.map((f) => {
+            const Icon = f.icon;
+            return (
+              <li key={f.label} className="flex items-center gap-3 border-t border-border px-4 py-3 first:border-t-0">
+                <span className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-sm", f.important ? "bg-warning-soft text-warning-text" : "bg-surface-elevated text-text-secondary")}>
+                  <Icon size={18} aria-hidden="true" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-label text-text-secondary">{f.label}</span>
+                  <span className={cn("block text-body font-semibold", f.important ? "text-warning-text" : "text-text")}>{f.value}</span>
+                </span>
+              </li>
+            );
+          })}
+        </ul>
       )}
 
-      <Button variant="tonal" full className="mt-3" leading={<FileText size={18} aria-hidden="true" />} onClick={onSummary} loading={summaryLoading} disabled={!row}>
-        Resumen clínico para el veterinario
-      </Button>
-    </Card>
+      <button
+        type="button"
+        onClick={onSummary}
+        disabled={!row || summaryLoading}
+        className="flex min-h-12 w-full items-center justify-center gap-2 border-t border-border text-label font-semibold text-primary-text disabled:opacity-50"
+      >
+        <FileText size={16} aria-hidden="true" />
+        {summaryLoading ? "Preparando…" : "Resumen para el veterinario"}
+      </button>
+    </section>
   );
 }

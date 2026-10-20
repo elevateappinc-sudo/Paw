@@ -61,7 +61,7 @@ export function Sheet({ open, onClose, title, subtitle, children, maxHeight = "8
       {open && (
         <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center" role="presentation">
           <motion.div
-            className="absolute inset-0 bg-[rgba(34,28,23,0.45)]"
+            className="absolute inset-0 bg-scrim"
             variants={backdrop}
             initial="hidden"
             animate="show"
@@ -85,34 +85,34 @@ export function Sheet({ open, onClose, title, subtitle, children, maxHeight = "8
               if (info.offset.y > 120 || info.velocity.y > 800) onClose();
             }}
             className={cn(
-              "relative flex w-full max-w-[560px] flex-col rounded-t-sheet bg-surface shadow-3 sm:rounded-sheet",
+              "relative flex w-full max-w-[560px] flex-col rounded-t-xl bg-surface-elevated shadow-3 sm:rounded-xl",
               className
             )}
             style={{ maxHeight }}
           >
-            <div className="flex justify-center pt-2 pb-1" aria-hidden="true">
-              <div className="h-[5px] w-9 rounded-full bg-outline-variant" />
+            <div className="flex justify-center pt-2 pb-2" aria-hidden="true">
+              <div className="h-1 w-8 rounded-full bg-border" />
             </div>
             {(title || !hideClose) && (
-              <div className="flex items-start justify-between gap-3 px-5 pb-2">
+              <div className="flex items-start justify-between gap-3 px-4 pb-2">
                 <div className="min-w-0">
-                  {title && <h2 id={titleId} className="font-display text-[22px] leading-tight text-on">{title}</h2>}
-                  {subtitle && <p className="mt-0.5 text-[13px] text-on-variant">{subtitle}</p>}
+                  {title && <h2 id={titleId} className="font-semibold text-title leading-tight text-text">{title}</h2>}
+                  {subtitle && <p className="mt-1 text-small text-text-secondary">{subtitle}</p>}
                 </div>
                 {!hideClose && (
                   <button
                     type="button"
                     onClick={onClose}
                     aria-label="Cerrar"
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-2 text-on active:scale-95"
+                    className="pressable flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface text-text"
                   >
                     <X size={20} />
                   </button>
                 )}
               </div>
             )}
-            <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-4">{children}</div>
-            {footer && <div className="border-t border-outline-variant bg-surface px-5 pt-3 pb-[max(20px,env(safe-area-inset-bottom))]">{footer}</div>}
+            <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">{children}</div>
+            {footer && <div className="border-t border-border bg-surface-elevated px-4 pt-3 pb-[max(20px,env(safe-area-inset-bottom))]">{footer}</div>}
             {!footer && <div className="pb-[max(12px,env(safe-area-inset-bottom))]" />}
           </motion.div>
         </div>

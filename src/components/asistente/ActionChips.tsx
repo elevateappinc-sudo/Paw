@@ -1,19 +1,21 @@
 "use client";
-import { Bell, ShoppingBag, NotebookPen, Siren, Check } from "lucide-react";
+import { Bell, NotebookPen, Check } from "lucide-react";
+import { PetEmergency, PetShop } from "@/components/icons/pet";
 import type { AssistantAction } from "@/types/db";
 import { cn } from "@/lib/utils";
+import { PawDotsLoader } from "@/components/ui";
 
 const ICON: Record<AssistantAction["type"], React.ReactNode> = {
   remind: <Bell size={14} aria-hidden="true" />,
-  book: <ShoppingBag size={14} aria-hidden="true" />,
+  book: <PetShop size={14} aria-hidden="true" />,
   log: <NotebookPen size={14} aria-hidden="true" />,
-  sos: <Siren size={14} aria-hidden="true" />,
+  sos: <PetEmergency size={14} aria-hidden="true" />,
 };
 
 export function ActionChips({ actions, done, busy, onRun }: { actions: AssistantAction[]; done: number[]; busy: number | null; onRun: (index: number, action: AssistantAction) => void }) {
   if (!actions.length) return null;
   return (
-    <div className="mt-1.5 flex max-w-[86%] flex-wrap gap-1.5">
+    <div className="mt-2 flex max-w-[86%] flex-wrap gap-2">
       {actions.map((a, i) => {
         const isDone = done.includes(i);
         const isBusy = busy === i;
@@ -25,12 +27,12 @@ export function ActionChips({ actions, done, busy, onRun }: { actions: Assistant
             disabled={isDone || isBusy}
             onClick={() => onRun(i, a)}
             className={cn(
-              "inline-flex min-h-[36px] items-center gap-1.5 rounded-full px-3 text-[13px] font-bold transition-[transform,opacity] active:scale-95 disabled:opacity-70",
-              danger ? "bg-danger-container text-on-danger-container" : isDone ? "bg-ok-container text-on-ok-container" : "bg-primary-container text-on-primary-container"
+              "inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-label font-semibold transition-[transform,opacity] active:scale-95 disabled:opacity-70",
+              danger ? "bg-danger-soft text-danger-text" : isDone ? "bg-success-soft text-success-text" : "bg-primary-soft text-primary-text"
             )}
           >
-            {isDone ? <Check size={14} aria-hidden="true" /> : ICON[a.type]}
-            {isBusy ? "Un momento…" : a.label}
+            {isBusy ? <PawDotsLoader size={16} label="Un momento" /> : isDone ? <Check size={14} aria-hidden="true" /> : ICON[a.type]}
+            {a.label}
           </button>
         );
       })}

@@ -158,16 +158,16 @@ export function BookingFlow() {
 
   if (loading) {
     return (
-      <div className="min-h-dvh bg-bg px-4 pt-[max(14px,env(safe-area-inset-top))]" aria-busy="true">
+      <div className="min-h-dvh bg-bg px-4 pt-[max(16px,env(safe-area-inset-top))]" aria-busy="true">
         <Skeleton className="h-8 w-48" />
         <div className="mt-4 grid grid-cols-3 gap-2">
-          <Skeleton className="h-1.5 rounded-full" />
-          <Skeleton className="h-1.5 rounded-full" />
-          <Skeleton className="h-1.5 rounded-full" />
+          <Skeleton className="h-2 rounded-full" />
+          <Skeleton className="h-2 rounded-full" />
+          <Skeleton className="h-2 rounded-full" />
         </div>
-        <Skeleton className="mt-6 h-16 w-full rounded-card-lg" />
-        <Skeleton className="mt-3 h-16 w-full rounded-card-lg" />
-        <Skeleton className="mt-3 h-16 w-full rounded-card-lg" />
+        <Skeleton className="mt-6 h-16 w-full rounded-md" />
+        <Skeleton className="mt-3 h-16 w-full rounded-md" />
+        <Skeleton className="mt-3 h-16 w-full rounded-md" />
       </div>
     );
   }
@@ -176,7 +176,6 @@ export function BookingFlow() {
     return (
       <div className="min-h-dvh bg-bg">
         <EmptyState
-          tone="danger"
           title="No pudimos abrir la reserva"
           description={loadError ?? "Inténtalo de nuevo."}
           action={<Button full variant="secondary" onClick={() => router.push("/explorar")}>Ver otros negocios</Button>}
@@ -187,12 +186,12 @@ export function BookingFlow() {
 
   return (
     <div className="flex min-h-dvh flex-col bg-bg">
-      <header className="flex items-center justify-between gap-3 px-4 pt-[max(14px,env(safe-area-inset-top))] pb-2">
+      <header className="flex items-center justify-between gap-3 px-4 pt-[max(16px,env(safe-area-inset-top))] pb-2">
         <div className="min-w-0">
-          <p className="truncate text-[13px] font-semibold text-on-variant">{biz.name}</p>
-          <h1 className="truncate font-display text-[24px] leading-tight text-on">{stepTitle}</h1>
+          <p className="truncate text-small font-semibold text-text-secondary">{biz.name}</p>
+          <h1 className="truncate font-semibold text-display leading-tight text-text">{stepTitle}</h1>
         </div>
-        <button type="button" onClick={() => router.back()} aria-label="Cerrar" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-2 text-on active:scale-95">
+        <button type="button" onClick={() => router.back()} aria-label="Cerrar" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-elevated text-text active:scale-95">
           <X size={20} />
         </button>
       </header>
@@ -207,17 +206,17 @@ export function BookingFlow() {
                 type="button"
                 disabled={i > step}
                 onClick={() => setStep(i as Step)}
-                className="flex w-full flex-col gap-1.5 text-left disabled:cursor-default"
+                className="flex w-full flex-col gap-2 text-left disabled:cursor-default"
               >
-                <span className={cn("h-1.5 w-full rounded-full", state === "todo" ? "bg-surface-3" : "bg-primary")} />
-                <span className={cn("text-[12px] font-bold", state === "todo" ? "text-on-variant" : "text-on")}>{label}</span>
+                <span className={cn("h-2 w-full rounded-full", state === "todo" ? "bg-border" : "bg-primary")} />
+                <span className={cn("text-label font-semibold", state === "todo" ? "text-text-secondary" : "text-text")}>{label}</span>
               </button>
             </li>
           );
         })}
       </ol>
 
-      <div className="flex-1 px-4 pb-[calc(110px+env(safe-area-inset-bottom))]">
+      <div className="flex-1 px-4 pb-[calc(112px+env(safe-area-inset-bottom))]">
         <AnimatePresence mode="wait" initial={false}>
           {step === 0 && (
             <motion.div key="s0" variants={reduce ? undefined : fadeUp} initial="hidden" animate="show" exit="hidden">
@@ -250,13 +249,13 @@ export function BookingFlow() {
                             setTime(null);
                             goNext();
                           }}
-                          className={cn("flex min-h-[64px] w-full items-center gap-3 rounded-card-lg border bg-surface px-4 py-3 text-left", sel ? "border-primary" : "border-outline-variant")}
+                          className={cn("flex min-h-16 w-full items-center gap-3 rounded-md border bg-surface px-4 py-3 text-left", sel ? "border-primary" : "border-border")}
                         >
                           <span className="min-w-0 flex-1">
-                            <span className="block text-[16px] font-bold text-on">{s.name}</span>
-                            <span className="block text-[13px] text-on-variant">{s.duration_min ? `${s.duration_min} min` : "Duración a convenir"}</span>
+                            <span className="block text-subtitle font-semibold text-text">{s.name}</span>
+                            <span className="block text-small text-text-secondary">{s.duration_min ? `${s.duration_min} min` : "Duración a convenir"}</span>
                           </span>
-                          <span className="shrink-0 text-[15px] font-bold text-on">{s.price != null ? formatCurrency(s.price) : "Consultar"}</span>
+                          <span className="shrink-0 text-body font-semibold text-text">{s.price != null ? formatCurrency(s.price) : "Consultar"}</span>
                         </button>
                       </li>
                     );
@@ -284,10 +283,10 @@ export function BookingFlow() {
                           setPetId(p.id);
                           goNext();
                         }}
-                        className="flex w-[84px] flex-col items-center gap-1.5 active:scale-95"
+                        className="flex w-[84px] flex-col items-center gap-2 active:scale-95"
                       >
                         <PetAvatarRing pet={p} active={sel} size={76} />
-                        <span className={cn("max-w-full truncate text-[14px] font-bold", sel ? "text-on" : "text-on-variant")}>{p.name}</span>
+                        <span className={cn("max-w-full truncate text-body font-semibold", sel ? "text-text" : "text-text-secondary")}>{p.name}</span>
                       </button>
                     );
                   })}
@@ -313,10 +312,10 @@ export function BookingFlow() {
                         setDateKey(key);
                         setTime(null);
                       }}
-                      className={cn("flex h-[64px] w-[56px] shrink-0 flex-col items-center justify-center rounded-card border transition-colors", sel ? "border-primary bg-primary text-on-primary" : "border-outline-variant bg-surface text-on")}
+                      className={cn("flex h-16 w-14 shrink-0 flex-col items-center justify-center rounded-md border transition-colors", sel ? "border-accent bg-accent text-on-accent" : "border-border bg-surface text-text")}
                     >
-                      <span className={cn("text-[11px] font-bold uppercase", sel ? "text-on-primary" : "text-on-variant")}>{dow}</span>
-                      <span className="font-display text-[20px] leading-none">{day}</span>
+                      <span className={cn("text-label font-semibold uppercase", sel ? "text-on-primary" : "text-text-secondary")}>{dow}</span>
+                      <span className="font-semibold text-title leading-none">{day}</span>
                     </button>
                   );
                 })}
@@ -330,8 +329,8 @@ export function BookingFlow() {
                 </div>
               ) : slots.length === 0 ? (
                 <Card tone="container" elevation={0}>
-                  <p className="text-[15px] font-bold text-on">{dayHours ? "No quedan horas este día" : "Cerrado este día"}</p>
-                  <p className="mt-1 text-[13px] text-on-variant">Prueba otro día o pide una hora al negocio.</p>
+                  <p className="text-body font-semibold text-text">{dayHours ? "No quedan horas este día" : "Cerrado este día"}</p>
+                  <p className="mt-1 text-small text-text-secondary">Prueba otro día o pide una hora al negocio.</p>
                   {wa && (
                     <a href={wa} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: "secondary", size: "sm" }), "mt-3")}>
                       <MessageCircle size={16} /> Pedir otra
@@ -352,8 +351,8 @@ export function BookingFlow() {
                           disabled={!s.available}
                           onClick={() => setTime(s.time)}
                           className={cn(
-                            "min-h-[44px] rounded-full border text-[14px] font-bold transition-colors",
-                            sel ? "border-primary bg-primary text-on-primary" : s.available ? "border-outline-variant bg-surface text-on active:bg-surface-2" : "border-dashed border-outline-variant text-on-variant line-through"
+                            "min-h-11 rounded-full border text-body font-semibold transition-colors",
+                            sel ? "border-accent bg-accent text-on-accent" : s.available ? "border-border bg-surface text-text active:bg-surface-elevated" : "border-dashed border-border text-text-secondary line-through"
                           )}
                         >
                           {s.time}
@@ -362,7 +361,7 @@ export function BookingFlow() {
                     })}
                   </div>
                   {wa && (
-                    <a href={wa} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[44px] items-center gap-1.5 self-start text-[14px] font-bold text-primary">
+                    <a href={wa} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 self-start text-body font-semibold text-primary-text">
                       <MessageCircle size={16} /> ¿Ninguna te sirve? Pedir otra
                     </a>
                   )}
@@ -370,10 +369,10 @@ export function BookingFlow() {
               )}
 
               <Card tone="info" elevation={0} className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-surface text-ok">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-surface text-success-text">
                   <ClipboardCheck size={20} />
                 </div>
-                <p className="text-[13px] leading-relaxed">
+                <p className="text-small leading-relaxed">
                   Al terminar, el negocio marca el servicio y en el historial de {pet?.name ?? "tu mascota"} queda {cycleName} con fecha, precio y foto. El gasto se registra solo.
                 </p>
               </Card>
@@ -383,7 +382,7 @@ export function BookingFlow() {
       </div>
 
       {step === 2 && (
-        <div className="glass fixed inset-x-0 bottom-0 z-40 mx-auto w-full max-w-[640px] border-t border-outline-variant px-4 pt-3 pb-[max(16px,env(safe-area-inset-bottom))]">
+        <div className="glass fixed inset-x-0 bottom-0 z-40 mx-auto w-full max-w-[640px] border-t border-border px-4 pt-3 pb-[max(16px,env(safe-area-inset-bottom))]">
           <Button full size="lg" onClick={confirm} loading={submitting} disabled={!time || !pet} leading={<Check size={18} />}>
             {time ? `Confirmar ${dayLabel.dow} ${dayLabel.day} · ${time}${service?.price != null ? ` · ${formatCurrency(service.price)}` : ""}` : "Elige una hora"}
           </Button>
@@ -411,8 +410,8 @@ export function BookingFlow() {
           </div>
         }
       >
-        <p className="text-[13px] text-on-variant">
-          Si necesitas ayuda, indica este código: <span className="font-mono font-bold text-on">{failure?.code}</span>
+        <p className="text-small text-text-secondary">
+          Si necesitas ayuda, indica este código: <span className="font-mono font-semibold text-text">{failure?.code}</span>
         </p>
       </Sheet>
     </div>

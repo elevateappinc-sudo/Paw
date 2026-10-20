@@ -65,9 +65,9 @@ const PLANS: Plan[] = [
 ];
 
 const toneHead: Record<Plan["tone"], string> = {
-  neutral: "bg-surface-2 text-on",
-  info: "bg-info-container text-on-info-container",
-  primary: "bg-primary-container text-on-primary-container",
+  neutral: "bg-surface-elevated text-text",
+  info: "bg-info-soft text-info-text",
+  primary: "bg-primary-soft text-primary-text",
 };
 
 interface BusinessPlanSelectorProps {
@@ -79,27 +79,27 @@ export function BusinessPlanSelector({ currentPlan = "free", onSelect }: Busines
   return (
     <div className="flex flex-col gap-4 py-2">
       <div className="text-center">
-        <h3 className="font-display text-[22px] text-on">Planes para negocios</h3>
-        <p className="mt-1 text-[14px] text-on-variant">Elige el que mejor se adapte a tu negocio</p>
+        <h3 className="font-semibold text-title text-text">Planes para negocios</h3>
+        <p className="mt-1 text-body text-text-secondary">Elige el que mejor se adapte a tu negocio</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
         {PLANS.map((plan) => {
           const isCurrent = currentPlan === plan.name;
           return (
-            <div key={plan.name} className={cn("flex flex-col overflow-hidden rounded-card-lg border bg-surface", isCurrent ? "border-primary" : "border-outline-variant")}>
+            <div key={plan.name} className={cn("flex flex-col overflow-hidden rounded-md border bg-surface", isCurrent ? "border-primary" : "border-border")}>
               <div className={cn("flex flex-col gap-1 px-4 py-4", toneHead[plan.tone])}>
                 <div className="flex items-center gap-2">
                   {plan.icon}
-                  <span className="font-display text-[18px]">{plan.label}</span>
+                  <span className="font-semibold text-subtitle">{plan.label}</span>
                 </div>
-                <div className="text-[20px] font-extrabold">{plan.price}</div>
+                <div className="text-title font-semibold">{plan.price}</div>
               </div>
               <ul className="flex flex-1 flex-col gap-2 px-4 py-3">
                 {plan.features.map((f) => (
-                  <li key={f.label} className="flex items-center justify-between gap-3 text-[13px]">
-                    <span className="text-on-variant">{f.label}</span>
-                    <span className={cn("inline-flex items-center font-bold", f.value === false ? "text-outline" : f.value === true ? "text-ok" : "text-on")}>
+                  <li key={f.label} className="flex items-center justify-between gap-3 text-small">
+                    <span className="text-text-secondary">{f.label}</span>
+                    <span className={cn("inline-flex items-center font-semibold", f.value === false ? "text-text-secondary" : f.value === true ? "text-success-text" : "text-text")}>
                       {f.value === true ? <Check size={16} aria-label="Incluido" /> : f.value === false ? <Minus size={16} aria-label="No incluido" /> : String(f.value)}
                     </span>
                   </li>
@@ -115,7 +115,7 @@ export function BusinessPlanSelector({ currentPlan = "free", onSelect }: Busines
         })}
       </div>
 
-      <p className="text-center text-[12px] text-on-variant">Precios en pesos colombianos. Cambia o cancela cuando quieras.</p>
+      <p className="text-center text-label text-text-secondary">Precios en pesos colombianos. Cambia o cancela cuando quieras.</p>
     </div>
   );
 }

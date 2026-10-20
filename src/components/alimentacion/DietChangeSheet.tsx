@@ -66,7 +66,7 @@ export function DietChangeSheet({ open, onClose, currentFood, onSave }: {
         <Input label="De" placeholder="Alimento anterior" value={from} onChange={(e) => setFrom(e.target.value)} />
         <Input label="A" placeholder="Alimento nuevo" value={to} onChange={(e) => setTo(e.target.value)} autoFocus />
         <Textarea label="Motivo (opcional)" placeholder="Ej. recomendación del veterinario, alergia" value={reason} onChange={(e) => setReason(e.target.value)} rows={2} />
-        {error && <p role="alert" className="text-[13px] font-semibold text-danger">{error}</p>}
+        {error && <p role="alert" className="text-small font-semibold text-overdue-text">{error}</p>}
       </div>
     </Sheet>
   );

@@ -6,7 +6,7 @@ import { Calendar, RefreshCw } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
-import { Button, Card, Divider, Row, SkeletonRow, Tag, Toggle, showToast } from "@/components/ui";
+import { Button, Card, Divider, PawDotsLoader, Row, SkeletonRow, Toggle, showToast } from "@/components/ui";
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
   comida: "Comidas",
@@ -141,36 +141,36 @@ export function CalendarIntegration() {
           </div>
           <Divider className="mx-0" />
           <fieldset className="px-4 py-2" disabled={saving || !integration.sync_enabled}>
-            <legend className="pt-2 text-[13px] font-semibold text-on-variant">Tipos de evento a sincronizar</legend>
+            <legend className="pt-2 text-small font-semibold text-text-secondary">Tipos de evento a sincronizar</legend>
             {ALL_EVENT_TYPES.map((type) => {
               const checked = (integration.synced_event_types ?? []).includes(type);
               return (
-                <label key={type} className={cn("flex min-h-[44px] cursor-pointer items-center gap-3", !integration.sync_enabled && "opacity-50")}>
+                <label key={type} className={cn("flex min-h-11 cursor-pointer items-center gap-3", !integration.sync_enabled && "opacity-50")}>
                   <input
                     type="checkbox"
                     checked={checked}
                     onChange={(e) => void handleToggleEventType(type, e.target.checked)}
-                    className="h-5 w-5 rounded accent-primary"
+                    className="h-5 w-5 rounded-sm accent-primary"
                   />
-                  <span className="text-[15px] text-on">{EVENT_TYPE_LABELS[type]}</span>
+                  <span className="text-body text-text">{EVENT_TYPE_LABELS[type]}</span>
                 </label>
               );
             })}
           </fieldset>
           <Divider className="mx-0" />
-          <p className="flex items-center gap-1.5 px-4 py-3 text-[12px] text-on-variant">
-            <RefreshCw size={12} aria-hidden="true" />
+          <p className="flex items-center gap-2 px-4 py-3 text-label text-text-secondary">
+            <RefreshCw size={14} aria-hidden="true" />
             Última actualización:{" "}
             {integration.updated_at
               ? new Date(integration.updated_at).toLocaleString("es-ES", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
               : "nunca"}
-            {saving && <Tag size="xs">Guardando</Tag>}
+            {saving && <PawDotsLoader size={16} label="Guardando" />}
           </p>
         </Card>
       )}
 
       {error && (
-        <Card tone="danger" elevation={0} role="alert" className="py-3 text-[14px]">
+        <Card tone="overdue" elevation={0} role="alert" className="py-3 text-body">
           {error}
         </Card>
       )}

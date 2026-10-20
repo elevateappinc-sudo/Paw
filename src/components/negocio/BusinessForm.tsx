@@ -68,10 +68,10 @@ export function BusinessForm({ initial, userId, onSaved, mode }: { initial: Busi
       {mode === "create" && (
         <Card tone="primary" elevation={0}>
           <div className="flex items-center gap-3">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] bg-surface text-primary"><Building2 size={24} aria-hidden="true" /></span>
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-sm bg-surface text-primary-text"><Building2 size={24} aria-hidden="true" /></span>
             <div>
-              <div className="font-display text-[20px] leading-tight">Registra tu negocio en Paw</div>
-              <p className="mt-0.5 text-[13px]">Aparece en Explorar, recibe reservas y escribe en el historial de las mascotas.</p>
+              <div className="font-semibold text-title leading-tight">Registra tu negocio en Paw</div>
+              <p className="mt-1 text-small">Aparece en Explorar, recibe reservas y escribe en el historial de las mascotas.</p>
             </div>
           </div>
         </Card>
@@ -82,8 +82,8 @@ export function BusinessForm({ initial, userId, onSaved, mode }: { initial: Busi
           <Input label="Nombre del negocio" placeholder="Ej.: Veterinaria Los Pinos" value={v.name} onChange={(e) => set("name", e.target.value)} error={errors.name} />
           <Select label="Categoría principal" options={CATEGORY_OPTIONS} value={v.type} onChange={(e) => set("type", e.target.value as BusinessCategory)} />
           <div>
-            <div className="text-[13px] font-semibold text-on-variant">Otras categorías</div>
-            <ChipRow className="mt-1.5">
+            <div className="text-small font-semibold text-text-secondary">Otras categorías</div>
+            <ChipRow className="mt-2">
               {CATEGORY_OPTIONS.filter((o) => o.value !== v.type).map((o) => (
                 <Chip key={o.value} selected={v.categories.includes(o.value)} onClick={() => toggleCategory(o.value)}>
                   {o.label}
@@ -106,7 +106,7 @@ export function BusinessForm({ initial, userId, onSaved, mode }: { initial: Busi
             <Input label="Latitud" inputMode="decimal" placeholder="4.6533" value={v.lat} onChange={(e) => set("lat", e.target.value)} />
             <Input label="Longitud" inputMode="decimal" placeholder="-74.0567" value={v.lng} onChange={(e) => set("lng", e.target.value)} />
           </div>
-          <Button variant="outline" leading={<MapPin size={18} aria-hidden="true" />} onClick={useMyLocation} loading={geo.status === "loading"}>
+          <Button variant="secondary" leading={<MapPin size={18} aria-hidden="true" />} onClick={useMyLocation} loading={geo.status === "loading"}>
             {geo.status === "denied" ? "Ubicación no permitida" : "Usar mi ubicación actual"}
           </Button>
           <div className="grid grid-cols-2 gap-3">
@@ -117,7 +117,7 @@ export function BusinessForm({ initial, userId, onSaved, mode }: { initial: Busi
       </Card>
 
       <Card>
-        <div className="mb-2 font-display text-[17px] text-on">Horario semanal</div>
+        <div className="mb-2 font-semibold text-subtitle text-text">Horario semanal</div>
         <Toggle label="Urgencias 24 h" description="Abierto siempre; aparece en la hoja SOS" checked={v.emergency_24h} onChange={(c) => set("emergency_24h", c)} />
         <div className="mt-2">
           <HoursEditor value={v.hours} onChange={(h) => set("hours", h)} disabled={v.emergency_24h} />

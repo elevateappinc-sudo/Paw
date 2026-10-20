@@ -2,25 +2,36 @@
 import React, { forwardRef } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
+import { PawDotsLoader } from "./Loaders";
 
+/**
+ * Botones: primario, secundario (borde), fantasma y destructivo.
+ * Tamaños S (32), M (44) y L (52), siempre píldora. Un solo primario por vista.
+ * El tamaño S amplía su área táctil a 44 px con un pseudo-elemento.
+ */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 font-bold rounded-full transition-[transform,background-color,opacity] duration-150 ease-[var(--ease-standard)] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-50 select-none",
+  "relative inline-flex items-center justify-center gap-2 rounded-full font-semibold select-none transition-[transform,background-color,border-color,opacity] duration-[var(--duration-fast)] ease-[var(--ease-standard)] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
         primary: "bg-primary text-on-primary hover:brightness-105",
-        tonal: "bg-primary-container text-on-primary-container hover:brightness-[0.98]",
-        secondary: "bg-surface-2 text-on hover:bg-surface-3",
-        outline: "border border-outline text-primary bg-transparent hover:bg-surface-2",
-        ghost: "bg-transparent text-primary hover:bg-surface-2",
-        danger: "bg-danger text-white hover:brightness-105",
-        dangerTonal: "bg-danger-container text-on-danger-container border border-danger",
+        secondary: "border border-border bg-surface text-text hover:bg-surface-elevated",
+        ghost: "bg-transparent text-primary-text hover:bg-primary-soft",
+        destructive: "bg-danger text-on-danger hover:brightness-105",
+        /** @deprecated usar secondary */
+        outline: "border border-border bg-surface text-text hover:bg-surface-elevated",
+        /** @deprecated usar secondary */
+        tonal: "border border-border bg-surface text-text hover:bg-surface-elevated",
+        /** @deprecated usar destructive */
+        danger: "bg-danger text-on-danger hover:brightness-105",
+        /** Destructivo secundario: borde y texto de peligro */
+        dangerTonal: "border border-danger bg-surface text-danger-text hover:bg-danger-soft",
       },
       size: {
-        sm: "min-h-[36px] px-3 text-[13px]",
-        md: "min-h-[44px] px-4 text-[15px]",
-        lg: "min-h-[54px] px-6 text-[17px]",
-        icon: "min-h-[44px] min-w-[44px] p-0",
+        sm: "min-h-8 px-3 text-label after:absolute after:inset-x-0 after:-inset-y-[6px] after:content-['']",
+        md: "min-h-11 px-4 text-body",
+        lg: "min-h-13 px-6 text-subtitle",
+        icon: "min-h-11 min-w-11 p-0",
       },
       full: {
         true: "w-full",
@@ -34,12 +45,13 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   loading?: boolean;
+  loadingLabel?: string;
   leading?: React.ReactNode;
   trailing?: React.ReactNode;
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, full, loading = false, disabled, leading, trailing, children, ...props }, ref) => (
+  ({ className, variant, size, full, loading = false, loadingLabel = "Guardando", disabled, leading, trailing, children, ...props }, ref) => (
     <button
       ref={ref}
       className={cn(buttonVariants({ variant, size, full }), className)}
@@ -47,16 +59,17 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       aria-busy={loading || undefined}
       {...props}
     >
-      {loading ? (
-        <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-        </svg>
-      ) : (
-        leading
+      {/* Al cargar, el contenido queda invisible (conserva el ancho) y encima va el loader */}
+      <span className={cn("inline-flex items-center justify-center gap-2", loading && "invisible")}>
+        {leading}
+        {children}
+        {trailing}
+      </span>
+      {loading && (
+        <span className="absolute inset-0 flex items-center justify-center">
+          <PawDotsLoader size={size === "lg" ? 20 : 18} label={loadingLabel} inline />
+        </span>
       )}
-      {children}
-      {!loading && trailing}
     </button>
   )
 );

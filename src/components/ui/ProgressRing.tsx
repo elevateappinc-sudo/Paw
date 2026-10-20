@@ -7,17 +7,18 @@ export interface ProgressRingProps {
   value: number;
   size?: number;
   stroke?: number;
-  tone?: "primary" | "warn" | "info" | "danger" | "ok";
+  tone?: "primary" | "warn" | "info" | "danger" | "overdue" | "ok";
   label?: React.ReactNode;
   className?: string;
 }
 
 const toneVar = {
-  primary: "var(--pr)",
-  warn: "var(--wa)",
-  info: "var(--te)",
-  danger: "var(--er)",
-  ok: "var(--ok)",
+  primary: "var(--color-primary)",
+  warn: "var(--color-warning-text)",
+  info: "var(--color-primary-text)",
+  danger: "var(--color-danger)",
+  overdue: "var(--color-overdue)",
+  ok: "var(--color-success)",
 };
 
 export function ProgressRing({ value, size = 56, stroke = 6, tone = "primary", label, className }: ProgressRingProps) {
@@ -28,7 +29,7 @@ export function ProgressRing({ value, size = 56, stroke = 6, tone = "primary", l
   return (
     <div className={cn("relative inline-flex items-center justify-center", className)} style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
-        <circle cx={size / 2} cy={size / 2} r={r} stroke="var(--sch)" strokeWidth={stroke} fill="none" />
+        <circle cx={size / 2} cy={size / 2} r={r} stroke="var(--color-border)" strokeWidth={stroke} fill="none" />
         <motion.circle
           cx={size / 2}
           cy={size / 2}
@@ -45,7 +46,7 @@ export function ProgressRing({ value, size = 56, stroke = 6, tone = "primary", l
         />
       </svg>
       {label !== undefined && (
-        <div className="absolute inset-0 flex items-center justify-center text-[13px] font-extrabold text-on">{label}</div>
+        <div className="absolute inset-0 flex items-center justify-center text-small font-semibold text-text">{label}</div>
       )}
     </div>
   );
@@ -54,7 +55,7 @@ export function ProgressRing({ value, size = 56, stroke = 6, tone = "primary", l
 export function ProgressBar({ value, tone = "primary", className }: { value: number; tone?: ProgressRingProps["tone"]; className?: string }) {
   const v = Math.max(0, Math.min(1, value));
   return (
-    <div className={cn("h-1.5 w-full overflow-hidden rounded-full bg-surface-3", className)} role="progressbar" aria-valuenow={Math.round(v * 100)} aria-valuemin={0} aria-valuemax={100}>
+    <div className={cn("h-2 w-full overflow-hidden rounded-full bg-border", className)} role="progressbar" aria-valuenow={Math.round(v * 100)} aria-valuemin={0} aria-valuemax={100}>
       <motion.div
         className="h-full rounded-full"
         style={{ background: toneVar[tone ?? "primary"] }}

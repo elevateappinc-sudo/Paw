@@ -2,7 +2,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
-import { Pencil, ShoppingBag, Cookie, Plus, TriangleAlert, Utensils, ArrowRight } from "lucide-react";
+import { Pencil, Cookie, Plus, TriangleAlert, ArrowRight } from "lucide-react";
+import { PetFood as PetFoodIcon, PetShop } from "@/components/icons/pet";
 import { PageHeader, Card, CardHeader, Button, Tag, ProgressBar, EmptyState, Divider } from "@/components/ui";
 import { showToast } from "@/components/ui/Toast";
 import { useActivePet } from "@/hooks/useActivePet";
@@ -134,37 +135,37 @@ export function AlimentacionView() {
 
       {error ? (
         <div className="px-4">
-          <EmptyState tone="danger" title="No pudimos cargar" description={error} action={<Button full onClick={() => void load(pet.id)}>Reintentar</Button>} />
+          <EmptyState title="No pudimos cargar" description={error} action={<Button full onClick={() => void load(pet.id)}>Reintentar</Button>} />
         </div>
       ) : (
         <motion.div variants={stagger()} initial="hidden" animate="show" className="flex flex-col gap-3 px-4">
           {/* Alimento actual */}
           <motion.div variants={fadeUp}>
             {hasFoodData(food) ? (
-              <Card className="bg-gradient-to-br from-surface to-surface-2">
+              <Card className="bg-gradient-to-br from-surface to-surface-elevated">
                 <CardHeader
                   title="Alimento actual"
                   subtitle={currentFoodLabel || "Sin marca"}
-                  action={<button type="button" onClick={() => setShowEdit(true)} className="min-h-[36px]">Editar</button>}
+                  action={<button type="button" onClick={() => setShowEdit(true)} className="min-h-11">Editar</button>}
                 />
-                <p className="text-[13px] text-on-variant">
+                <p className="text-small text-text-secondary">
                   {food?.bag_kg ? `Bolsa de ${food.bag_kg} kg` : "Tamaño de bolsa sin registrar"}
                   {food?.opened_at ? ` · abierta el ${shortDate(food.opened_at)}` : ""}
                 </p>
                 {restock ? (
                   <div className="mt-3">
-                    <div className="mb-1.5 flex items-center justify-between text-[13px]">
-                      <span className="font-bold text-on">Queda {Math.round(restock.pctLeft * 100)} %</span>
-                      <span className={cn("font-semibold", restock.daysLeft <= 3 ? "text-warn" : "text-on-variant")}>
+                    <div className="mb-2 flex items-center justify-between text-small">
+                      <span className="font-semibold text-text">Queda {Math.round(restock.pctLeft * 100)} %</span>
+                      <span className={cn("font-semibold", restock.daysLeft <= 3 ? "text-warning-text" : "text-text-secondary")}>
                         Recompra estimada: {longDate(restock.date)}
                       </span>
                     </div>
                     <ProgressBar value={restock.pctLeft} tone={restock.daysLeft <= 3 ? "warn" : "primary"} />
                   </div>
                 ) : (
-                  <p className="mt-3 text-[13px] text-on-variant">Añade bolsa, fecha de apertura y gramos por día para estimar la recompra.</p>
+                  <p className="mt-3 text-small text-text-secondary">Añade bolsa, fecha de apertura y gramos por día para estimar la recompra.</p>
                 )}
-                <Button full className="mt-4" leading={<ShoppingBag size={18} />} onClick={() => router.push("/explorar?cat=tienda")}>
+                <Button full className="mt-4" leading={<PetShop size={18} />} onClick={() => router.push("/explorar?cat=tienda")}>
                   Pedir en tienda cercana
                 </Button>
               </Card>
@@ -172,7 +173,7 @@ export function AlimentacionView() {
               <Card tone="container" elevation={0}>
                 <EmptyState
                   compact
-                  icon={<Utensils size={24} />}
+                  icon={<PetFoodIcon size={24} />}
                   title="Cuéntanos qué come"
                   description={`Con la marca, la bolsa y la ración te avisamos cuándo comprar más para ${pet.name}.`}
                   action={<Button full onClick={() => setShowEdit(true)}>Añadir alimento</Button>}
@@ -191,7 +192,7 @@ export function AlimentacionView() {
             <Card>
               <CardHeader title="Snacks de hoy" action={snacksMax > 0 ? `${Math.min(day.snacks, snacksMax)} de ${snacksMax}` : undefined} />
               {snacksMax > 0 ? (
-                <div className="flex gap-1.5" role="group" aria-label="Snacks dados hoy">
+                <div className="flex gap-2" role="group" aria-label="Snacks dados hoy">
                   {Array.from({ length: snacksMax }, (_, i) => {
                     const filled = i < day.snacks;
                     return (
@@ -201,7 +202,7 @@ export function AlimentacionView() {
                         aria-pressed={filled}
                         aria-label={`Snack ${i + 1}`}
                         onClick={() => day.setSnacks(filled && i === day.snacks - 1 ? i : i + 1)}
-                        className={cn("flex h-11 flex-1 items-center justify-center rounded-control transition-colors active:scale-95", filled ? "bg-primary text-on-primary" : "bg-surface-2 text-on-variant")}
+                        className={cn("flex h-11 flex-1 items-center justify-center rounded-md transition-colors active:scale-95", filled ? "bg-accent text-on-accent" : "bg-surface-elevated text-text-secondary")}
                       >
                         <Cookie size={18} />
                       </button>
@@ -209,27 +210,27 @@ export function AlimentacionView() {
                   })}
                 </div>
               ) : (
-                <p className="text-[14px] text-on-variant">Sin snacks configurados. Añádelos al editar la alimentación.</p>
+                <p className="text-body text-text-secondary">Sin snacks configurados. Añádelos al editar la alimentación.</p>
               )}
-              <p className="mt-2 text-[12px] text-on-variant">Máximo 10 % de las calorías del día.</p>
+              <p className="mt-2 text-label text-text-secondary">Máximo 10 % de las calorías del día.</p>
             </Card>
           </motion.div>
 
           {/* Nunca */}
           {(toxic.length > 0 || allergies.length > 0) && (
             <motion.div variants={fadeUp}>
-              <Card className="ring-1 ring-danger/40">
+              <Card className="border-warning">
                 <CardHeader
                   title={
-                    <span className="inline-flex items-center gap-1.5">
-                      <TriangleAlert size={18} className="text-danger" aria-hidden="true" />
+                    <span className="inline-flex items-center gap-2">
+                      <TriangleAlert size={18} className="text-warning-text" aria-hidden="true" />
                       Nunca para {speciesPlural}
                     </span>
                   }
-                  action={toxic.length > 0 ? <button type="button" onClick={() => setShowToxic(true)} className="min-h-[36px]">Ver lista</button> : undefined}
+                  action={toxic.length > 0 ? <button type="button" onClick={() => setShowToxic(true)} className="min-h-11">Ver lista</button> : undefined}
                 />
-                <div className="flex flex-wrap gap-1.5">
-                  {toxic.slice(0, 6).map((f) => <Tag key={f} tone="danger">{f}</Tag>)}
+                <div className="flex flex-wrap gap-2">
+                  {toxic.slice(0, 6).map((f) => <Tag key={f} tone="warn">{f}</Tag>)}
                   {allergies.map((a) => <Tag key={`al-${a}`} tone="warn">Alergia: {a}</Tag>)}
                 </div>
               </Card>
@@ -243,27 +244,27 @@ export function AlimentacionView() {
                 <CardHeader
                   title="Cambios de dieta"
                   action={
-                    <button type="button" onClick={() => setShowChange(true)} className="inline-flex min-h-[36px] items-center gap-1">
+                    <button type="button" onClick={() => setShowChange(true)} className="inline-flex min-h-11 items-center gap-1">
                       <Plus size={16} /> Añadir
                     </button>
                   }
                 />
               </div>
               {changes.length === 0 ? (
-                <p className="px-4 pb-4 text-[14px] text-on-variant">Sin cambios registrados. Anota cada cambio de alimento para seguir cómo le sienta.</p>
+                <p className="px-4 pb-4 text-body text-text-secondary">Sin cambios registrados. Anota cada cambio de alimento para seguir cómo le sienta.</p>
               ) : (
                 <ul className="pb-2">
                   {changes.map((c, i) => (
                     <li key={`${c.date}-${i}`}>
                       {i > 0 && <Divider />}
                       <div className="px-4 py-3">
-                        <div className="text-[12px] font-semibold text-on-variant">{longDate(c.date)}</div>
-                        <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[15px] font-bold text-on">
-                          <span className="text-on-variant">{c.from || "—"}</span>
-                          <ArrowRight size={14} className="text-on-variant" aria-hidden="true" />
+                        <div className="text-label font-semibold text-text-secondary">{longDate(c.date)}</div>
+                        <div className="mt-1 flex flex-wrap items-center gap-2 text-body font-semibold text-text">
+                          <span className="text-text-secondary">{c.from || "—"}</span>
+                          <ArrowRight size={14} className="text-text-secondary" aria-hidden="true" />
                           <span>{c.to || "—"}</span>
                         </div>
-                        {c.reason && <div className="text-[13px] text-on-variant">{c.reason}</div>}
+                        {c.reason && <div className="text-small text-text-secondary">{c.reason}</div>}
                       </div>
                     </li>
                   ))}

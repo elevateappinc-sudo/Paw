@@ -5,7 +5,7 @@ import { useStore } from "@/store";
 import { getMonthKey, getMonthLabel, formatCurrency } from "@/lib/utils";
 
 /** Paleta por tokens: cambia sola con el tema. */
-const PALETTE = ["var(--pr)", "var(--te)", "var(--wa)", "var(--olv)", "var(--prc)", "var(--tec)"];
+const PALETTE = ["var(--color-primary)", "var(--color-primary-text)", "var(--color-warning-text)", "var(--color-border)", "var(--color-primary-soft)", "var(--color-info-soft)"];
 
 interface GastosChartProps {
   onMonthClick: (month: string) => void;
@@ -16,20 +16,20 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
   if (!active || !payload?.length) return null;
   const total = payload.reduce((s, p) => s + (p.value || 0), 0);
   return (
-    <div className="min-w-[160px] rounded-card border border-outline-variant bg-surface px-3 py-2.5 shadow-2">
-      <p className="mb-2 text-[13px] font-bold text-on">{label}</p>
+    <div className="min-w-[160px] rounded-md border border-border bg-surface px-3 py-3 shadow-2">
+      <p className="mb-2 text-small font-semibold text-text">{label}</p>
       {payload.map((p) => (
         <div key={p.name} className="mb-1 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full" style={{ background: p.fill }} aria-hidden="true" />
-            <span className="text-[12px] text-on-variant">{p.name}</span>
+            <span className="text-label text-text-secondary">{p.name}</span>
           </div>
-          <span className="text-[12px] font-semibold text-on">{formatCurrency(p.value)}</span>
+          <span className="text-label font-semibold text-text">{formatCurrency(p.value)}</span>
         </div>
       ))}
-      <div className="mt-2 flex justify-between border-t border-outline-variant pt-2">
-        <span className="text-[12px] text-on-variant">Total</span>
-        <span className="text-[12px] font-bold text-on">{formatCurrency(total)}</span>
+      <div className="mt-2 flex justify-between border-t border-border pt-2">
+        <span className="text-label text-text-secondary">Total</span>
+        <span className="text-label font-semibold text-text">{formatCurrency(total)}</span>
       </div>
     </div>
   );
@@ -55,9 +55,9 @@ export function GastosChart({ onMonthClick, selectedMonth }: GastosChartProps) {
 
   if (data.length === 0) {
     return (
-      <div className="flex h-40 flex-col items-center justify-center gap-1 rounded-card bg-surface-2">
-        <p className="text-[14px] font-semibold text-on-variant">Sin datos todavía</p>
-        <p className="text-[12px] text-on-variant">Agrega gastos para ver el gráfico</p>
+      <div className="flex h-40 flex-col items-center justify-center gap-1 rounded-md bg-surface-elevated">
+        <p className="text-body font-semibold text-text-secondary">Sin datos todavía</p>
+        <p className="text-label text-text-secondary">Agrega gastos para ver el gráfico</p>
       </div>
     );
   }
@@ -73,15 +73,15 @@ export function GastosChart({ onMonthClick, selectedMonth }: GastosChartProps) {
             if (dd?.activePayload?.[0]) onMonthClick(dd.activePayload[0].payload.month);
           }}
         >
-          <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--onv)", fontWeight: 600 }} axisLine={false} tickLine={false} />
+          <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--color-text-secondary)", fontWeight: 600 }} axisLine={false} tickLine={false} />
           <YAxis
-            tick={{ fontSize: 10, fill: "var(--onv)" }}
+            tick={{ fontSize: 10, fill: "var(--color-text-secondary)" }}
             axisLine={false}
             tickLine={false}
             tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`}
             width={36}
           />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: "var(--sc)" }} />
+          <Tooltip content={<CustomTooltip />} cursor={{ fill: "var(--color-surface-elevated)" }} />
           {allConceptos.map((concepto, i) => (
             <Bar
               key={concepto}
@@ -97,7 +97,7 @@ export function GastosChart({ onMonthClick, selectedMonth }: GastosChartProps) {
           ))}
         </BarChart>
       </ResponsiveContainer>
-      <p className="mt-1 text-center text-[11px] text-on-variant">Toca un mes para ver el detalle</p>
+      <p className="mt-1 text-center text-label text-text-secondary">Toca un mes para ver el detalle</p>
     </div>
   );
 }

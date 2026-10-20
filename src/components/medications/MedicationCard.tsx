@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import { Pill, Clock, Check } from "lucide-react";
+import { Clock, Check } from "lucide-react";
+import { PetMedication } from "@/components/icons/pet";
 import { createClient } from "@/lib/supabase/client";
 import { Card, Tag, Button } from "@/components/ui";
 import type { ChipTone } from "@/components/ui/Chip";
@@ -74,7 +75,7 @@ function hasTodayPending(logs: MedicationLogData[]): MedicationLogData | null {
 }
 
 function getBadge(medication: MedicationData): { label: string; tone: ChipTone } {
-  if (!medication.active) return { label: "Suspendido", tone: "danger" };
+  if (!medication.active) return { label: "Suspendido", tone: "neutral" };
   const now = new Date().toISOString().split("T")[0];
   if (medication.end_date && medication.end_date < now) return { label: "Completado", tone: "neutral" };
   return { label: "Activo", tone: "ok" };
@@ -119,24 +120,24 @@ export function MedicationCard({ medication, logs, onUpdate }: Props) {
   return (
     <Card tone={medication.active ? "surface" : "container"} elevation={medication.active ? 1 : 0}>
       <div className="flex items-start gap-3">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-primary-container text-on-primary-container">
-          <Pill size={20} />
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-sm bg-primary-soft text-primary-text">
+          <PetMedication size={20} />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span className="truncate text-[16px] font-bold text-on">{medication.name}</span>
+            <span className="truncate text-subtitle font-semibold text-text">{medication.name}</span>
             <Tag tone={badge.tone} size="xs">{badge.label}</Tag>
           </div>
-          <p className="mt-0.5 text-[13px] text-on-variant">
+          <p className="mt-1 text-small text-text-secondary">
             {medication.dose_amount} {medication.dose_unit} · {frequencyLabel(medication.frequency_value, medication.frequency_unit)}
           </p>
-          {medication.vet_name && <p className="text-[12px] text-on-variant">Vet: {medication.vet_name}</p>}
+          {medication.vet_name && <p className="text-label text-text-secondary">Vet: {medication.vet_name}</p>}
         </div>
       </div>
 
       {nextDose && medication.active && (
-        <div className="mt-3 flex items-center gap-2 rounded-control bg-info-container px-3 py-2 text-[13px] font-bold text-on-info-container">
-          <Clock size={15} className="text-info" aria-hidden="true" />
+        <div className="mt-3 flex items-center gap-2 rounded-md bg-info-soft px-3 py-2 text-small font-semibold text-info-text">
+          <Clock size={16} className="text-info-text" aria-hidden="true" />
           Próxima dosis: {nextDose}
         </div>
       )}
@@ -144,7 +145,7 @@ export function MedicationCard({ medication, logs, onUpdate }: Props) {
       {medication.active && (
         <div className="mt-3 flex gap-2">
           {todayLog && (
-            <Button onClick={() => void handleRegisterDose()} loading={loading} leading={<Check size={16} />} className="flex-[2]" size="sm">
+            <Button variant="secondary" onClick={() => void handleRegisterDose()} loading={loading} leading={<Check size={16} />} className="flex-[2]" size="sm">
               Registrar toma
             </Button>
           )}
