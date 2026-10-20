@@ -2,6 +2,7 @@
 import { usePathname } from "next/navigation";
 import { TabBar } from "./TabBar";
 import { OfflineBanner } from "./OfflineBanner";
+import { SkeletonSync } from "@/components/ui/SkeletonSync";
 
 const PUBLIC_ROUTES = ["/login", "/register", "/auth", "/join", "/shared", "/e"];
 /** Rutas a pantalla completa sin barra de pestañas (flujos, hojas, onboarding) */
@@ -18,9 +19,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const showTabs = !pub && !fullscreen;
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-[640px] flex-col bg-bg md:border-x md:border-outline-variant">
+    <div className="mx-auto flex min-h-dvh w-full max-w-[640px] flex-col bg-bg md:border-x md:border-border">
+      <SkeletonSync />
       {!pub && <OfflineBanner />}
-      <main className={showTabs ? "flex-1 pb-[calc(104px+env(safe-area-inset-bottom))]" : "flex-1"}>{children}</main>
+      {/* --content-bottom-padding: el contenido con scroll nunca queda bajo el menú flotante */}
+      <main className={showTabs ? "pb-content flex-1" : "flex-1"}>{children}</main>
       {showTabs && <TabBar />}
     </div>
   );

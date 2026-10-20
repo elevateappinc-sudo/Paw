@@ -17,12 +17,12 @@ export const DEFAULT_HOURS: BusinessHours = {
   sat: [["09:00", "14:00"]],
 };
 
-export const STATUS_TONE: Record<BookingStatus, { bar: string; tag: "warn" | "info" | "ok" | "neutral" | "danger" }> = {
-  requested: { bar: "bg-warn", tag: "warn" },
-  confirmed: { bar: "bg-info", tag: "info" },
-  completed: { bar: "bg-ok", tag: "ok" },
-  cancelled: { bar: "bg-outline-variant", tag: "neutral" },
-  no_show: { bar: "bg-danger", tag: "danger" },
+export const STATUS_TONE: Record<BookingStatus, { bar: string; tag: "warn" | "info" | "ok" | "neutral" | "overdue" }> = {
+  requested: { bar: "bg-warning", tag: "warn" },
+  confirmed: { bar: "bg-primary", tag: "info" },
+  completed: { bar: "bg-success", tag: "ok" },
+  cancelled: { bar: "bg-border", tag: "neutral" },
+  no_show: { bar: "bg-overdue", tag: "overdue" },
 };
 
 /** Plan actual del negocio (free si no hay suscripción o la tabla no existe). */

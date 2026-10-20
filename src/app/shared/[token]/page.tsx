@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Clock, Lock, Stethoscope } from "lucide-react";
+import { Clock, Lock } from "lucide-react";
+import { PetHealth } from "@/components/icons/pet";
 import { createClient } from "@/lib/supabase/server";
 import { Card, Divider, EmptyState, Tag } from "@/components/ui";
 import type { ClinicalRecord } from "@/types";
@@ -35,8 +36,8 @@ function Unavailable({ icon, description }: { icon: React.ReactNode; description
 
 function Field({ label, value }: { label: string; value: string }) {
   return (
-    <p className="mt-1.5 text-[14px] text-on">
-      <span className="mr-1 text-[11px] font-bold uppercase tracking-wider text-on-variant">{label}</span>
+    <p className="mt-2 text-body text-text">
+      <span className="mr-1 text-label font-semibold uppercase tracking-wider text-text-secondary">{label}</span>
       {value}
     </p>
   );
@@ -66,8 +67,8 @@ export default async function SharedHistorialPage({ params }: PageProps) {
   return (
     <main className="mx-auto min-h-dvh w-full max-w-[640px] bg-bg pb-10">
       <header className="px-4 pt-[max(24px,env(safe-area-inset-top))] pb-4">
-        <div className="text-[13px] font-semibold text-on-variant">{petName}</div>
-        <h1 className="font-display text-[30px] leading-[1.1] text-on">Historial clínico</h1>
+        <div className="text-small font-semibold text-text-secondary">{petName}</div>
+        <h1 className="font-semibold text-display leading-[1.1] text-text">Historial clínico</h1>
         <Tag className="mt-2" tone="info" size="xs">
           Solo lectura · compartido
         </Tag>
@@ -76,7 +77,7 @@ export default async function SharedHistorialPage({ params }: PageProps) {
       <div className="px-4">
         {list.length === 0 ? (
           <Card>
-            <EmptyState compact tone="neutral" icon={<Stethoscope size={24} />} title="Sin registros clínicos" />
+            <EmptyState compact tone="neutral" icon={<PetHealth size={24} />} title="Sin registros clínicos" />
           </Card>
         ) : (
           <Card padded={false} className="overflow-hidden">
@@ -84,12 +85,12 @@ export default async function SharedHistorialPage({ params }: PageProps) {
               <article key={r.id}>
                 {i > 0 && <Divider className="ml-[72px] mr-0" />}
                 <div className="flex items-start gap-3 px-4 py-4">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-primary-container text-on-primary-container">
-                    <Stethoscope size={20} aria-hidden="true" />
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-sm bg-primary-soft text-primary-text">
+                    <PetHealth size={20} aria-hidden="true" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h2 className="text-[16px] font-bold text-on">{VISIT_TYPE_LABELS[r.visit_type] ?? r.visit_type}</h2>
-                    <p className="text-[13px] text-on-variant">
+                    <h2 className="text-subtitle font-semibold text-text">{VISIT_TYPE_LABELS[r.visit_type] ?? r.visit_type}</h2>
+                    <p className="text-small text-text-secondary">
                       {formatDate(r.visit_date)}
                       {r.vet_name && ` · ${r.vet_name}`}
                       {r.clinic_name && ` · ${r.clinic_name}`}

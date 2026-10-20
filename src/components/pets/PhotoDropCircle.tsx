@@ -42,7 +42,7 @@ export function PhotoDropCircle({ preview, onFile, size = "md", label }: { previ
         onDrop={onDrop}
         onPaste={(e) => accept(Array.from(e.clipboardData.files)[0])}
         aria-label={label ?? (preview ? "Cambiar foto" : "Añadir foto")}
-        className={`flex ${dim} shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-dashed bg-surface-2 text-on-variant transition-[border-color,transform,box-shadow] active:scale-95 ${over ? "scale-105 border-primary text-primary shadow-[0_0_0_6px_rgba(53,112,80,0.18)]" : "border-outline"}`}
+        className={`flex ${dim} shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-dashed bg-surface-elevated text-text-secondary transition-[border-color,transform,box-shadow] active:scale-95 ${over ? "scale-105 border-primary text-primary-text ring-4 ring-primary/20" : "border-text-secondary"}`}
       >
         {over ? (
           <ImagePlus size={icon} aria-hidden="true" />

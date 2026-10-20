@@ -1,53 +1,45 @@
 "use client";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
-import { CalendarDays, Footprints, GraduationCap, House, Scissors, ShoppingBag, Siren, Stethoscope } from "lucide-react";
-import { SectionTitle } from "@/components/ui";
-import { cn } from "@/lib/utils";
+import { CalendarDays } from "lucide-react";
+import { PetDaycare, PetGrooming, PetHealth, PetShop, PetTraining, PetWalk } from "@/components/icons/pet";
 
 interface Category {
   label: string;
   href: string;
   icon: LucideIcon;
-  tone?: "danger";
 }
 
+/** Urgencias no va aquí: el botón SOS ya está siempre visible arriba */
 const CATEGORIES: Category[] = [
-  { label: "Veterinaria", href: "/explorar?cat=veterinaria", icon: Stethoscope },
-  { label: "Peluquería", href: "/explorar?cat=peluqueria", icon: Scissors },
-  { label: "Tienda", href: "/explorar?cat=tienda", icon: ShoppingBag },
-  { label: "Paseador", href: "/explorar?cat=paseador", icon: Footprints },
-  { label: "Guardería", href: "/explorar?cat=guarderia", icon: House },
-  { label: "Entrenador", href: "/explorar?cat=entrenador", icon: GraduationCap },
-  { label: "Urgencias", href: "/sos", icon: Siren, tone: "danger" },
+  { label: "Vet", href: "/explorar?cat=veterinaria", icon: PetHealth },
+  { label: "Estética", href: "/explorar?cat=peluqueria", icon: PetGrooming },
+  { label: "Tienda", href: "/explorar?cat=tienda", icon: PetShop },
+  { label: "Paseo", href: "/explorar?cat=paseador", icon: PetWalk },
+  { label: "Guardería", href: "/explorar?cat=guarderia", icon: PetDaycare },
+  { label: "Entreno", href: "/explorar?cat=entrenador", icon: PetTraining },
   { label: "Eventos", href: "/eventos", icon: CalendarDays },
 ];
 
-/** Grilla 4×2 de categorías: cuadrado tintado de 64 px, radio 20 */
+/** Servicios: una fila de íconos circulares con etiqueta de una palabra */
 export function CategoryGrid() {
   return (
-    <section className="px-4" aria-labelledby="home-cats">
-      <SectionTitle>
-        <span id="home-cats">¿Qué necesitas?</span>
-      </SectionTitle>
-      <div className="mt-3 grid grid-cols-4 gap-x-2 gap-y-4">
+    <nav aria-label="Servicios">
+      <ul className="no-scrollbar fade-edge flex gap-4 overflow-x-auto px-4">
         {CATEGORIES.map((c) => {
           const Icon = c.icon;
           return (
-            <Link key={c.label} href={c.href} className="flex flex-col items-center gap-1.5 active:scale-95">
-              <span
-                className={cn(
-                  "flex h-16 w-16 items-center justify-center rounded-[20px]",
-                  c.tone === "danger" ? "bg-danger-container text-danger" : "bg-primary-container text-on-primary-container"
-                )}
-              >
-                <Icon size={26} aria-hidden="true" />
-              </span>
-              <span className="text-[12px] font-bold text-on">{c.label}</span>
-            </Link>
+            <li key={c.label} className="shrink-0">
+              <Link href={c.href} className="pressable flex w-14 flex-col items-center gap-2">
+                <span className="flex h-14 w-14 items-center justify-center rounded-full bg-primary-soft text-primary-text">
+                  <Icon size={24} aria-hidden="true" />
+                </span>
+                <span className="text-label font-semibold text-text-secondary">{c.label}</span>
+              </Link>
+            </li>
           );
         })}
-      </div>
-    </section>
+      </ul>
+    </nav>
   );
 }

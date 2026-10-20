@@ -1,8 +1,10 @@
 "use client";
+import { ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Stethoscope } from "lucide-react";
-import { Card, CardHeader, Skeleton, showToast } from "@/components/ui";
+import { PetHealth } from "@/components/icons/pet";
+import { Skeleton, showToast } from "@/components/ui";
+import { ExpensesTab } from "./ExpensesTab";
 import { createClient } from "@/lib/supabase/client";
 import { fetchCycleLogs } from "@/lib/api/careCycles";
 import { CARE_KIND_ICON } from "@/components/pets/petHelpers";
@@ -25,15 +27,21 @@ type Log = CareCycleLog & { care_cycles: Pick<CareCycle, "name" | "kind"> | null
 export function HistoryTab({ petId }: { petId: string }) {
   const [visits, setVisits] = useState<Visit[] | null>(null);
   const [logs, setLogs] = useState<Log[] | null>(null);
+  const [attempt, setAttempt] = useState(0);
   const toasted = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
+    toasted.current = false;
     const supabase = createClient();
     const warn = () => {
       if (!toasted.current) {
         toasted.current = true;
-        showToast("No pudimos cargar parte del historial", undefined, "error");
+        showToast("No pudimos cargar parte del historial", () => {
+          setVisits(null);
+          setLogs(null);
+          setAttempt((n) => n + 1);
+        }, "error");
       }
     };
     (async () => {
@@ -67,64 +75,66 @@ export function HistoryTab({ petId }: { petId: string }) {
     return () => {
       cancelled = true;
     };
-  }, [petId]);
+  }, [petId, attempt]);
+
+  // Una sola línea de tiempo: visitas y cuidados hechos, lo más reciente primero
+  const items =
+    visits === null || logs === null
+      ? null
+      : [
+          ...visits.map((v) => ({
+            key: `v-${v.id}`,
+            date: v.visit_date,
+            icon: PetHealth,
+            tone: "bg-pastel-lilac text-primary-text",
+            title: `${VISIT_LABEL[v.visit_type] ?? "Visita"}${v.diagnosis ? ` · ${v.diagnosis}` : ""}`,
+            place: v.clinic_name ?? v.vet_name ?? null,
+          })),
+          ...logs.map((l) => ({
+            key: `l-${l.id}`,
+            date: l.done_at,
+            icon: CARE_KIND_ICON[l.care_cycles?.kind ?? "other"],
+            tone: "bg-pastel-mint text-success-text",
+            title: l.care_cycles?.name ?? "Cuidado",
+            place: l.business_name ?? l.product ?? null,
+          })),
+        ]
+          .sort((a, b) => b.date.localeCompare(a.date))
+          .slice(0, 8);
 
   return (
     <div className="flex flex-col gap-4 px-4 pt-4">
-      <Card padded={false}>
-        <CardHeader title="Visitas" subtitle="Últimas 5 del historial clínico" className="px-4 pt-4" action={<Link href={`/salud/historial?pet=${petId}`}>Ver todo</Link>} />
-        {visits === null ? (
-          <div className="flex flex-col gap-2 px-4 pb-4">
+      <section aria-labelledby="history-title" className="overflow-hidden rounded-xl border border-border bg-surface">
+        <div className="flex items-center justify-between gap-3 py-2 pr-2 pl-4">
+          <h3 id="history-title" className="text-subtitle font-semibold text-text">
+            Actividad reciente
+          </h3>
+          <Link href={`/salud/historial?pet=${petId}`} aria-label="Ver todo el historial" className="pressable flex h-11 w-11 items-center justify-center rounded-full text-text-secondary">
+            <ChevronRight size={20} aria-hidden="true" />
+          </Link>
+        </div>
+        {items === null ? (
+          <div className="flex flex-col gap-2 px-4 pb-4" aria-hidden="true">
             {[0, 1, 2].map((i) => (
               <Skeleton key={i} className="h-12 w-full" />
             ))}
           </div>
-        ) : visits.length === 0 ? (
-          <p className="px-4 pb-4 text-[14px] text-on-variant">Sin visitas registradas.</p>
+        ) : items.length === 0 ? (
+          <p className="px-4 pb-4 text-small text-text-secondary">Aún no hay visitas ni cuidados registrados.</p>
         ) : (
-          <ul>
-            {visits.map((v) => (
-              <li key={v.id} className="flex items-center gap-3 border-t border-outline-variant px-4 py-3">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-info-container text-info">
-                  <Stethoscope size={20} aria-hidden="true" />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[15px] font-bold text-on">{VISIT_LABEL[v.visit_type] ?? "Visita"}{v.diagnosis ? ` · ${v.diagnosis}` : ""}</span>
-                  <span className="block truncate text-[13px] text-on-variant">
-                    {formatDate(v.visit_date)}
-                    {v.clinic_name ? ` · ${v.clinic_name}` : v.vet_name ? ` · ${v.vet_name}` : ""}
-                  </span>
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Card>
-
-      <Card padded={false}>
-        <CardHeader title="Cuidados hechos" subtitle="Últimos registros del plan" className="px-4 pt-4" />
-        {logs === null ? (
-          <div className="flex flex-col gap-2 px-4 pb-4">
-            {[0, 1, 2].map((i) => (
-              <Skeleton key={i} className="h-12 w-full" />
-            ))}
-          </div>
-        ) : logs.length === 0 ? (
-          <p className="px-4 pb-4 text-[14px] text-on-variant">Todavía no has marcado ningún cuidado como hecho.</p>
-        ) : (
-          <ul>
-            {logs.map((l) => {
-              const Icon = CARE_KIND_ICON[l.care_cycles?.kind ?? "other"];
+          <ul className="enter-soft-list">
+            {items.map((it) => {
+              const Icon = it.icon;
               return (
-                <li key={l.id} className="flex items-center gap-3 border-t border-outline-variant px-4 py-3">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-primary-container text-on-primary-container">
+                <li key={it.key} className="flex items-center gap-3 border-t border-border px-4 py-3">
+                  <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-md ${it.tone}`}>
                     <Icon size={20} aria-hidden="true" />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[15px] font-bold text-on">{l.care_cycles?.name ?? "Cuidado"}</span>
-                    <span className="block truncate text-[13px] text-on-variant">
-                      {formatDate(l.done_at)}
-                      {l.business_name ? ` · ${l.business_name}` : l.product ? ` · ${l.product}` : ""}
+                    <span className="block truncate text-body font-semibold text-text">{it.title}</span>
+                    <span className="block truncate text-small text-text-secondary">
+                      {formatDate(it.date.slice(0, 10))}
+                      {it.place ? ` · ${it.place}` : ""}
                     </span>
                   </span>
                 </li>
@@ -132,7 +142,8 @@ export function HistoryTab({ petId }: { petId: string }) {
             })}
           </ul>
         )}
-      </Card>
+      </section>
+      <ExpensesTab petId={petId} />
     </div>
   );
 }

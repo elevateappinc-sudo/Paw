@@ -57,7 +57,7 @@ export function AvatarSelector({ pet, value, onChange }: AvatarSelectorProps) {
   }, [species]);
 
   return (
-    <div className="grid grid-cols-3 gap-2.5" role="radiogroup" aria-label="Avatar">
+    <div className="grid grid-cols-3 gap-3" role="radiogroup" aria-label="Avatar">
       {variants.map((v, i) => {
         const isSelected = value?.seed === v.seed;
         return (
@@ -69,18 +69,18 @@ export function AvatarSelector({ pet, value, onChange }: AvatarSelectorProps) {
             aria-label={v.label}
             onClick={() => onChange({ style: v.style, seed: v.seed })}
             className={cn(
-              "flex flex-col items-center justify-center gap-1.5 rounded-card border-2 p-2.5 transition-[background-color,border-color] active:scale-95",
-              isSelected ? "border-primary bg-primary-container" : "border-transparent bg-surface-2"
+              "flex flex-col items-center justify-center gap-2 rounded-md border-2 p-3 transition-[background-color,border-color] active:scale-95",
+              isSelected ? "border-primary bg-primary-soft" : "border-transparent bg-surface-elevated"
             )}
           >
             {svgs[i] ? (
-              <div className="h-14 w-14 overflow-hidden rounded-control bg-surface" dangerouslySetInnerHTML={{ __html: svgs[i] }} aria-hidden="true" />
+              <div className="h-14 w-14 overflow-hidden rounded-md bg-surface" dangerouslySetInnerHTML={{ __html: svgs[i] }} aria-hidden="true" />
             ) : (
-              <div className="flex h-14 w-14 items-center justify-center rounded-control bg-surface text-on-variant" aria-hidden="true">
+              <div className="flex h-14 w-14 items-center justify-center rounded-md bg-surface text-text-secondary" aria-hidden="true">
                 <PawPrint size={22} />
               </div>
             )}
-            <span className={cn("text-[11px] font-bold", isSelected ? "text-on-primary-container" : "text-on-variant")}>{v.label}</span>
+            <span className={cn("text-label font-semibold", isSelected ? "text-primary-text" : "text-text-secondary")}>{v.label}</span>
           </button>
         );
       })}

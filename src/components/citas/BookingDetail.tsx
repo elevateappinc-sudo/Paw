@@ -65,9 +65,8 @@ export function BookingDetail({ id }: { id: string }) {
   if (error || !booking) {
     return (
       <div className="min-h-dvh bg-bg">
-        <PageHeader title="Cita" back backHref="/citas" large={false} />
+        <PageHeader title="Cita" back backHref="/citas" />
         <EmptyState
-          tone={error ? "danger" : "neutral"}
           title={error ? "No pudimos cargar la cita" : "No encontramos esta cita"}
           description={error ?? "Puede que la hayas cancelado o que ya no exista."}
           action={error ? <Button full variant="secondary" onClick={() => setReload((n) => n + 1)}>Reintentar</Button> : <Button full variant="secondary" onClick={() => router.push("/citas")}>Ver mis citas</Button>}
@@ -85,24 +84,24 @@ export function BookingDetail({ id }: { id: string }) {
 
   return (
     <div className="min-h-dvh bg-bg pb-[calc(32px+env(safe-area-inset-bottom))]">
-      <PageHeader title="Tu cita" back backHref="/citas" large={false} />
+      <PageHeader title="Tu cita" back backHref="/citas" />
       <div className="flex flex-col gap-4 px-4 pt-2">
         <Card padded={false} className="overflow-hidden">
-          <div className="relative h-[140px] bg-surface-3">
+          <div className="relative h-36 bg-border">
             {photo ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={photo} alt="" className="h-full w-full object-cover" />
             ) : (
-              <div className="h-full w-full bg-gradient-to-br from-surface-2 to-primary-container" aria-hidden="true" />
+              <div className="h-full w-full bg-gradient-to-br from-surface-elevated to-primary-soft" aria-hidden="true" />
             )}
             <Tag tone={STATUS_TONE[booking.status]} className="absolute left-3 top-3 shadow-1">
               {STATUS_LABEL[booking.status]}
             </Tag>
           </div>
           <div className="p-4">
-            <h2 className="font-display text-[22px] leading-tight text-on">{bookingTitle(booking)}</h2>
+            <h2 className="font-semibold text-title leading-tight text-text">{bookingTitle(booking)}</h2>
             {biz && (
-              <Link href={`/negocios/${biz.id}`} className="mt-0.5 inline-block text-[14px] font-bold text-primary">
+              <Link href={`/negocios/${biz.id}`} className="mt-1 inline-block text-body font-semibold text-primary-text">
                 {biz.name}
               </Link>
             )}
@@ -113,12 +112,12 @@ export function BookingDetail({ id }: { id: string }) {
               {biz?.address && <InfoCell label="Dirección" value={biz.address} className="col-span-2" />}
             </div>
             {booking.business_notes && (
-              <div className="mt-3 rounded-control bg-surface-2 px-3 py-2">
-                <p className="text-[11px] font-bold text-on-variant">Nota del negocio</p>
-                <p className="mt-0.5 text-[13px] text-on">{booking.business_notes}</p>
+              <div className="mt-3 rounded-md bg-surface-elevated px-3 py-2">
+                <p className="text-label font-semibold text-text-secondary">Nota del negocio</p>
+                <p className="mt-1 text-small text-text">{booking.business_notes}</p>
               </div>
             )}
-            {canCancel(booking) && <p className="mt-3 text-[13px] text-on-variant">Cancela gratis hasta 24 h antes.</p>}
+            {canCancel(booking) && <p className="mt-3 text-small text-text-secondary">Cancela gratis hasta 24 h antes.</p>}
           </div>
         </Card>
 
@@ -136,7 +135,7 @@ export function BookingDetail({ id }: { id: string }) {
         </div>
 
         {booking.status !== "cancelled" && (
-          <a href={bookingCalendarLink(booking)} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: "tonal" }), "w-full")}>
+          <a href={bookingCalendarLink(booking)} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: "secondary" }), "w-full")}>
             <CalendarPlus size={18} /> Añadir al calendario
           </a>
         )}
@@ -155,7 +154,7 @@ export function BookingDetail({ id }: { id: string }) {
         subtitle={bookingWhenLong(booking)}
         footer={
           <div className="flex flex-col gap-2">
-            <Button full variant="danger" onClick={cancel} loading={cancelling}>
+            <Button full variant="destructive" onClick={cancel} loading={cancelling}>
               Sí, cancelar
             </Button>
             <Button full variant="ghost" onClick={() => setConfirmCancel(false)}>
@@ -164,7 +163,7 @@ export function BookingDetail({ id }: { id: string }) {
           </div>
         }
       >
-        <p className="text-[15px] leading-relaxed text-on-variant">
+        <p className="text-body leading-relaxed text-text-secondary">
           Avisaremos a {biz?.name ?? "el negocio"}. Si faltan menos de 24 h, es posible que te cobren una parte.
         </p>
       </Sheet>

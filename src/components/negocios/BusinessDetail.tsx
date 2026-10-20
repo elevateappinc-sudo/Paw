@@ -132,13 +132,12 @@ export function BusinessDetail({ id }: { id: string }) {
   if (error || !biz) {
     return (
       <div className="flex min-h-dvh flex-col bg-bg">
-        <div className="px-4 pt-[max(14px,env(safe-area-inset-top))]">
+        <div className="px-4 pt-[max(16px,env(safe-area-inset-top))]">
           <Link href="/explorar" className={buttonVariants({ variant: "secondary", size: "sm" })}>
             Volver a Explorar
           </Link>
         </div>
         <EmptyState
-          tone={error ? "danger" : "neutral"}
           title={error ? "No pudimos cargar este lugar" : "No encontramos este lugar"}
           description={error ?? "Puede que ya no esté disponible."}
           action={error ? <Button full variant="secondary" onClick={() => setReload((n) => n + 1)}>Reintentar</Button> : undefined}
@@ -166,21 +165,21 @@ export function BusinessDetail({ id }: { id: string }) {
       <div className="flex flex-col gap-4 px-4 pt-4">
         <header>
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="font-display text-[26px] leading-[1.1] text-on">{biz.name}</h1>
+            <h1 className="font-semibold text-display leading-[1.1] text-text">{biz.name}</h1>
             {biz.verified && <Verified />}
           </div>
-          <p className="mt-1 text-[14px] text-on-variant">{meta}</p>
-          <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[14px]">
-            {biz.rating_count > 0 ? <Rating value={biz.rating_avg} count={biz.rating_count} className="text-[14px]" /> : <span className="text-on-variant">Sin reseñas aún</span>}
-            <span className="text-outline-variant" aria-hidden="true">·</span>
+          <p className="mt-1 text-body text-text-secondary">{meta}</p>
+          <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-body">
+            {biz.rating_count > 0 ? <Rating value={biz.rating_avg} count={biz.rating_count} className="text-body" /> : <span className="text-text-secondary">Sin reseñas aún</span>}
+            <span className="text-border" aria-hidden="true">·</span>
             {biz.emergency_24h ? (
-              <span className="font-bold text-ok">Abierto 24 h</span>
+              <span className="font-semibold text-success-text">Abierto 24 h</span>
             ) : open ? (
-              <span className="font-bold text-ok">
-                Abierto{closes ? <span className="font-semibold text-on-variant"> · {closes}</span> : null}
+              <span className="font-semibold text-success-text">
+                Abierto{closes ? <span className="font-semibold text-text-secondary"> · {closes}</span> : null}
               </span>
             ) : (
-              <span className="font-bold text-on-variant">Cerrado{closes ? ` · ${closes}` : ""}</span>
+              <span className="font-semibold text-text-secondary">Cerrado{closes ? ` · ${closes}` : ""}</span>
             )}
           </div>
         </header>
@@ -199,12 +198,12 @@ export function BusinessDetail({ id }: { id: string }) {
 
         {biz.writes_history && (
           <Card tone="info" elevation={0} className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-surface text-ok">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-surface text-success-text">
               <ClipboardCheck size={20} />
             </div>
             <div>
-              <p className="text-[15px] font-bold">Escribe en el historial de {pet?.name ?? "tu mascota"}</p>
-              <p className="mt-0.5 text-[13px] leading-relaxed">Al terminar el servicio, el negocio lo registra con fecha, precio y foto. Tú no tienes que anotar nada.</p>
+              <p className="text-body font-semibold">Escribe en el historial de {pet?.name ?? "tu mascota"}</p>
+              <p className="mt-1 text-small leading-relaxed">Al terminar el servicio, el negocio lo registra con fecha, precio y foto. Tú no tienes que anotar nada.</p>
             </div>
           </Card>
         )}
@@ -226,7 +225,7 @@ export function BusinessDetail({ id }: { id: string }) {
 
         {biz.description && (
           <Card>
-            <p className="text-[14px] leading-relaxed text-on">{biz.description}</p>
+            <p className="text-body leading-relaxed text-text">{biz.description}</p>
           </Card>
         )}
       </div>

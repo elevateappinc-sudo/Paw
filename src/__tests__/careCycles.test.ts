@@ -20,6 +20,7 @@ describe("ciclos de cuidado", () => {
   test("urgencia según días", () => {
     expect(cycleUrgency({ next_due_at: iso(addDays(-1)), interval_days: 30 })).toBe("overdue");
     expect(cycleUrgency({ next_due_at: iso(addDays(2)), interval_days: 30 })).toBe("soon");
+    expect(cycleUrgency({ next_due_at: iso(addDays(7)), interval_days: 30 })).toBe("soon");
     expect(cycleUrgency({ next_due_at: iso(addDays(10)), interval_days: 30 })).toBe("upcoming");
     expect(cycleUrgency({ next_due_at: iso(addDays(40)), interval_days: 90 })).toBe("ok");
   });

@@ -64,7 +64,7 @@ export function GastoForm({ open, onClose, editGasto }: GastoFormProps) {
           placeholder="0"
           value={monto}
           onChange={(e) => setMonto(e.target.value)}
-          leading={<span className="text-[18px] font-bold">$</span>}
+          leading={<span className="text-subtitle font-semibold">$</span>}
         />
         <OptionChips label="Concepto" options={conceptos} value={concepto} onChange={setConcepto} onAddOption={addConcepto} addPlaceholder="Nuevo concepto" />
         <Input label="Fecha" type="date" required value={fecha} onChange={(e) => setFecha(e.target.value)} />

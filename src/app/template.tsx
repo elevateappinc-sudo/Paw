@@ -1,13 +1,9 @@
-"use client";
-import { motion, useReducedMotion } from "motion/react";
-import { page, reducedPage } from "@/lib/motion";
-
-/** Transición de página: fade + 12 px de desplazamiento en 200 ms. */
+/**
+ * Transición de página: fundido cruzado en --duration-base.
+ * Es animación CSS (.page-enter) y no de JS, para que el contenido que llega
+ * renderizado del servidor se vea desde el primer pintado, sin esperar a
+ * que hidrate (con motion el HTML llegaba con opacity: 0).
+ */
 export default function Template({ children }: { children: React.ReactNode }) {
-  const reduce = useReducedMotion();
-  return (
-    <motion.div variants={reduce ? reducedPage : page} initial="initial" animate="animate" className="min-h-dvh">
-      {children}
-    </motion.div>
-  );
+  return <div className="page-enter min-h-dvh">{children}</div>;
 }

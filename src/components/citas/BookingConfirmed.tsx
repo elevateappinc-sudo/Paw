@@ -21,13 +21,13 @@ export function BookingConfirmed({ booking }: { booking: Booking }) {
   return (
     <div className="min-h-dvh bg-bg px-4 pb-[calc(32px+env(safe-area-inset-bottom))] pt-[max(40px,env(safe-area-inset-top))]">
       <div className="flex flex-col items-center text-center">
-        <motion.div variants={reduce ? undefined : pop} initial="hidden" animate="show" className="flex h-[112px] w-[112px] items-center justify-center rounded-full bg-primary-container">
-          <div className="flex h-[80px] w-[80px] items-center justify-center rounded-full bg-primary text-on-primary">
+        <motion.div variants={reduce ? undefined : pop} initial="hidden" animate="show" className="flex h-28 w-28 items-center justify-center rounded-full bg-primary-soft">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary text-on-primary">
             <Check size={44} strokeWidth={3} aria-hidden="true" />
           </div>
         </motion.div>
-        <h1 className="mt-5 font-display text-[28px] leading-tight text-on">Reserva confirmada</h1>
-        <p className="mt-1 text-[15px] text-on-variant">{biz?.name ?? "El negocio"} ya la tiene en su agenda</p>
+        <h1 className="mt-6 font-semibold text-display leading-tight text-text">Reserva confirmada</h1>
+        <p className="mt-1 text-body text-text-secondary">{biz?.name ?? "El negocio"} ya la tiene en su agenda</p>
       </div>
 
       <Card className="mt-6">
@@ -39,24 +39,24 @@ export function BookingConfirmed({ booking }: { booking: Booking }) {
           <InfoCell label="Pago" value="Se paga en el local" />
           {biz?.address && <InfoCell label="Dirección" value={biz.address} className="col-span-2" />}
         </div>
-        <div className="mt-3 flex items-center justify-between gap-3 rounded-control bg-primary-container px-3 py-2.5 text-on-primary-container">
-          <span className="text-[12px] font-semibold">Código de reserva</span>
-          <span className="font-mono text-[15px] font-bold">{bookingCode(booking)}</span>
+        <div className="mt-3 flex items-center justify-between gap-3 rounded-md bg-primary-soft px-3 py-3 text-primary-text">
+          <span className="text-label font-semibold">Código de reserva</span>
+          <span className="font-mono text-body font-semibold">{bookingCode(booking)}</span>
         </div>
-        <p className="mt-3 text-center text-[13px] text-on-variant">Cancela gratis hasta 24 h antes</p>
+        <p className="mt-3 text-center text-small text-text-secondary">Cancela gratis hasta 24 h antes</p>
       </Card>
 
       <section className="mt-6">
-        <h2 className="font-display text-[20px] text-on">Qué pasa ahora</h2>
+        <h2 className="font-semibold text-title text-text">Qué pasa ahora</h2>
         <ol className="mt-3 flex flex-col gap-3">
           {steps.map((s, i) => (
             <li key={s.title} className="flex gap-3">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-2 text-[13px] font-bold text-on" aria-hidden="true">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-elevated text-small font-semibold text-text" aria-hidden="true">
                 {i + 1}
               </span>
               <div>
-                <p className="text-[15px] font-bold text-on">{s.title}</p>
-                <p className="text-[13px] leading-relaxed text-on-variant">{s.body}</p>
+                <p className="text-body font-semibold text-text">{s.title}</p>
+                <p className="text-small leading-relaxed text-text-secondary">{s.body}</p>
               </div>
             </li>
           ))}

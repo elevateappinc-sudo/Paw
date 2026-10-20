@@ -4,14 +4,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Bell, ChevronLeft, Info, PartyPopper } from "lucide-react";
-import { ProgressBar, Input, SegmentedControl, Toggle, Button, Card, buttonVariants, showToast } from "@/components/ui";
+import { ProgressBar, Input, SegmentedControl, Toggle, Button, Card, SEVERITY, buttonVariants, showToast } from "@/components/ui";
 import { SOSButton } from "@/components/layout/SOSButton";
 import { ChipsInput } from "@/components/pets/ChipsInput";
 import { uploadPetProfilePhoto } from "@/components/pets/petPhoto";
 import { PhotoDropCircle } from "@/components/pets/PhotoDropCircle";
-import { CARE_KIND_ICON } from "@/components/pets/petHelpers";
+import { CARE_KIND_ICON, cycleSeverity } from "@/components/pets/petHelpers";
 import { createPet, lifeStage, updatePetProfile } from "@/lib/api/pets";
 import { fetchCareCycles, regenerateCycles, daysUntil, dueLabel } from "@/lib/api/careCycles";
+import { cn } from "@/lib/utils";
 import { PriorHistorySheet, cyclesWithoutHistory } from "@/components/salud/PriorHistorySheet";
 import { ClipboardList } from "lucide-react";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
@@ -66,6 +67,7 @@ export function NewPetFlow({ userId, mode = "new" }: { userId: string; mode?: "n
   const [created, setCreated] = useState<{ id: string; name: string } | null>(null);
   const [plan, setPlan] = useState<CareCycle[] | null>(null);
   const [finishing, setFinishing] = useState(false);
+  const [nameError, setNameError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!photo) {
@@ -83,7 +85,7 @@ export function NewPetFlow({ userId, mode = "new" }: { userId: string; mode?: "n
 
   async function persist(minimal: boolean) {
     if (!nameOk) {
-      showToast("Ponle un nombre al menos", undefined, "error");
+      setNameError("Ponle un nombre al menos");
       setStep(1);
       return null;
     }
@@ -188,19 +190,19 @@ export function NewPetFlow({ userId, mode = "new" }: { userId: string; mode?: "n
   return (
     <div className="flex min-h-dvh flex-col pb-[max(20px,env(safe-area-inset-bottom))]">
       {/* Cabecera compuesta como PageHeader: atrás controla el paso, "Después" guarda lo mínimo, SOS siempre */}
-      <header className="flex items-center justify-between gap-3 px-4 pt-[max(14px,env(safe-area-inset-top))] pb-2">
+      <header className="flex items-center justify-between gap-3 px-4 pt-[max(16px,env(safe-area-inset-top))] pb-3">
         <div className="flex min-w-0 items-center gap-2">
           {step !== 3 && (
             <button
               type="button"
               onClick={() => (step === 2 ? setStep(1) : mode === "new" ? router.push("/mascotas") : router.back())}
               aria-label="Volver"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-surface-2 text-on active:scale-95"
+              className="pressable flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-text"
             >
               <ChevronLeft size={22} aria-hidden="true" />
             </button>
           )}
-          <div className="text-[13px] font-semibold text-on-variant">Paso {step} de 3</div>
+          <div className="text-small text-text-secondary">Paso {step} de 3</div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {step !== 3 && (
@@ -217,21 +219,31 @@ export function NewPetFlow({ userId, mode = "new" }: { userId: string; mode?: "n
         </div>
       )}
       <div className="px-4 pt-4">
-        <h1 className="font-display text-[28px] leading-[1.1] text-on">{title}</h1>
-        <p className="mt-1.5 text-[15px] text-on-variant">{subtitle}</p>
+        <h1 className="font-semibold text-display leading-[1.1] text-text">{title}</h1>
+        <p className="mt-2 text-body text-text-secondary">{subtitle}</p>
       </div>
 
       <AnimatePresence mode="wait" initial={false}>
-        <motion.div key={step} variants={reduce ? undefined : fadeUp} initial="hidden" animate="show" exit={{ opacity: 0 }} className="flex flex-1 flex-col gap-4 px-4 pt-5">
+        <motion.div key={step} variants={reduce ? undefined : fadeUp} initial="hidden" animate="show" exit={{ opacity: 0 }} className="flex flex-1 flex-col gap-4 px-4 pt-6">
           {step === 1 && (
             <>
               <div className="flex flex-col items-center gap-2">
                 <PhotoDropCircle preview={preview} onFile={setPhoto} size="lg" />
-                <span className="text-[13px] font-semibold text-on-variant">{preview ? "Toca o arrastra para cambiar" : "Añadir foto (opcional): toca o arrastra"}</span>
+                <span className="text-small text-text-secondary">{preview ? "Toca o arrastra para cambiar" : "Añadir foto (opcional): toca o arrastra"}</span>
               </div>
-              <Input label="Nombre" placeholder="¿Cómo se llama?" value={form.name} onChange={(e) => set("name", e.target.value)} autoFocus />
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[13px] font-semibold text-on-variant">Especie</span>
+              <Input
+                label="Nombre"
+                placeholder="¿Cómo se llama?"
+                value={form.name}
+                error={nameError ?? undefined}
+                onChange={(e) => {
+                  set("name", e.target.value);
+                  if (nameError && e.target.value.trim()) setNameError(null);
+                }}
+                autoFocus
+              />
+              <div className="flex flex-col gap-2">
+                <span className="text-small font-semibold text-text-secondary">Especie</span>
                 <SegmentedControl
                   ariaLabel="Especie"
                   value={form.species}
@@ -243,8 +255,8 @@ export function NewPetFlow({ userId, mode = "new" }: { userId: string; mode?: "n
                   ]}
                 />
               </div>
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[13px] font-semibold text-on-variant">Sexo</span>
+              <div className="flex flex-col gap-2">
+                <span className="text-small font-semibold text-text-secondary">Sexo</span>
                 <SegmentedControl
                   ariaLabel="Sexo"
                   value={form.sex}
@@ -257,7 +269,7 @@ export function NewPetFlow({ userId, mode = "new" }: { userId: string; mode?: "n
                 />
               </div>
               <div className="mt-auto pt-4">
-                <Button full size="lg" onClick={() => (nameOk ? setStep(2) : showToast("Ponle un nombre para continuar", undefined, "error"))}>
+                <Button full size="lg" onClick={() => (nameOk ? setStep(2) : setNameError("Ponle un nombre para continuar"))}>
                   Continuar
                 </Button>
               </div>
@@ -268,7 +280,7 @@ export function NewPetFlow({ userId, mode = "new" }: { userId: string; mode?: "n
             <>
               <Input label="Fecha de nacimiento" type="date" value={form.birth_date} max={today()} onChange={(e) => set("birth_date", e.target.value)} hint="Si no la sabes exacta, pon una aproximada" />
               <div className="grid grid-cols-2 gap-3">
-                <Input label="Peso" type="number" inputMode="decimal" step="0.1" min="0.1" placeholder="12,4" value={form.weight} onChange={(e) => set("weight", e.target.value)} trailing={<span className="text-[15px] font-bold">kg</span>} />
+                <Input label="Peso" type="number" inputMode="decimal" step="0.1" min="0.1" placeholder="12,4" value={form.weight} onChange={(e) => set("weight", e.target.value)} trailing={<span className="text-body text-text-secondary">kg</span>} />
                 <Input label="Raza" placeholder="Criollo, labrador…" value={form.breed} onChange={(e) => set("breed", e.target.value)} />
               </div>
               <Toggle label="Esterilizado" checked={form.neutered} onChange={(v) => set("neutered", v)} />
@@ -276,8 +288,8 @@ export function NewPetFlow({ userId, mode = "new" }: { userId: string; mode?: "n
               {form.hasChip && <Input label="Número de microchip" inputMode="numeric" placeholder="15 dígitos" value={form.microchip} onChange={(e) => set("microchip", e.target.value)} />}
               <ChipsInput label="Alergias" tone="warn" value={form.allergies} onChange={(v) => set("allergies", v)} placeholder="Pollo, polen… (opcional)" />
               <Card tone="info" elevation={0} className="flex items-start gap-3">
-                <Info size={20} className="mt-0.5 shrink-0 text-info" aria-hidden="true" />
-                <p className="text-[14px] leading-relaxed">{advice}</p>
+                <Info size={20} className="mt-1 shrink-0 text-info-text" aria-hidden="true" />
+                <p className="text-body leading-relaxed">{advice}</p>
               </Card>
               <div className="mt-auto pt-4">
                 <Button full size="lg" onClick={() => void createPlan()} loading={saving}>
@@ -293,55 +305,58 @@ export function NewPetFlow({ userId, mode = "new" }: { userId: string; mode?: "n
                 <button
                   type="button"
                   onClick={() => setPriorOpen(true)}
-                  className="mb-3 flex w-full items-center gap-3 rounded-card-lg bg-primary-container px-4 py-3 text-left text-on-primary-container active:scale-[0.99]"
+                  className="pressable flex min-h-16 w-full items-center gap-3 rounded-md bg-primary-soft px-4 py-3 text-left text-primary-text"
                 >
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-surface text-primary">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-sm bg-surface text-primary-text">
                     <ClipboardList size={22} aria-hidden="true" />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[15px] font-bold">{priorCount > 0 ? "¿Ya le han puesto vacunas o antiparasitarios?" : "Ajustar el plan"}</span>
-                    <span className="block text-[13px] opacity-90">Registra las últimas fechas, cambia la frecuencia o quita lo que no quieras seguir.</span>
+                    <span className="block text-body font-semibold">{priorCount > 0 ? "¿Ya le han puesto vacunas o antiparasitarios?" : "Ajustar el plan"}</span>
+                    <span className="block text-small">Registra las últimas fechas, cambia la frecuencia o quita lo que no quieras seguir.</span>
                   </span>
-                  <span className="shrink-0 text-[13px] font-extrabold">Registrar</span>
+                  <span className="shrink-0 text-small font-semibold">Registrar</span>
                 </button>
               )}
               <Card padded={false}>
-                <div className="flex items-center gap-3 border-b border-outline-variant px-4 py-3">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-primary-container text-on-primary-container">
+                <div className="flex items-center gap-3 border-b border-border px-4 py-3">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-sm bg-primary-soft text-primary-text">
                     <PartyPopper size={22} aria-hidden="true" />
                   </span>
                   <div>
-                    <div className="text-[16px] font-bold text-on">Primeras 4 semanas</div>
-                    <div className="text-[13px] text-on-variant">{plan === null ? "Preparando el plan…" : `${firstWeeks.length} ${firstWeeks.length === 1 ? "cuidado" : "cuidados"} programados`}</div>
+                    <div className="text-subtitle font-semibold text-text">Primeras 4 semanas</div>
+                    <div className="text-small text-text-secondary">{plan === null ? "Preparando el plan…" : `${firstWeeks.length} ${firstWeeks.length === 1 ? "cuidado" : "cuidados"} programados`}</div>
                   </div>
                 </div>
                 {plan === null ? (
                   <div className="flex flex-col gap-2 p-4">
                     {[0, 1, 2].map((i) => (
-                      <div key={i} className="skeleton h-11 w-full" aria-hidden="true" />
+                      <div key={i} className="skeleton h-12 w-full" aria-hidden="true" />
                     ))}
                   </div>
                 ) : firstWeeks.length === 0 ? (
-                  <p className="px-4 py-4 text-[14px] text-on-variant">
+                  <p className="px-4 py-4 text-body text-text-secondary">
                     {plan.length === 0 ? "El plan se generará en cuanto esté disponible. Puedes añadir cuidados desde Salud." : "Nada urgente en las próximas 4 semanas."}
                   </p>
                 ) : (
-                  <ul>
+                  <ul className="enter-soft-list">
                     {firstWeeks.map((c) => {
                       const Icon = CARE_KIND_ICON[c.kind];
+                      const sev = cycleSeverity(c);
                       return (
-                        <li key={c.id} className="flex items-center gap-3 border-t border-outline-variant px-4 py-3 first:border-t-0">
-                          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-surface-2 text-on-variant">
-                            <Icon size={20} aria-hidden="true" />
+                        <li key={c.id} className="flex min-h-16 items-center gap-3 border-t border-border px-4 py-2 first:border-t-0">
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-primary-soft text-primary-text">
+                            <Icon size={16} aria-hidden="true" />
                           </span>
-                          <span className="min-w-0 flex-1 truncate text-[15px] font-bold text-on">{c.name}</span>
-                          <span className="shrink-0 text-[13px] font-semibold text-on-variant">{dueLabel(c.next_due_at)}</span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block break-words text-subtitle font-semibold text-text">{c.name}</span>
+                            <span className={cn("block text-small font-semibold", SEVERITY[sev].text)}>{dueLabel(c.next_due_at)}</span>
+                          </span>
                         </li>
                       );
                     })}
                   </ul>
                 )}
-                {rest > 0 && <p className="border-t border-outline-variant px-4 py-3 text-[13px] font-semibold text-on-variant">y {rest} {rest === 1 ? "ciclo más" : "ciclos más"} a lo largo del año</p>}
+                {rest > 0 && <p className="border-t border-border px-4 py-3 text-small text-text-secondary">y {rest} {rest === 1 ? "ciclo más" : "ciclos más"} a lo largo del año</p>}
               </Card>
               <div className="mt-auto flex flex-col gap-2 pt-4">
                 <Button full size="lg" onClick={() => void finish()} loading={finishing} leading={<Bell size={18} aria-hidden="true" />}>

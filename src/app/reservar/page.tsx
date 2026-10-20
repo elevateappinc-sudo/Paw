@@ -6,15 +6,15 @@ export const metadata = { title: "Reservar · Paw" };
 
 function Fallback() {
   return (
-    <div className="min-h-dvh bg-bg px-4 pt-[max(14px,env(safe-area-inset-top))]" aria-busy="true">
+    <div className="min-h-dvh bg-bg px-4 pt-[max(16px,env(safe-area-inset-top))]" aria-busy="true">
       <Skeleton className="h-8 w-48" />
       <div className="mt-4 grid grid-cols-3 gap-2">
-        <Skeleton className="h-1.5 rounded-full" />
-        <Skeleton className="h-1.5 rounded-full" />
-        <Skeleton className="h-1.5 rounded-full" />
+        <Skeleton className="h-2 rounded-full" />
+        <Skeleton className="h-2 rounded-full" />
+        <Skeleton className="h-2 rounded-full" />
       </div>
-      <Skeleton className="mt-6 h-16 w-full rounded-card-lg" />
-      <Skeleton className="mt-3 h-16 w-full rounded-card-lg" />
+      <Skeleton className="mt-6 h-16 w-full rounded-md" />
+      <Skeleton className="mt-3 h-16 w-full rounded-md" />
     </div>
   );
 }

@@ -16,7 +16,7 @@ function ToastItem({ toast, onDismiss }: { toast: ToastMessage; onDismiss: (id: 
     return () => clearTimeout(timer);
   }, [toast.id, onDismiss]);
 
-  const tone = toast.tone === "success" ? "border-ok" : toast.tone === "error" ? "border-danger" : "border-outline-variant";
+  const tone = toast.tone === "success" ? "border-success" : toast.tone === "error" ? "border-overdue" : "border-border";
 
   return (
     <motion.div
@@ -26,9 +26,9 @@ function ToastItem({ toast, onDismiss }: { toast: ToastMessage; onDismiss: (id: 
       exit={{ opacity: 0, y: 8, scale: 0.98 }}
       transition={{ duration: 0.2 }}
       role="status"
-      className={`mb-2 flex w-[min(92vw,360px)] items-center gap-3 rounded-card-lg border bg-surface px-4 py-3 text-on shadow-3 ${tone}`}
+      className={`mb-2 flex w-[min(92vw,360px)] items-center gap-3 rounded-md border bg-surface px-4 py-3 text-text shadow-3 ${tone}`}
     >
-      <span className="flex-1 text-[14px] font-semibold">{toast.message}</span>
+      <span className="flex-1 text-body">{toast.message}</span>
       {toast.onRetry && (
         <button
           type="button"
@@ -36,12 +36,12 @@ function ToastItem({ toast, onDismiss }: { toast: ToastMessage; onDismiss: (id: 
             toast.onRetry?.();
             onDismiss(toast.id);
           }}
-          className="shrink-0 rounded-full bg-primary px-3 py-1.5 text-[13px] font-bold text-on-primary"
+          className="relative min-h-9 shrink-0 rounded-full border border-border bg-surface px-3 text-label font-semibold text-primary-text after:absolute after:inset-x-0 after:-inset-y-1 after:content-['']"
         >
           Reintentar
         </button>
       )}
-      <button type="button" onClick={() => onDismiss(toast.id)} aria-label="Cerrar aviso" className="shrink-0 text-on-variant">
+      <button type="button" onClick={() => onDismiss(toast.id)} aria-label="Cerrar aviso" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-text-secondary">
         <X size={16} />
       </button>
     </motion.div>
@@ -50,7 +50,7 @@ function ToastItem({ toast, onDismiss }: { toast: ToastMessage; onDismiss: (id: 
 
 export function ToastContainer({ toasts, onDismiss }: { toasts: ToastMessage[]; onDismiss: (id: string) => void }) {
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(96px+env(safe-area-inset-bottom))] z-[9999] flex flex-col-reverse items-center">
+    <div className="pointer-events-none fixed inset-x-0 bottom-[var(--content-bottom-padding)] z-[9999] flex flex-col-reverse items-center">
       <AnimatePresence initial={false}>
         {toasts.map((t) => (
           <div key={t.id} className="pointer-events-auto">

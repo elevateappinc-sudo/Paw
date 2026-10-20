@@ -1,10 +1,10 @@
 "use client";
 import { useState } from "react";
-import { CheckCircle2, Link2 } from "lucide-react";
+import { Link2 } from "lucide-react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useAuth } from "@/hooks/useAuth";
 import { createClient } from "@/lib/supabase/client";
-import { Button, Card, Row, Tag, showToast } from "@/components/ui";
+import { Button, Card, Row, StatusChip, showToast } from "@/components/ui";
 import { GoogleLogo } from "./GoogleLogo";
 
 interface AccountSettingsProps {
@@ -89,7 +89,7 @@ export function AccountSettings({ googleLinked, onGoogleLinkChange }: AccountSet
       <Card padded={false} className="overflow-hidden">
         <Row
           icon={
-            <span className="flex h-11 w-11 items-center justify-center rounded-[14px] border border-outline-variant bg-white">
+            <span className="flex h-11 w-11 items-center justify-center rounded-sm border border-border bg-surface">
               <GoogleLogo />
             </span>
           }
@@ -99,15 +99,13 @@ export function AccountSettings({ googleLinked, onGoogleLinkChange }: AccountSet
           trailing={
             linked ? (
               <span className="flex items-center gap-2">
-                <Tag tone="ok" size="xs">
-                  <CheckCircle2 size={12} aria-hidden="true" /> Vinculada
-                </Tag>
+                <StatusChip severity="ok">Vinculada</StatusChip>
                 <Button variant="dangerTonal" size="sm" onClick={() => void handleUnlinkGoogle()} loading={unlinkLoading} disabled={isLoading}>
                   Desvincular
                 </Button>
               </span>
             ) : (
-              <Button variant="tonal" size="sm" leading={<Link2 size={14} />} onClick={() => void handleLinkGoogle()} loading={linkLoading} disabled={isLoading}>
+              <Button variant="secondary" size="sm" leading={<Link2 size={14} />} onClick={() => void handleLinkGoogle()} loading={linkLoading} disabled={isLoading}>
                 Vincular
               </Button>
             )
@@ -116,7 +114,7 @@ export function AccountSettings({ googleLinked, onGoogleLinkChange }: AccountSet
         />
       </Card>
       {error && (
-        <Card tone="danger" elevation={0} role="alert" className="py-3 text-[14px]">
+        <Card tone="overdue" elevation={0} role="alert" className="py-3 text-body">
           {error}
         </Card>
       )}

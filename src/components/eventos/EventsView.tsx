@@ -127,7 +127,7 @@ export function EventsView() {
       </div>
       <div className="px-4 pt-4">
         {error && list.length === 0 ? (
-          <EmptyState tone="danger" title="No pudimos cargar los eventos" description={error} action={<Button full variant="secondary" onClick={() => setReload((n) => n + 1)}>Reintentar</Button>} />
+          <EmptyState title="No pudimos cargar los eventos" description={error} action={<Button full variant="secondary" onClick={() => setReload((n) => n + 1)}>Reintentar</Button>} />
         ) : list.length === 0 ? (
           <EmptyState
             title="Nada por ahora"

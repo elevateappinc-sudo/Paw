@@ -9,7 +9,7 @@ import type { Pet } from "@/types";
 export function PetSelectorRow({ pets, activeId, onSelect, loading }: { pets: Pet[]; activeId: string | null; onSelect: (id: string) => void; loading: boolean }) {
   if (loading) return <SkeletonPets />;
   return (
-    <div className="no-scrollbar flex gap-4 overflow-x-auto px-4" role="listbox" aria-label="Tus mascotas">
+    <div className="no-scrollbar fade-edge enter-soft-list flex gap-4 overflow-x-auto px-4" role="listbox" aria-label="Tus mascotas">
       {pets.map((p) => {
         const active = p.id === activeId;
         return (
@@ -19,18 +19,18 @@ export function PetSelectorRow({ pets, activeId, onSelect, loading }: { pets: Pe
             role="option"
             aria-selected={active}
             onClick={() => onSelect(p.id)}
-            className="flex w-[72px] shrink-0 flex-col items-center gap-1.5 active:scale-95"
+            className="pressable flex w-18 shrink-0 flex-col items-center gap-2"
           >
             <PetAvatarRing pet={p} active={active} size={68} />
-            <span className={cn("max-w-full truncate text-[12px] font-bold", active ? "text-on" : "text-on-variant")}>{p.name}</span>
+            <span className={cn("max-w-full truncate text-label font-semibold", active ? "text-text" : "text-text-secondary")}>{p.name}</span>
           </button>
         );
       })}
-      <Link href="/mascotas/nueva" className="flex w-[72px] shrink-0 flex-col items-center gap-1.5 active:scale-95" aria-label="Añadir mascota">
-        <span className="flex h-[68px] w-[68px] items-center justify-center rounded-full border-2 border-dashed border-outline text-on-variant">
+      <Link href="/mascotas/nueva" className="pressable flex w-18 shrink-0 flex-col items-center gap-2" aria-label="Añadir mascota">
+        <span className="flex h-17 w-17 items-center justify-center rounded-full border-2 border-dashed border-text-secondary text-text-secondary">
           <Plus size={24} aria-hidden="true" />
         </span>
-        <span className="text-[12px] font-bold text-on-variant">Añadir</span>
+        <span className="text-label font-semibold text-text-secondary">Añadir</span>
       </Link>
     </div>
   );

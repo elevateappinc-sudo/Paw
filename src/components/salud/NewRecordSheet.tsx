@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { Syringe, Bug, Pill, Stethoscope, Weight, ChevronRight, ChevronLeft } from "lucide-react";
+import { ChevronRight, ChevronLeft } from "lucide-react";
+import { PetDeworm, PetHealth, PetMedication, PetVaccine, PetWeight } from "@/components/icons/pet";
 import { Sheet, Button, Input, Textarea, Select, Chip, SegmentedControl, Row, Divider } from "@/components/ui";
 import { createCareCycle, completeCareCycle, intervalToDays } from "@/lib/api/careCycles";
 import { addWeightLog } from "@/lib/api/pets";
@@ -13,11 +14,11 @@ import { addDays, errorMessage, longDate, todayStr } from "./shared";
 export type NewRecordOption = "vaccine" | "deworm" | "medication" | "consult" | "weight";
 
 const OPTIONS: { id: NewRecordOption; label: string; hint: string; icon: React.ReactNode; tone: "info" | "container" | "primary" | "warn" | "ok" }[] = [
-  { id: "vaccine", label: "Vacuna", hint: "Crea el ciclo y registra la aplicación", icon: <Syringe size={20} />, tone: "info" },
-  { id: "deworm", label: "Antiparasitario", hint: "Interno o externo, con recordatorio", icon: <Bug size={20} />, tone: "container" },
-  { id: "medication", label: "Medicamento", hint: "Dosis, frecuencia y tomas", icon: <Pill size={20} />, tone: "primary" },
-  { id: "consult", label: "Consulta", hint: "Visita al veterinario", icon: <Stethoscope size={20} />, tone: "warn" },
-  { id: "weight", label: "Peso", hint: "Nuevo registro de peso", icon: <Weight size={20} />, tone: "ok" },
+  { id: "vaccine", label: "Vacuna", hint: "Crea el ciclo y registra la aplicación", icon: <PetVaccine size={20} />, tone: "info" },
+  { id: "deworm", label: "Antiparasitario", hint: "Interno o externo, con recordatorio", icon: <PetDeworm size={20} />, tone: "container" },
+  { id: "medication", label: "Medicamento", hint: "Dosis, frecuencia y tomas", icon: <PetMedication size={20} />, tone: "primary" },
+  { id: "consult", label: "Consulta", hint: "Visita al veterinario", icon: <PetHealth size={20} />, tone: "warn" },
+  { id: "weight", label: "Peso", hint: "Nuevo registro de peso", icon: <PetWeight size={20} />, tone: "ok" },
 ];
 
 const VISIT_TYPES: { value: VisitType; label: string }[] = [
@@ -63,13 +64,13 @@ export function NewRecordSheet({ open, onClose, petId, userId, onSaved, initial 
           {OPTIONS.map((o, i) => (
             <div key={o.id}>
               {i > 0 && <Divider className="mx-0" />}
-              <Row icon={o.icon} iconTone={o.tone} title={o.label} subtitle={o.hint} trailing={<ChevronRight size={18} className="text-on-variant" />} onClick={() => setStep(o.id)} className="rounded-card px-2" />
+              <Row icon={o.icon} iconTone={o.tone} title={o.label} subtitle={o.hint} trailing={<ChevronRight size={18} className="text-text-secondary" />} onClick={() => setStep(o.id)} className="rounded-md px-2" />
             </div>
           ))}
         </div>
       )}
       {step && (
-        <button type="button" onClick={() => setStep(null)} className="mb-3 inline-flex min-h-[36px] items-center gap-1 rounded-full bg-surface-2 px-3 text-[13px] font-bold text-on active:scale-95">
+        <button type="button" onClick={() => setStep(null)} className="mb-3 inline-flex min-h-11 items-center gap-1 rounded-full bg-surface-elevated px-3 text-small font-semibold text-text active:scale-95">
           <ChevronLeft size={16} /> Otra opción
         </button>
       )}
@@ -125,16 +126,16 @@ function CycleForm({ kindGroup, petId, userId, onDone }: { kindGroup: "vaccine" 
         />
       )}
       <Input label="Nombre" placeholder={kindGroup === "vaccine" ? "Ej. Rabia, Triple felina" : "Ej. Desparasitación, Antipulgas"} value={name} onChange={(e) => setName(e.target.value)} autoFocus />
-      <div className="flex flex-col gap-1.5">
-        <span className="text-[13px] font-semibold text-on-variant">Se repite cada</span>
-        <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-col gap-2">
+        <span className="text-small font-semibold text-text-secondary">Se repite cada</span>
+        <div className="flex flex-wrap gap-2">
           {INTERVAL_PRESETS.map((p) => (
             <Chip key={p.label} selected={intervalValue === p.value && unit === p.unit} onClick={() => { setIntervalValue(p.value); setUnit(p.unit); }}>{p.label}</Chip>
           ))}
         </div>
         <div className="grid grid-cols-[1fr_1fr] gap-2">
           <Input type="number" inputMode="numeric" min={1} value={String(intervalValue)} onChange={(e) => setIntervalValue(Number(e.target.value))} aria-label="Frecuencia" />
-          <select value={unit} onChange={(e) => setUnit(e.target.value as IntervalUnit)} aria-label="Unidad" className="min-h-[44px] rounded-control border border-outline-variant bg-surface px-2 text-[15px] text-on outline-none focus:border-primary">
+          <select value={unit} onChange={(e) => setUnit(e.target.value as IntervalUnit)} aria-label="Unidad" className="min-h-11 rounded-md border border-border bg-surface px-2 text-body text-text outline-none focus:border-primary">
             <option value="days">días</option>
             <option value="weeks">semanas</option>
             <option value="months">meses</option>
@@ -143,10 +144,10 @@ function CycleForm({ kindGroup, petId, userId, onDone }: { kindGroup: "vaccine" 
       </div>
       <Input label="Última aplicación" type="date" max={todayStr()} value={lastDate} onChange={(e) => setLastDate(e.target.value)} />
       <Input label="Producto (opcional)" placeholder="Marca o nombre comercial" value={product} onChange={(e) => setProduct(e.target.value)} />
-      <div className="rounded-control bg-primary-container px-4 py-3 text-[14px] text-on-primary-container">
+      <div className="rounded-md bg-primary-soft px-4 py-3 text-body text-primary-text">
         Próxima: <strong>{nextDate ? longDate(nextDate) : "—"}</strong>
       </div>
-      {error && <p role="alert" className="text-[13px] font-semibold text-danger">{error}</p>}
+      {error && <p role="alert" className="text-small font-semibold text-overdue-text">{error}</p>}
       <Button type="submit" size="lg" full loading={saving}>Guardar</Button>
     </form>
   );
@@ -185,7 +186,7 @@ function ConsultForm({ petId, userId, onDone }: { petId: string; userId: string;
       <Input label="Clínica (opcional)" value={clinic} onChange={(e) => setClinic(e.target.value)} />
       <Textarea label="Diagnóstico (opcional)" value={diagnosis} onChange={(e) => setDiagnosis(e.target.value)} rows={2} />
       <Textarea label="Notas (opcional)" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} />
-      {error && <p role="alert" className="text-[13px] font-semibold text-danger">{error}</p>}
+      {error && <p role="alert" className="text-small font-semibold text-overdue-text">{error}</p>}
       <Button type="submit" size="lg" full loading={saving}>Guardar consulta</Button>
     </form>
   );
@@ -216,10 +217,10 @@ function WeightForm({ petId, userId, onDone }: { petId: string; userId: string; 
 
   return (
     <form className="flex flex-col gap-3 pb-2" onSubmit={(e) => { e.preventDefault(); void submit(); }}>
-      <Input label="Peso" type="number" inputMode="decimal" step={0.1} min={0} placeholder="0,0" value={kg} onChange={(e) => setKg(e.target.value)} trailing={<span className="text-[13px]">kg</span>} autoFocus />
+      <Input label="Peso" type="number" inputMode="decimal" step={0.1} min={0} placeholder="0,0" value={kg} onChange={(e) => setKg(e.target.value)} trailing={<span className="text-small">kg</span>} autoFocus />
       <Input label="Fecha" type="date" max={todayStr()} value={date} onChange={(e) => setDate(e.target.value)} />
       <Textarea label="Notas (opcional)" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} />
-      {error && <p role="alert" className="text-[13px] font-semibold text-danger">{error}</p>}
+      {error && <p role="alert" className="text-small font-semibold text-overdue-text">{error}</p>}
       <Button type="submit" size="lg" full loading={saving}>Guardar peso</Button>
     </form>
   );

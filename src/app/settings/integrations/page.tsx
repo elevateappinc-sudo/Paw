@@ -10,7 +10,7 @@ export default function IntegrationsPage() {
       <PageHeader title="Integraciones" back backHref="/settings" />
       <section className="flex flex-col gap-3 px-4" aria-label="Google Calendar">
         <SectionTitle>Calendario</SectionTitle>
-        <p className="text-[14px] text-on-variant">Conecta Paw con tus servicios externos.</p>
+        <p className="text-body text-text-secondary">Conecta Paw con tus servicios externos.</p>
         <CalendarIntegration />
       </section>
     </div>

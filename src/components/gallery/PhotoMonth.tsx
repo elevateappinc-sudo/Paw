@@ -26,9 +26,9 @@ function capitalizeMonth(label: string): string {
 export function PhotoMonth({ group, getBadges, onPhotoClick }: PhotoMonthProps) {
   return (
     <section className="mb-7" aria-label={capitalizeMonth(group.month_label)}>
-      <div className="mb-2.5 flex items-baseline gap-2 px-1">
-        <h3 className="font-display text-[17px] leading-tight text-on">{capitalizeMonth(group.month_label)}</h3>
-        <span className="text-[13px] text-on-variant">
+      <div className="mb-3 flex items-baseline gap-2 px-1">
+        <h3 className="font-semibold text-subtitle leading-tight text-text">{capitalizeMonth(group.month_label)}</h3>
+        <span className="text-small text-text-secondary">
           · {group.photo_count} {group.photo_count === 1 ? "foto" : "fotos"}
         </span>
       </div>

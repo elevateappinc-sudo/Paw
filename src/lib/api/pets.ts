@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/client";
 import type { PetRow, WeightLog, PetFood, Species } from "@/types/db";
 import { today, toLocalISODate } from "@/lib/utils";
+import { formatPetAge } from "@/lib/age";
 
 export async function fetchPet(petId: string): Promise<PetRow | null> {
   const supabase = createClient();
@@ -45,7 +46,7 @@ export async function createPet(input: {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("pets")
-    .insert({ ...input, emoji: "🐾", color: "#357050" })
+    .insert({ ...input, emoji: "🐾", color: "var(--color-pet-lavanda)" })
     .select()
     .single();
   if (error) throw error;
@@ -87,17 +88,9 @@ export async function addWeightLog(petId: string, userId: string, weightKg: numb
 }
 
 // ── Utilidades ──────────────────────────────────────────────────────────────
+/** Edad legible ("1 año y 8 meses"), nunca truncada. Ver src/lib/age.ts */
 export function ageLabel(birthDate: string | null | undefined): string {
-  if (!birthDate) return "edad desconocida";
-  const [y, m, d] = birthDate.split("-").map(Number);
-  const b = new Date(y, m - 1, d);
-  const now = new Date();
-  let months = (now.getFullYear() - b.getFullYear()) * 12 + (now.getMonth() - b.getMonth());
-  if (now.getDate() < b.getDate()) months--;
-  if (months < 1) return "recién nacido";
-  if (months < 24) return `${months} ${months === 1 ? "mes" : "meses"}`;
-  const years = Math.floor(months / 12);
-  return `${years} ${years === 1 ? "año" : "años"}`;
+  return formatPetAge(birthDate) ?? "edad desconocida";
 }
 
 export function lifeStage(species: Species, birthDate: string | null | undefined): "puppy" | "adult" | "senior" {

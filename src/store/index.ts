@@ -124,7 +124,7 @@ export const useStore = create<PawStore>()((set, get) => ({
           birthDate: (r.birth_date as string) ?? "",
           weight: r.weight as number ?? undefined,
           emoji: (r.emoji as string) ?? "🐾",
-          color: (r.color as string) ?? "#0a84ff",
+          color: (r.color as string) ?? "var(--color-pet-lavanda)",
           avatar_config: (r.avatar_config as Pet["avatar_config"]) ?? null,
           photoUrl: (r.photo_url as string) ?? null,
           sharedWith: (r.shared_with as string[]) ?? [],
@@ -154,7 +154,7 @@ export const useStore = create<PawStore>()((set, get) => ({
         breed: p.breed ?? null,
         birth_date: p.birthDate ?? null,
         emoji: p.emoji ?? "🐾",
-        color: p.color ?? "#0a84ff",
+        color: p.color ?? "var(--color-pet-lavanda)",
         avatar_config: p.avatar_config ?? null,
       }).select().single();
       if (error) throw error;

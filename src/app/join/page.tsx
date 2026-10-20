@@ -7,7 +7,7 @@ import { CheckCircle, XCircle, Clock, LogIn, PawPrint } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
-import { Button, Card, EmptyState, Skeleton } from "@/components/ui";
+import { Button, Card, EmptyState, PawLoader, useLoaderVisibility } from "@/components/ui";
 
 type JoinState = "loading" | "needs-auth" | "invalid-token" | "already-member" | "own-pet" | "pending" | "ready" | "error";
 
@@ -24,13 +24,12 @@ interface PetInfo {
   owner_id: string;
 }
 
-function JoinSkeleton() {
-  return (
-    <div className="flex w-full max-w-[400px] flex-col items-center gap-6" aria-busy="true" aria-label="Cargando">
-      <Skeleton className="h-16 w-16 rounded-card-lg" />
-      <Skeleton className="h-[200px] w-full rounded-card-lg" />
-    </div>
-  );
+/**
+ * Mientras se valida la invitación no se sabe qué pantalla sigue (inválida,
+ * iniciar sesión, elegir mascota…): loader general de huellitas, no skeleton.
+ */
+function JoinLoader({ className }: { className?: string }) {
+  return <PawLoader showLabel label="Revisando la invitación" className={className} />;
 }
 
 function JoinContent() {
@@ -38,6 +37,7 @@ function JoinContent() {
   const token = searchParams.get("token");
   const { user } = useAuthContext();
   const [state, setState] = useState<JoinState>("loading");
+  const showLoader = useLoaderVisibility(state === "loading");
   const [business, setBusiness] = useState<BusinessInfo | null>(null);
   const [ownerPets, setOwnerPets] = useState<PetInfo[]>([]);
   const [selectedPetId, setSelectedPetId] = useState("");
@@ -116,17 +116,18 @@ function JoinContent() {
     setJoining(false);
   }
 
-  if (state === "loading") return <JoinSkeleton />;
+  // Visible solo si tarda más de 300 ms y al menos 500 ms (sin parpadeos)
+  if (state === "loading" || showLoader) return showLoader ? <JoinLoader /> : null;
 
   return (
     <div className="flex w-full max-w-[400px] flex-col gap-6">
       <div className="flex justify-center">
-        <Image src="/icon.svg" alt="Paw" width={64} height={64} priority className="h-16 w-16 rounded-card-lg shadow-2" />
+        <Image src="/icon.svg" alt="Paw" width={64} height={64} priority className="h-16 w-16 rounded-md shadow-2" />
       </div>
 
       {state === "invalid-token" && (
         <Card elevation={2}>
-          <EmptyState compact tone="danger" icon={<XCircle size={26} />} title="Código no válido" description="Este código QR ya no es válido. Pide al negocio el actualizado." />
+          <EmptyState compact icon={<XCircle size={26} />} title="Código no válido" description="Este código QR ya no es válido. Pide al negocio el actualizado." />
         </Card>
       )}
       {state === "needs-auth" && (
@@ -161,20 +162,20 @@ function JoinContent() {
       )}
       {state === "error" && (
         <Card elevation={2}>
-          <EmptyState compact tone="danger" icon={<XCircle size={26} />} title="Algo salió mal" description={errorMsg || "Ocurrió un error inesperado."} action={<Button full onClick={() => void load()}>Reintentar</Button>} />
+          <EmptyState compact icon={<XCircle size={26} />} title="Algo salió mal" description={errorMsg || "Ocurrió un error inesperado."} action={<Button full onClick={() => void load()}>Reintentar</Button>} />
         </Card>
       )}
 
       {state === "ready" && business && (
         <Card elevation={2} className="flex flex-col gap-4">
           <div className="text-center">
-            <h1 className="font-display text-[24px] leading-tight text-on">Vincularte a {business.name}</h1>
-            {business.description && <p className="mt-2 text-[14px] text-on-variant">{business.description}</p>}
+            <h1 className="font-semibold text-title leading-tight text-text">Vincularte a {business.name}</h1>
+            {business.description && <p className="mt-2 text-body text-text-secondary">{business.description}</p>}
           </div>
 
           {ownerPets.length > 1 && (
             <fieldset>
-              <legend className="mb-2 text-[13px] font-semibold text-on-variant">Elige la mascota</legend>
+              <legend className="mb-2 text-small font-semibold text-text-secondary">Elige la mascota</legend>
               <div className="flex flex-col gap-2" role="radiogroup">
                 {ownerPets.map((p) => {
                   const on = selectedPetId === p.id;
@@ -186,14 +187,14 @@ function JoinContent() {
                       aria-checked={on}
                       onClick={() => setSelectedPetId(p.id)}
                       className={cn(
-                        "flex min-h-[56px] items-center gap-3 rounded-control border px-4 text-left transition-colors",
-                        on ? "border-primary bg-primary-container text-on-primary-container" : "border-outline-variant bg-surface text-on"
+                        "flex min-h-14 items-center gap-3 rounded-md border px-4 text-left transition-colors",
+                        on ? "border-primary bg-primary-soft text-primary-text" : "border-border bg-surface text-text"
                       )}
                     >
-                      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-2 text-on-variant">
+                      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-elevated text-text-secondary">
                         <PawPrint size={18} aria-hidden="true" />
                       </span>
-                      <span className="flex-1 text-[16px] font-bold">{p.name}</span>
+                      <span className="flex-1 text-subtitle font-semibold">{p.name}</span>
                       {on && <CheckCircle size={18} aria-hidden="true" />}
                     </button>
                   );
@@ -201,7 +202,7 @@ function JoinContent() {
               </div>
             </fieldset>
           )}
-          {ownerPets.length === 0 && <p className="text-center text-[14px] text-on-variant">Este negocio no tiene mascotas registradas.</p>}
+          {ownerPets.length === 0 && <p className="text-center text-body text-text-secondary">Este negocio no tiene mascotas registradas.</p>}
 
           <Button size="lg" full onClick={() => void handleJoin()} loading={joining} disabled={!selectedPetId}>
             Solicitar acceso
@@ -215,7 +216,7 @@ function JoinContent() {
 export default function JoinPage() {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center bg-bg px-5 py-8">
-      <Suspense fallback={<JoinSkeleton />}>
+      <Suspense fallback={<JoinLoader className="delay-in" />}>
         <JoinContent />
       </Suspense>
     </main>

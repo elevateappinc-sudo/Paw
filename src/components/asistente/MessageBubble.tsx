@@ -8,7 +8,7 @@ function inline(text: string, keyPrefix: string): React.ReactNode[] {
   return parts.map((p, i) => {
     if (p.startsWith("**") && p.endsWith("**") && p.length > 4) {
       return (
-        <strong key={`${keyPrefix}-${i}`} className="font-bold">
+        <strong key={`${keyPrefix}-${i}`} className="font-semibold">
           {p.slice(2, -2)}
         </strong>
       );
@@ -27,7 +27,7 @@ export function renderMarkdownLite(content: string): React.ReactNode {
   const flushList = () => {
     if (!list.length) return;
     blocks.push(
-      <ul key={`ul-${blocks.length}`} className="my-1 flex list-disc flex-col gap-0.5 pl-5">
+      <ul key={`ul-${blocks.length}`} className="my-1 flex list-disc flex-col gap-1 pl-5">
         {list.map((item, i) => (
           <li key={i}>{inline(item, `li-${blocks.length}-${i}`)}</li>
         ))}
@@ -68,8 +68,8 @@ export function MessageBubble({ role, content, children }: { role: "user" | "ass
     <div className={cn("flex w-full flex-col", mine ? "items-end" : "items-start")}>
       <div
         className={cn(
-          "max-w-[86%] rounded-card-lg px-4 py-2.5 text-[15px] leading-relaxed",
-          mine ? "rounded-br-[6px] bg-primary text-on-primary" : "rounded-bl-[6px] border border-outline-variant bg-surface text-on"
+          "max-w-[86%] rounded-md px-4 py-3 text-body leading-relaxed",
+          mine ? "rounded-br-sm bg-primary text-on-primary" : "rounded-bl-sm border border-border bg-surface text-text"
         )}
       >
         {mine ? <p className="whitespace-pre-wrap">{content}</p> : renderMarkdownLite(content)}

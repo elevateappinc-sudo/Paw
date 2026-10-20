@@ -38,25 +38,26 @@ export function WeightChart({ logs }: { logs: WeightLog[] }) {
   return (
     <figure className="m-0">
       <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label={`Peso de ${fmtKg(values[0])} a ${fmtKg(last)} en ${logs.length} registros`}>
-        {band && <rect x={PAD.left} y={y(band.hi)} width={innerW} height={Math.max(0, y(band.lo) - y(band.hi))} rx={4} className="fill-primary-container/60" />}
-        <line x1={PAD.left} x2={W - PAD.right} y1={PAD.top + innerH} y2={PAD.top + innerH} className="stroke-outline-variant" strokeWidth={1} />
+        {band && <rect x={PAD.left} y={y(band.hi)} width={innerW} height={Math.max(0, y(band.lo) - y(band.hi))} rx={4} className="fill-primary-soft/60" />}
+        <line x1={PAD.left} x2={W - PAD.right} y1={PAD.top + innerH} y2={PAD.top + innerH} className="stroke-border" strokeWidth={1} />
         <path d={path} fill="none" className="stroke-primary" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
         {values.map((v, i) => (
           <g key={logs[i].id} onClick={() => setSel(i)} className="cursor-pointer">
-            <circle cx={x(i)} cy={y(v)} r={12} className="fill-transparent" />
+            {/* área táctil de 44 px */}
+            <circle cx={x(i)} cy={y(v)} r={22} className="fill-transparent" />
             <circle cx={x(i)} cy={y(v)} r={i === active ? 5 : 4} className="fill-primary stroke-surface" strokeWidth={2} />
           </g>
         ))}
-        <text x={PAD.left} y={H - 6} className="fill-on-variant text-[10px] font-semibold">{fmtDate(logs[0].measured_at)}</text>
+        <text x={PAD.left} y={H - 6} className="fill-text-secondary text-label font-normal">{fmtDate(logs[0].measured_at)}</text>
         {logs.length > 1 && (
-          <text x={W - PAD.right} y={H - 6} textAnchor="end" className="fill-on-variant text-[10px] font-semibold">{fmtDate(logs[logs.length - 1].measured_at)}</text>
+          <text x={W - PAD.right} y={H - 6} textAnchor="end" className="fill-text-secondary text-label font-normal">{fmtDate(logs[logs.length - 1].measured_at)}</text>
         )}
       </svg>
-      <figcaption className="mt-1 flex items-center justify-between text-[13px]">
-        <span className="font-bold text-on">
-          {fmtKg(values[active])} <span className="font-semibold text-on-variant">· {fmtDate(logs[active].measured_at)}</span>
+      <figcaption className="mt-1 flex flex-wrap items-center justify-between gap-x-2 text-small">
+        <span className="font-semibold text-text">
+          {fmtKg(values[active])} <span className="font-normal text-text-secondary">· {fmtDate(logs[active].measured_at)}</span>
         </span>
-        {band && <span className="font-semibold text-on-variant">Rango ideal {fmtKg(band.lo)} – {fmtKg(band.hi)}</span>}
+        {band && <span className="text-text-secondary">Rango ideal {fmtKg(band.lo)} – {fmtKg(band.hi)}</span>}
       </figcaption>
     </figure>
   );

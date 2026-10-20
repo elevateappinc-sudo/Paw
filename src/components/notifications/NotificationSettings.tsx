@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Bell, BellOff, Calendar, Dumbbell, Pill, Syringe, Wallet, type LucideIcon } from "lucide-react";
+import { Bell, BellOff, Calendar, Wallet, type LucideIcon } from "lucide-react";
+import { PetMedication, PetTraining, PetVaccine } from "@/components/icons/pet";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
@@ -10,11 +11,11 @@ import { Button, Card, Divider, Row, SectionTitle, SkeletonRow, Toggle, showToas
 type Category = "medications" | "itinerary" | "training" | "expenses" | "vaccines";
 
 const CATEGORY_LABELS: Record<Category, { label: string; icon: LucideIcon }> = {
-  medications: { label: "Medicamentos", icon: Pill },
+  medications: { label: "Medicamentos", icon: PetMedication },
   itinerary: { label: "Rutina diaria", icon: Calendar },
-  training: { label: "Entrenamiento", icon: Dumbbell },
+  training: { label: "Entrenamiento", icon: PetTraining },
   expenses: { label: "Gastos", icon: Wallet },
-  vaccines: { label: "Vacunas", icon: Syringe },
+  vaccines: { label: "Vacunas", icon: PetVaccine },
 };
 
 const ALL_CATEGORIES: Category[] = ["medications", "itinerary", "training", "expenses", "vaccines"];
@@ -86,7 +87,7 @@ export function NotificationSettings({ showTitle = true }: { showTitle?: boolean
               </Button>
             }
           />
-          {permission === "denied" && <p className="px-4 pb-3 text-[12px] text-on-primary-container">Permiso bloqueado: actívalo desde los ajustes del navegador.</p>}
+          {permission === "denied" && <p className="px-4 pb-3 text-label text-primary-text">Permiso bloqueado: actívalo desde los ajustes del navegador.</p>}
         </Card>
       )}
 
@@ -104,9 +105,9 @@ export function NotificationSettings({ showTitle = true }: { showTitle?: boolean
               const enabled = prefs[cat] ?? true;
               return (
                 <div key={cat}>
-                  {idx > 0 && <Divider className="ml-[72px] mr-0" />}
-                  <div className="flex items-center gap-3 px-4 py-1.5">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-surface-2 text-on-variant">
+                  {idx > 0 && <Divider className="ml-18 mr-0" />}
+                  <div className="flex items-center gap-3 px-4 py-2">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-sm bg-surface-elevated text-text-secondary">
                       <Icon size={20} aria-hidden="true" />
                     </div>
                     <div className="flex-1">

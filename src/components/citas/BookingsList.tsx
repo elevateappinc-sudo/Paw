@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "motion/react";
-import { Button, EmptyState, PageHeader, SegmentedControl } from "@/components/ui";
+import { Button, EmptyState, PageHeader, SegmentedControl, PullToRefresh } from "@/components/ui";
 import { useStore } from "@/store";
 import { fetchMyBookings } from "@/lib/api/bookings";
 import { fadeUp, stagger } from "@/lib/motion";
@@ -50,6 +50,7 @@ export function BookingsList() {
   }, [bookings, segment]);
 
   return (
+    <PullToRefresh onRefresh={() => setReload((n) => n + 1)}>
     <div className="min-h-dvh bg-bg">
       <PageHeader title="Citas" />
       <div className="px-4 pt-1">
@@ -71,7 +72,7 @@ export function BookingsList() {
             <SkeletonBookingRow />
           </div>
         ) : error ? (
-          <EmptyState tone="danger" title="No pudimos cargar tus citas" description={error} action={<Button full variant="secondary" onClick={() => setReload((n) => n + 1)}>Reintentar</Button>} />
+          <EmptyState title="No pudimos cargar tus citas" description={error} action={<Button full variant="secondary" onClick={() => setReload((n) => n + 1)}>Reintentar</Button>} />
         ) : list.length === 0 ? (
           <EmptyState
             title={segment === "upcoming" ? "Sin citas" : "Sin citas pasadas"}
@@ -89,5 +90,6 @@ export function BookingsList() {
         )}
       </div>
     </div>
+    </PullToRefresh>
   );
 }

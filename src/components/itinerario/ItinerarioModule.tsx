@@ -1,14 +1,15 @@
 "use client";
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { motion, useReducedMotion } from "motion/react";
-import { Plus, UtensilsCrossed, Footprints, Pencil, Trash2, Clock, PartyPopper } from "lucide-react";
+import { Plus, Trash2, Clock, PartyPopper } from "lucide-react";
+import { PetFood, PetWalk } from "@/components/icons/pet";
 import { useStore } from "@/store";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useActivePet } from "@/hooks/useActivePet";
 import { cn } from "@/lib/utils";
 import { fadeUp, stagger } from "@/lib/motion";
-import { Button, Card, Divider, EmptyState, PageHeader, ProgressBar, SectionTitle, showToast } from "@/components/ui";
-import { AnimatedCheck } from "@/components/entrenamiento/AnimatedCheck";
+import { Button, Card, Divider, EmptyState, PageHeader, ProgressBar, SectionTitle, showToast, type Severity } from "@/components/ui";
+import { TaskCheck, TaskDue, TaskIcon } from "@/components/tasks/TaskRow";
 import { ItemForm, DIAS_LABEL } from "./ItemForm";
 import { ItinerarioSkeleton } from "./ItinerarioSkeleton";
 import type { ItinerarioItem } from "@/types";
@@ -19,31 +20,38 @@ function todayDate() {
 }
 
 // ── Fila de rutina ───────────────────────────────────────────────────────────
-function ItemRow({ item, done, onToggle, onEdit, onDelete }: { item: ItinerarioItem; done: boolean; onToggle: () => void; onEdit: () => void; onDelete: () => void }) {
+/** Severidad de una rutina de hoy: hora pasada sin hacer = vencida; más tarde hoy = vence pronto */
+function itemSeverity(item: ItinerarioItem, done: boolean, isToday: boolean): Severity {
+  if (done) return "ok";
+  if (!isToday) return "info";
+  const [h, m] = item.hora.split(":").map(Number);
+  const now = new Date();
+  return h * 60 + (m || 0) < now.getHours() * 60 + now.getMinutes() ? "overdue" : "soon";
+}
+
+function ItemRow({ item, done, isToday, onToggle, onEdit, onDelete }: { item: ItinerarioItem; done: boolean; isToday: boolean; onToggle: () => void; onEdit: () => void; onDelete: () => void }) {
   const diasStr = item.dias.length === 7 ? "Todos los días" : [...item.dias].sort().map((d) => DIAS_LABEL[d]).join(", ");
-  const Icon = item.tipo === "comida" ? UtensilsCrossed : Footprints;
+  const Icon = item.tipo === "comida" ? PetFood : PetWalk;
+  const severity = itemSeverity(item, done, isToday);
+  const due = done ? "Hecho" : severity === "overdue" ? `Pendiente desde las ${item.hora}` : isToday ? `Hoy a las ${item.hora}` : item.hora;
 
   return (
-    <div className="flex min-h-[64px] items-center gap-2 py-2 pr-3 pl-1">
-      <AnimatedCheck state={done ? "on" : "off"} onClick={onToggle} label={done ? `Desmarcar ${item.nombre}` : `Marcar ${item.nombre} como hecho`} />
-      <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-control", done ? "bg-surface-2 text-on-variant" : "bg-primary-container text-on-primary-container")}>
-        <Icon size={18} aria-hidden="true" />
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className={cn("truncate text-[16px] font-bold", done ? "text-on-variant line-through" : "text-on")}>{item.nombre}</p>
-        <p className="truncate text-[13px] text-on-variant">
-          {item.hora}
-          {item.cantidad ? ` · ${item.cantidad}` : ""} · {diasStr}
+    <div className="flex min-h-16 items-center gap-3 py-2 pr-2 pl-4" style={{ opacity: done ? 0.7 : 1, transition: "opacity var(--duration-slow) var(--ease-standard)" }}>
+      <TaskIcon severity={severity}>
+        <Icon size={18} />
+      </TaskIcon>
+      <button type="button" onClick={onEdit} aria-label={`Editar ${item.nombre}`} className="min-h-11 min-w-0 flex-1 text-left">
+        <p className={cn("truncate text-subtitle font-semibold", done ? "text-text-secondary line-through" : "text-text")}>{item.nombre}</p>
+        <TaskDue severity={severity}>{due}</TaskDue>
+        <p className="truncate text-small text-text-secondary">
+          {item.cantidad ? `${item.cantidad} · ` : ""}
+          {diasStr}
         </p>
-      </div>
-      <div className="flex shrink-0 gap-1">
-        <Button variant="secondary" size="icon" aria-label={`Editar ${item.nombre}`} onClick={onEdit} className="min-h-[40px] min-w-[40px]">
-          <Pencil size={15} />
-        </Button>
-        <Button variant="dangerTonal" size="icon" aria-label={`Eliminar ${item.nombre}`} onClick={onDelete} className="min-h-[40px] min-w-[40px] border-transparent">
-          <Trash2 size={15} />
-        </Button>
-      </div>
+      </button>
+      <Button variant="dangerTonal" size="icon" aria-label={`Eliminar ${item.nombre}`} onClick={onDelete} className="shrink-0 border-transparent">
+        <Trash2 size={16} />
+      </Button>
+      <TaskCheck done={done} onClick={onToggle} label={done ? `Desmarcar ${item.nombre}` : `Marcar ${item.nombre} como hecho`} />
     </div>
   );
 }
@@ -114,14 +122,15 @@ export function ItinerarioModule() {
     }
   }
 
-  function renderList(items: ItinerarioItem[]) {
+  function renderList(items: ItinerarioItem[], isToday = false) {
     return (
       <Card padded={false} className="overflow-hidden">
         {items.map((item, i) => (
           <div key={item.id}>
-            {i > 0 && <Divider className="ml-[60px] mr-0" />}
+            {i > 0 && <Divider className="ml-15 mr-0" />}
             <ItemRow
               item={item}
+              isToday={isToday}
               done={isItemDone(item.id)}
               onToggle={() => void handleToggle(item.id)}
               onEdit={() => setEditItem(item)}
@@ -136,7 +145,7 @@ export function ItinerarioModule() {
   if (loadingItinerary && petItems.length === 0 && !error) return <ItinerarioSkeleton />;
 
   return (
-    <motion.div className="flex flex-col gap-4 pb-6" variants={reduce ? undefined : stagger()} initial={reduce ? false : "hidden"} animate="show">
+    <motion.div className="enter-list flex flex-col gap-4 pb-6" variants={reduce ? undefined : stagger()} animate="show">
       <PageHeader
         title="Rutina diaria"
         eyebrow={pet?.name ?? "Mascota"}
@@ -144,7 +153,7 @@ export function ItinerarioModule() {
         backHref="/actividad"
         actions={
           petItems.length > 0 ? (
-            <Button size="icon" variant="tonal" onClick={() => setShowForm(true)} aria-label="Agregar rutina">
+            <Button size="icon" variant="secondary" onClick={() => setShowForm(true)} aria-label="Agregar rutina">
               <Plus size={20} />
             </Button>
           ) : undefined
@@ -154,7 +163,6 @@ export function ItinerarioModule() {
       {error && petItems.length === 0 ? (
         <div className="px-4">
           <EmptyState
-            tone="danger"
             icon={<Clock size={24} />}
             title="No pudimos cargar la rutina"
             description="Revisa tu conexión e inténtalo otra vez."
@@ -182,16 +190,16 @@ export function ItinerarioModule() {
           {todayItems.length > 0 && (
             <motion.section className="px-4" variants={fadeUp} aria-label="Progreso de hoy">
               <Card tone={progress === 1 ? "primary" : "surface"}>
-                <div className="mb-2.5 flex items-center justify-between">
-                  <p className="text-[16px] font-bold">Progreso de hoy</p>
-                  <span className={cn("text-[14px] font-bold", progress === 1 ? "text-on-primary-container" : "text-primary")}>
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="text-subtitle font-semibold">Progreso de hoy</p>
+                  <span className="text-body font-semibold text-primary-text">
                     {doneToday}/{todayItems.length}
                   </span>
                 </div>
                 <ProgressBar value={progress} tone={progress === 1 ? "ok" : "primary"} />
                 {progress === 1 && (
-                  <p className="mt-2.5 flex items-center justify-center gap-1.5 text-[13px] font-semibold">
-                    <PartyPopper size={15} aria-hidden="true" /> Todo completado hoy
+                  <p className="mt-3 flex items-center justify-center gap-2 text-small font-semibold">
+                    <PartyPopper size={16} aria-hidden="true" /> Todo completado hoy
                   </p>
                 )}
               </Card>
@@ -201,7 +209,7 @@ export function ItinerarioModule() {
           {todayItems.length > 0 && (
             <motion.section className="flex flex-col gap-3 px-4" variants={fadeUp}>
               <SectionTitle>Hoy</SectionTitle>
-              {renderList(todayItems)}
+              {renderList(todayItems, true)}
             </motion.section>
           )}
 

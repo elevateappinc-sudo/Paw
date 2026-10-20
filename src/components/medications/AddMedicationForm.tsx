@@ -130,12 +130,12 @@ export function AddMedicationForm({ onClose, onSuccess }: Props) {
       <Input label="Motivo (opcional)" value={reason} onChange={(e) => setReason(e.target.value)} />
       <Textarea label="Notas (opcional)" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} />
 
-      <div className="flex items-start gap-2 rounded-control bg-warn-container px-3 py-2.5 text-[13px] leading-snug text-on-warn-container">
-        <TriangleAlert size={16} className="mt-0.5 shrink-0 text-warn" aria-hidden="true" />
+      <div className="flex items-start gap-2 rounded-md bg-warning-soft px-3 py-3 text-small leading-snug text-warning-text">
+        <TriangleAlert size={16} className="mt-1 shrink-0 text-warning-text" aria-hidden="true" />
         <span>Consulta siempre con tu veterinario antes de dar cualquier medicamento.</span>
       </div>
 
-      {apiError && <p role="alert" className="text-[13px] font-semibold text-danger">{apiError}</p>}
+      {apiError && <p role="alert" className="text-small font-semibold text-overdue-text">{apiError}</p>}
 
       <div className="flex gap-2">
         <Button type="button" variant="secondary" onClick={onClose} className="flex-1">Cancelar</Button>

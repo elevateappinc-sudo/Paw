@@ -1,55 +1,80 @@
 "use client";
-import { Phone, MapPin } from "lucide-react";
+import { Phone } from "lucide-react";
 import { Skeleton } from "@/components/ui";
+import { PetEmergency } from "@/components/icons/pet";
 import { distanceLabel } from "@/lib/api/businesses";
 import type { Business } from "@/types/db";
 
 /**
- * Botón gigante de 72 px: una sola acción fuerte en la pantalla.
- * Llama a la urgencia más cercana con tel:.
+ * Botón circular de llamada (estilo SOS de emergencia de iOS): una sola
+ * acción fuerte en la pantalla, con un halo suave que late. Debajo, solo el
+ * nombre de la clínica y un dato (distancia o barrio).
  */
 export function EmergencyCallButton({ business, distance, loading, fromCache }: { business: Business | null; distance: number | null; loading: boolean; fromCache: boolean }) {
   if (loading && !business) {
-    return <Skeleton className="h-[72px] w-full rounded-card-lg" />;
-  }
-  if (!business) {
     return (
-      <div className="rounded-card-lg border border-danger/40 bg-danger-container px-4 py-3 text-on-danger-container">
-        <div className="text-[16px] font-bold">No encontramos una urgencia cerca</div>
-        <div className="text-[13px]">Busca en Explorar o llama a tu veterinaria de confianza.</div>
+      <div className="flex flex-col items-center gap-3" aria-hidden="true">
+        <Skeleton className="h-32 w-32 rounded-full" />
+        <Skeleton className="h-4 w-40" />
       </div>
     );
   }
+
+  if (!business) {
+    return (
+      <div className="flex flex-col items-center gap-2 text-center">
+        <span className="flex h-32 w-32 items-center justify-center rounded-full bg-surface-elevated text-text-secondary">
+          <PetEmergency size={44} aria-hidden="true" />
+        </span>
+        <p className="mt-1 text-body font-semibold text-text">Sin urgencias cerca</p>
+        <p className="text-small text-text-secondary">Llama a tu veterinaria de confianza</p>
+      </div>
+    );
+  }
+
   const phone = business.whatsapp ?? business.phone;
-  const meta = [business.emergency_24h ? "Urgencias 24 h" : "Veterinaria", distance !== null ? distanceLabel(distance) : business.neighborhood, business.verified ? "verificada" : null, fromCache ? "datos guardados" : null]
+  const meta = [distance !== null ? distanceLabel(distance) : business.neighborhood, business.emergency_24h ? "24 h" : null, fromCache ? "guardado" : null]
     .filter(Boolean)
     .join(" · ");
 
+  const circle = (
+    <span className="relative flex h-32 w-32 items-center justify-center">
+      {phone && <span className="sos-halo absolute inset-0 rounded-full bg-danger" aria-hidden="true" />}
+      <span
+        className={
+          phone
+            ? "relative flex h-32 w-32 items-center justify-center rounded-full bg-danger text-on-danger shadow-3"
+            : "relative flex h-32 w-32 items-center justify-center rounded-full bg-surface-elevated text-text-secondary"
+        }
+      >
+        <Phone size={44} strokeWidth={2.2} aria-hidden="true" />
+      </span>
+    </span>
+  );
+
+  const caption = (
+    <span className="flex flex-col items-center text-center">
+      <span className="text-title font-semibold text-text">{phone ? "Llamar" : "Sin teléfono"}</span>
+      <span className="mt-1 max-w-[260px] truncate text-small text-text-secondary">
+        {business.name}
+        {meta ? ` · ${meta}` : ""}
+      </span>
+    </span>
+  );
+
   if (!phone) {
     return (
-      <div className="flex min-h-[72px] items-center gap-3 rounded-card-lg bg-danger-container px-4 text-on-danger-container">
-        <MapPin size={26} className="shrink-0 text-danger" aria-hidden="true" />
-        <div className="min-w-0">
-          <div className="truncate text-[17px] font-bold">{business.name}</div>
-          <div className="truncate text-[13px]">{meta} · sin teléfono registrado</div>
-        </div>
+      <div className="flex flex-col items-center gap-3">
+        {circle}
+        {caption}
       </div>
     );
   }
 
   return (
-    <a
-      href={`tel:${phone.replace(/\s+/g, "")}`}
-      className="flex min-h-[72px] w-full items-center gap-3 rounded-card-lg bg-danger px-4 text-white shadow-2 transition-transform active:scale-[0.98]"
-      aria-label={`Llamar a ${business.name}`}
-    >
-      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/20">
-        <Phone size={24} aria-hidden="true" />
-      </span>
-      <span className="min-w-0 flex-1 text-left">
-        <span className="block truncate font-display text-[18px] leading-tight">Llamar a {business.name}</span>
-        <span className="block truncate text-[13px] font-semibold opacity-90">{meta}</span>
-      </span>
+    <a href={`tel:${phone.replace(/\s+/g, "")}`} aria-label={`Llamar a ${business.name}`} className="pressable flex flex-col items-center gap-3 rounded-xl">
+      {circle}
+      {caption}
     </a>
   );
 }

@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { fadeUp, stagger } from "@/lib/motion";
 import { Button, Card, Divider, EmptyState, PageHeader, PetAvatarRing, Row, SectionTitle, Sheet, Tag } from "@/components/ui";
 import { PetForm } from "./PetForm";
+import { formatPetAge } from "@/lib/age";
 import type { Pet } from "@/types";
 
 /** Lista de mascotas propias y compartidas para elegir la activa. */
@@ -33,7 +34,7 @@ export function PetSelector() {
   function renderPet(pet: Pet, isOwner: boolean, i: number, total: number) {
     return (
       <div key={pet.id}>
-        {i > 0 && <Divider className="ml-[84px] mr-0" />}
+        {i > 0 && <Divider className="ml-21 mr-0" />}
         <Row
           icon={<PetAvatarRing pet={pet} size={56} />}
           title={
@@ -46,7 +47,7 @@ export function PetSelector() {
               )}
             </span>
           }
-          subtitle={`${speciesLabel(pet)}${pet.breed ? ` · ${pet.breed}` : ""}`}
+          subtitle={[speciesLabel(pet), pet.breed || null, formatPetAge(pet.birthDate)].filter(Boolean).join(" · ")}
           onClick={() => selectPet(pet.id)}
           trailing={
             <span className="flex items-center gap-1">
@@ -59,10 +60,12 @@ export function PetSelector() {
                     e.stopPropagation();
                     setToDelete(pet);
                   }}
-                  className="min-h-[40px] min-w-[40px] border-transparent"
-                />
+                  className="border-transparent"
+                >
+                  <Trash2 size={16} aria-hidden="true" />
+                </Button>
               )}
-              <ChevronRight size={18} className="text-on-variant" aria-hidden="true" />
+              <ChevronRight size={18} className="text-text-secondary" aria-hidden="true" />
             </span>
           }
           className={cnRow(i, total)}
@@ -72,7 +75,7 @@ export function PetSelector() {
   }
 
   return (
-    <motion.div className="flex min-h-dvh flex-col gap-4 bg-bg pb-10" variants={reduce ? undefined : stagger()} initial={reduce ? false : "hidden"} animate="show">
+    <motion.div className="enter-list flex min-h-dvh flex-col gap-4 bg-bg pb-10" variants={reduce ? undefined : stagger()} animate="show">
       <PageHeader
         title="Mis mascotas"
         eyebrow={`Hola, ${displayName.split(" ")[0]}`}
@@ -111,7 +114,15 @@ export function PetSelector() {
 
       {myPets.length === 0 && sharedPets.length === 0 && (
         <motion.div className="px-4" variants={fadeUp}>
-          <EmptyState title="Sin mascotas aún" description="Agrega tu primera mascota para empezar." />
+          <EmptyState
+            title="Aún no tienes mascotas"
+            description="Añade la primera y armamos su plan de cuidados."
+            action={
+              <Button full size="lg" leading={<Plus size={20} aria-hidden="true" />} onClick={() => setShowForm(true)}>
+                Añadir mascota
+              </Button>
+            }
+          />
         </motion.div>
       )}
 
@@ -123,24 +134,26 @@ export function PetSelector() {
         </motion.div>
       )}
 
-      <motion.div className="px-4" variants={fadeUp}>
-        <Button full size="lg" leading={<Plus size={20} />} onClick={() => setShowForm(true)}>
-          Agregar mascota
-        </Button>
-      </motion.div>
+      {(myPets.length > 0 || sharedPets.length > 0) && (
+        <motion.div className="px-4" variants={fadeUp}>
+          <Button variant="secondary" full size="lg" leading={<Plus size={20} aria-hidden="true" />} onClick={() => setShowForm(true)}>
+            Añadir mascota
+          </Button>
+        </motion.div>
+      )}
 
       {showForm && <PetForm onClose={() => setShowForm(false)} />}
 
       <Sheet open={toDelete !== null} onClose={() => setToDelete(null)} title={toDelete ? `¿Eliminar a ${toDelete.name}?` : undefined}>
         <div className="flex flex-col gap-4 pb-2">
-          <p className="text-[15px] leading-relaxed text-on-variant">Se borrarán todos sus datos. Esta acción no se puede deshacer.</p>
+          <p className="text-body text-text-secondary">Se borrarán todos sus datos. Esta acción no se puede deshacer.</p>
           <div className="flex gap-2">
             <Button variant="secondary" onClick={() => setToDelete(null)} className="flex-1">
               Cancelar
             </Button>
             <Button
-              variant="danger"
-              leading={<Trash2 size={16} />}
+              variant="destructive"
+              leading={<Trash2 size={16} aria-hidden="true" />}
               onClick={() => {
                 if (toDelete) deletePet(toDelete.id);
                 setToDelete(null);

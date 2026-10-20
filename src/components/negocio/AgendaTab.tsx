@@ -12,9 +12,9 @@ import { bookingDuration, bookingTime, countBookings7d, dayRange, fetchViews7d, 
 
 function Kpi({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="flex flex-col gap-1 rounded-card bg-surface-2 px-3 py-2.5">
-      <span className="flex items-center gap-1 text-[11px] font-semibold text-on-variant">{icon} {label}</span>
-      <span className="font-display text-[22px] leading-none text-on">{value}</span>
+    <div className="flex flex-col gap-1 rounded-md bg-surface-elevated px-3 py-3">
+      <span className="flex items-center gap-1 text-label font-semibold text-text-secondary">{icon} {label}</span>
+      <span className="font-semibold text-title leading-none text-text">{value}</span>
     </div>
   );
 }
@@ -100,11 +100,11 @@ export function AgendaTab({ business }: { business: Business }) {
 
       {loading ? (
         <>
-          <Skeleton className="h-[72px] rounded-card-lg" />
-          <Skeleton className="h-[220px] rounded-card-lg" />
+          <Skeleton className="h-[72px] rounded-md" />
+          <Skeleton className="h-[220px] rounded-md" />
         </>
       ) : error ? (
-        <EmptyState tone="danger" compact title="Algo salió mal" description={error} action={<Button full onClick={load}>Reintentar</Button>} />
+        <EmptyState compact title="Algo salió mal" description={error} action={<Button full onClick={load}>Reintentar</Button>} />
       ) : (
         <>
           {pending.length > 0 && (
@@ -112,10 +112,10 @@ export function AgendaTab({ business }: { business: Business }) {
               <CardHeader title={`${pending.length} ${pending.length === 1 ? "solicitud por confirmar" : "solicitudes por confirmar"}`} className="mb-2" />
               <ul className="flex flex-col gap-2">
                 {pending.map((b) => (
-                  <li key={b.id} className="flex items-center gap-2 rounded-control bg-surface px-3 py-2 text-on">
+                  <li key={b.id} className="flex items-center gap-2 rounded-md bg-surface px-3 py-2 text-text">
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-[15px] font-bold">{b.pets?.name ?? "Mascota"} · {b.business_services?.name ?? "Servicio"}</div>
-                      <div className="text-[12px] text-on-variant">{new Date(b.starts_at).toLocaleDateString("es-CO", { weekday: "short", day: "numeric", month: "short" })} · {bookingTime(b)}</div>
+                      <div className="truncate text-body font-semibold">{b.pets?.name ?? "Mascota"} · {b.business_services?.name ?? "Servicio"}</div>
+                      <div className="text-label text-text-secondary">{new Date(b.starts_at).toLocaleDateString("es-CO", { weekday: "short", day: "numeric", month: "short" })} · {bookingTime(b)}</div>
                     </div>
                     <Button size="icon" variant="primary" aria-label="Confirmar" onClick={() => setStatus(b, "confirmed")} loading={busy === b.id}><Check size={18} /></Button>
                     <Button size="icon" variant="dangerTonal" aria-label="Rechazar" onClick={() => setStatus(b, "cancelled")} disabled={busy === b.id}><X size={18} /></Button>
@@ -125,7 +125,7 @@ export function AgendaTab({ business }: { business: Business }) {
             </Card>
           )}
 
-          <div className="no-scrollbar -mx-4 flex gap-1.5 overflow-x-auto px-4" role="tablist" aria-label="Día">
+          <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4" role="tablist" aria-label="Día">
             {days.map((d) => {
               const active = d.key === day;
               return (
@@ -135,10 +135,10 @@ export function AgendaTab({ business }: { business: Business }) {
                   role="tab"
                   aria-selected={active}
                   onClick={() => setDay(d.key)}
-                  className={cn("flex min-h-[52px] min-w-[52px] shrink-0 flex-col items-center justify-center rounded-card px-2 text-[12px] font-bold capitalize transition-colors", active ? "bg-primary text-on-primary" : "bg-surface-2 text-on-variant")}
+                  className={cn("flex min-h-13 min-w-13 shrink-0 flex-col items-center justify-center rounded-md px-2 text-label font-semibold capitalize transition-colors", active ? "bg-primary text-on-primary" : "bg-surface-elevated text-text-secondary")}
                 >
                   <span>{d.isToday ? "Hoy" : d.weekday}</span>
-                  <span className="text-[16px]">{d.day}</span>
+                  <span className="text-subtitle">{d.day}</span>
                 </button>
               );
             })}
@@ -152,19 +152,19 @@ export function AgendaTab({ business }: { business: Business }) {
                 const tone = STATUS_TONE[b.status];
                 const dur = bookingDuration(b);
                 return (
-                  <motion.li key={b.id} variants={reduce ? undefined : fadeUp} className="flex overflow-hidden rounded-card-lg border border-outline-variant bg-surface">
-                    <span className={cn("w-1.5 shrink-0", tone.bar)} aria-hidden="true" />
+                  <motion.li key={b.id} variants={reduce ? undefined : fadeUp} className="flex overflow-hidden rounded-md border border-border bg-surface">
+                    <span className={cn("w-2 shrink-0", tone.bar)} aria-hidden="true" />
                     <div className="flex min-w-0 flex-1 items-center gap-3 px-3 py-3">
                       <div className="w-14 shrink-0">
-                        <div className="font-display text-[17px] leading-none text-on">{bookingTime(b)}</div>
-                        {dur && <div className="mt-0.5 text-[11px] text-on-variant">{dur} min</div>}
+                        <div className="font-semibold text-subtitle leading-none text-text">{bookingTime(b)}</div>
+                        {dur && <div className="mt-1 text-label text-text-secondary">{dur} min</div>}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="truncate text-[15px] font-bold text-on">{b.pets?.name ?? "Mascota"} · {b.business_services?.name ?? "Servicio"}</div>
+                        <div className="truncate text-body font-semibold text-text">{b.pets?.name ?? "Mascota"} · {b.business_services?.name ?? "Servicio"}</div>
                         <Tag tone={tone.tag} size="xs" className="mt-1">{STATUS_LABEL[b.status]}</Tag>
                       </div>
                       {b.status === "confirmed" && (
-                        <Button size="sm" variant="tonal" onClick={() => setStatus(b, "completed")} loading={busy === b.id}>Completar</Button>
+                        <Button size="sm" variant="secondary" onClick={() => setStatus(b, "completed")} loading={busy === b.id}>Completar</Button>
                       )}
                       {b.status === "requested" && (
                         <Button size="sm" variant="primary" onClick={() => setStatus(b, "confirmed")} loading={busy === b.id}>Confirmar</Button>

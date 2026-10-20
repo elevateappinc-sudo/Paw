@@ -35,8 +35,8 @@ export function OptionChips({
   }
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <span className="text-[13px] font-semibold text-on-variant">{label}</span>
+    <div className="flex flex-col gap-2">
+      <span className="text-small font-semibold text-text-secondary">{label}</span>
       <ChipRow>
         {options.map((opt) => (
           <Chip key={opt} selected={value === opt} onClick={() => onChange(opt)}>
@@ -64,7 +64,7 @@ export function OptionChips({
             }}
             className="flex-1"
           />
-          <Button type="button" variant="tonal" onClick={commit} disabled={!draft.trim()}>
+          <Button type="button" variant="secondary" onClick={commit} disabled={!draft.trim()}>
             Agregar
           </Button>
         </div>
