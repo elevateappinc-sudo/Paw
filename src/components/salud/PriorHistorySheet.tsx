@@ -165,7 +165,7 @@ export function PriorHistorySheet({
           <Button full size="lg" onClick={() => void save()} loading={saving}>
             {total > 0 ? `Guardar ${total} ${total === 1 ? "cambio" : "cambios"}` : "Sin cambios"}
           </Button>
-          <p className="text-center text-label text-text-secondary">Las próximas fechas se recalculan solas a partir de lo que registres.</p>
+          <p className="text-center text-small text-text-secondary">Las próximas fechas se recalculan solas a partir de lo que registres.</p>
         </div>
       }
     >
@@ -180,7 +180,7 @@ export function PriorHistorySheet({
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <div className="truncate text-body font-semibold text-text">{c.name}</div>
-                  <div className="text-label text-text-secondary">
+                  <div className="text-small text-text-secondary">
                     {CARE_KIND_LABEL[c.kind]} · {intervalLabel({ interval_days: days, interval_value: e.value, interval_unit: e.unit })}
                     {nextLabel ? ` · ${nextLabel}` : ""}
                   </div>

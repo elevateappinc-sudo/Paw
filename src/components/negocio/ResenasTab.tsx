@@ -73,7 +73,7 @@ export function ResenasTab({ business }: { business: Business }) {
                 {r.users?.display_name ?? "Cliente"}
                 {r.pets?.name ? <span className="font-semibold text-text-secondary"> · {r.pets.name}</span> : null}
               </div>
-              <div className="text-label text-text-secondary">{relativeTime(r.created_at)}</div>
+              <div className="text-small text-text-secondary">{relativeTime(r.created_at)}</div>
             </div>
             <Rating value={Number(r.rating)} />
           </div>

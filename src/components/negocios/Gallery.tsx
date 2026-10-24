@@ -2,7 +2,6 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Bookmark, ChevronLeft } from "lucide-react";
-import { SOSButton } from "@/components/layout/SOSButton";
 import { cn } from "@/lib/utils";
 
 export interface GalleryProps {
@@ -62,7 +61,6 @@ export function Gallery({ photos, name, saved, onToggleSaved, savedBusy }: Galle
           >
             <Bookmark size={20} className={saved ? "fill-current" : undefined} />
           </button>
-          <SOSButton />
         </div>
       </div>
 

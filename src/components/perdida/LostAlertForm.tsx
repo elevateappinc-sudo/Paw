@@ -75,7 +75,7 @@ export function LostAlertForm() {
 
   return (
     <LostModeRoot className="pb-[max(24px,env(safe-area-inset-bottom))]">
-      <PageHeader title="Reportar perdida" eyebrow="Avisaremos a la comunidad cerca" back />
+      <PageHeader sos title="Reportar perdida" eyebrow="Avisaremos a la comunidad cerca" back />
       <div className="flex flex-col gap-4 px-4">
         {pet ? (
           <Card>

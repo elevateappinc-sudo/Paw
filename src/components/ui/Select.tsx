@@ -57,9 +57,9 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             </svg>
           </div>
         </div>
-        {error && <p className="text-label text-overdue-text">{error}</p>}
+        {error && <p className="text-small text-overdue-text">{error}</p>}
         {!error && helperText && (
-          <p className="text-label text-text-secondary">{helperText}</p>
+          <p className="text-small text-text-secondary">{helperText}</p>
         )}
       </div>
     );

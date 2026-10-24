@@ -87,7 +87,7 @@ export function NotificationSettings({ showTitle = true }: { showTitle?: boolean
               </Button>
             }
           />
-          {permission === "denied" && <p className="px-4 pb-3 text-label text-primary-text">Permiso bloqueado: actívalo desde los ajustes del navegador.</p>}
+          {permission === "denied" && <p className="px-4 pb-3 text-small text-primary-text">Permiso bloqueado: actívalo desde los ajustes del navegador.</p>}
         </Card>
       )}
 

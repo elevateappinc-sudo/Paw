@@ -41,7 +41,7 @@ export function MonthDetail({ month, onClose }: MonthDetailProps) {
     <Card padded={false} className="overflow-hidden">
       <div className="flex items-center justify-between gap-3 px-4 pt-4 pb-2">
         <div className="min-w-0">
-          <div className="text-label font-semibold uppercase tracking-wider text-text-secondary">Detalle</div>
+          <div className="text-label font-semibold text-text-secondary">Detalle</div>
           <h3 className="font-semibold text-subtitle capitalize leading-tight text-text">{getMonthLabel(month)}</h3>
         </div>
         <div className="flex items-center gap-2">
@@ -92,7 +92,7 @@ export function MonthDetail({ month, onClose }: MonthDetailProps) {
                             <Tag size="xs">{formatDate(g.fecha)}</Tag>
                             <Tag size="xs" tone="primary">{g.quien}</Tag>
                           </div>
-                          {g.notas && <p className="mt-1 truncate text-label text-text-secondary">{g.notas}</p>}
+                          {g.notas && <p className="mt-1 truncate text-small text-text-secondary">{g.notas}</p>}
                         </div>
                         <div className="flex shrink-0 gap-1">
                           <Button variant="secondary" size="icon" aria-label={`Editar gasto de ${g.concepto}`} onClick={() => setEditGasto(g)}>

@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { AlertCircle, Bell, LocateFixed, MapPin, SearchX, WifiOff } from "lucide-react";
 import { Button, Chip, ChipRow, EmptyState, Input, showToast, SkeletonSwap } from "@/components/ui";
-import { SOSButton } from "@/components/layout/SOSButton";
 import { useGeolocation, DEFAULT_CENTER } from "@/hooks/useGeolocation";
 import { useStore } from "@/store";
 import { fetchNearbyBusinesses, fetchPopularBusinesses, searchBusinesses, isOpenNow } from "@/lib/api/businesses";
@@ -423,7 +422,6 @@ export function ExplorarView() {
       <header ref={headerRef} className="absolute inset-x-0 top-0 z-20 flex flex-col gap-3 bg-bg pb-3 pt-[max(16px,env(safe-area-inset-top))]">
         <div className="flex items-center justify-between gap-3 px-4">
           <h1 className="truncate text-display font-semibold text-text">Explorar</h1>
-          <SOSButton />
         </div>
         <div className="px-4">
           <SearchField

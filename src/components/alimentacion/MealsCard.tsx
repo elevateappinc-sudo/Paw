@@ -147,7 +147,7 @@ export function MealsCard({ meals, totalGrams, explanation, isDone, toggleMeal }
                   </motion.span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-body font-semibold">{m.time}</span>
-                    <span className="block text-label opacity-80">{m.grams} g</span>
+                    <span className="block text-small opacity-80">{m.grams} g</span>
                   </span>
                   <Tag tone={done ? "ok" : "neutral"} size="xs">{done ? "Hecho" : "Pendiente"}</Tag>
                 </button>

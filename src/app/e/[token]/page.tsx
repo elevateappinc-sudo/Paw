@@ -71,7 +71,7 @@ export default async function EmergencyCardPage({ params, searchParams }: { para
     <main className="mx-auto flex min-h-dvh w-full max-w-[640px] flex-col gap-4 bg-bg px-4 pt-[max(20px,env(safe-area-inset-top))] pb-[max(32px,env(safe-area-inset-bottom))]" style={lost ? LOST_MODE_STYLE : undefined}>
       {imprimir && <PrintOnLoad />}
       {lost && (
-        <section className="rounded-md bg-danger px-4 py-4 text-on-danger shadow-2" role="alert">
+        <section className="rounded-md bg-danger px-4 py-4 text-on-danger" role="alert">
           <div className="flex items-center gap-2 font-semibold text-title leading-tight">
             <AlertTriangle size={22} aria-hidden="true" />
             Esta mascota está reportada como perdida
@@ -95,7 +95,7 @@ export default async function EmergencyCardPage({ params, searchParams }: { para
       <header className="flex items-center gap-4">
         {card.photo_url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={card.photo_url} alt={card.pet_name} className="h-24 w-24 shrink-0 rounded-full object-cover shadow-1" />
+          <img src={card.photo_url} alt={card.pet_name} className="h-24 w-24 shrink-0 rounded-full object-cover" />
         ) : (
           <span className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary-text">
             <PawPrint size={40} aria-hidden="true" />

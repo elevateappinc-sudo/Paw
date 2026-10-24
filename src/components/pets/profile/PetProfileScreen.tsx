@@ -5,7 +5,6 @@ import { ChevronRight, CloudOff, Pencil, Plus, SearchX, Share2, Users } from "lu
 import PetMembersPanel from "@/components/pets/PetMembersPanel";
 import { cn } from "@/lib/utils";
 import { SegmentedControl, Sheet, Button, EmptyState, PageHeader, buttonVariants, showToast, SkeletonSwap } from "@/components/ui";
-import { SOSButton } from "@/components/layout/SOSButton";
 import { formatPetAge } from "@/lib/age";
 import { PetAvatar } from "@/components/pets/PetAvatar";
 import { fetchPet, fetchWeightLogs, SPECIES_LABEL } from "@/lib/api/pets";
@@ -177,7 +176,6 @@ export function PetProfileScreen({ petId, userId }: { petId: string; userId: str
             <Plus size={18} aria-hidden="true" />
           </Link>
         </nav>
-        <SOSButton />
       </div>
 
       {/* Foto grande con compartir encima */}
@@ -213,7 +211,7 @@ export function PetProfileScreen({ petId, userId }: { petId: string; userId: str
       <dl className="mt-4 grid grid-cols-3 gap-3 px-4">
         {stats.map((st) => (
           <div key={st.label} className={`rounded-lg px-3 py-3 ${st.bg}`}>
-            <dt className="text-label text-text-secondary">{st.label}</dt>
+            <dt className="text-small text-text-secondary">{st.label}</dt>
             <dd className="mt-1 text-body font-semibold text-text">{st.value}</dd>
           </div>
         ))}

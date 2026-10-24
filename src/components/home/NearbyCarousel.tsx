@@ -24,6 +24,8 @@ export interface NearbyCard {
 
 export function NearbyCarousel({ items, error, onRetry }: { items: NearbyCard[] | null; error?: boolean; onRetry?: () => void }) {
   const loading = items === null && !error;
+  // Inicio oculta los módulos vacíos (la búsqueda amplia vive en Explorar)
+  if (!error && items !== null && items.length === 0) return null;
   return (
     <section aria-labelledby="home-nearby">
       <HomeSectionHeader id="home-nearby" title="Cerca de ti" href="/explorar" linkLabel="Ver el mapa" />

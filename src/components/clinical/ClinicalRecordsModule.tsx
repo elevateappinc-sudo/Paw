@@ -52,7 +52,7 @@ function DocumentItem({ doc, onDelete }: { doc: ClinicalDocument; onDelete: (doc
         </div>
         <div className="min-w-0 flex-1">
           <p className="truncate text-body font-semibold text-text">{doc.file_name}</p>
-          {doc.file_size_bytes && <p className="text-label text-text-secondary">{(doc.file_size_bytes / 1024).toFixed(0)} KB</p>}
+          {doc.file_size_bytes && <p className="text-small text-text-secondary">{(doc.file_size_bytes / 1024).toFixed(0)} KB</p>}
         </div>
         <div className="flex shrink-0 gap-1">
           <Button
@@ -364,7 +364,7 @@ function RecordDetail({ record, userId, vacunas, onClose, onDeleted, onEdited }:
           <div className="flex flex-col gap-4 pb-2">
             {fields.map((f) => (
               <div key={f.label}>
-                <p className="text-label font-semibold uppercase tracking-wide text-text-secondary">{f.label}</p>
+                <p className="text-label font-semibold text-text-secondary">{f.label}</p>
                 <p className="mt-1 whitespace-pre-wrap text-body leading-relaxed text-text">{f.value}</p>
               </div>
             ))}
@@ -552,7 +552,7 @@ export function ClinicalRecordsModule({ embedded = false }: { embedded?: boolean
             />
           ) : (
             <>
-              <p className="text-small font-semibold uppercase tracking-wide text-text-secondary">
+              <p className="text-small font-semibold text-text-secondary">
                 {filtered.length} visita{filtered.length !== 1 ? "s" : ""}
               </p>
               <motion.div variants={stagger()} initial="hidden" animate="show">

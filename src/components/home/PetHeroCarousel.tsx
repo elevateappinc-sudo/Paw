@@ -166,18 +166,18 @@ function PetHeroCard({ pet }: { pet: Pet }) {
         {cycles === null ? (
           <Skeleton className="h-7 w-20 rounded-full" />
         ) : cycles.length === 0 ? null : pending.length === 0 ? (
-          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-success px-3 py-1 text-label font-semibold text-on-primary">
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-success px-3 py-1 text-small font-semibold text-on-primary">
             Al día <ShieldCheck size={14} aria-hidden="true" />
           </span>
         ) : (
-          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-pastel-glass px-3 py-1 text-label font-semibold text-warning-text">
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-pastel-glass px-3 py-1 text-small font-semibold text-warning-text">
             <Clock size={14} aria-hidden="true" /> {pending.length}
             <span className="sr-only">{pending.length === 1 ? "cuidado pendiente" : "cuidados pendientes"}</span>
           </span>
         )}
       </div>
 
-      <div className="mt-3 text-label text-text-secondary">Próximo cuidado</div>
+      <div className="mt-3 text-small text-text-secondary">Próximo cuidado</div>
       {cycles === null ? (
         <Skeleton className="mt-2 h-18 w-full rounded-lg" />
       ) : next && NextIcon ? (
@@ -201,7 +201,7 @@ function PetHeroCard({ pet }: { pet: Pet }) {
 
       {cycles && cycles.length > 0 && (
         <div className="mt-3 flex items-center gap-3">
-          <span className="shrink-0 text-label text-text-secondary">
+          <span className="shrink-0 text-small tabular-nums text-text-secondary">
             {upToDate} de {cycles.length} al día
           </span>
           <span className="h-2 flex-1 overflow-hidden rounded-full bg-pastel-glass" role="progressbar" aria-valuenow={upToDate} aria-valuemin={0} aria-valuemax={cycles.length} aria-label="Cuidados al día">

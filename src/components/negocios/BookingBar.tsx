@@ -21,7 +21,7 @@ export function BookingBar({ businessId, service, petName, whatsappHref }: Booki
       <div className="flex items-center gap-3">
         <div className="min-w-0 flex-1">
           <p className="truncate text-body font-semibold text-text">{summary}</p>
-          <p className="truncate text-label text-text-secondary">Cancela gratis hasta 24 h antes</p>
+          <p className="truncate text-small text-text-secondary">Cancela gratis hasta 24 h antes</p>
           {service?.price != null && <p className="font-semibold text-title leading-tight text-text">{formatCurrency(service.price)}</p>}
         </div>
         {service || !whatsappHref ? (

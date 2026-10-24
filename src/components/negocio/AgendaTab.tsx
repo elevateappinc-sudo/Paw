@@ -115,7 +115,7 @@ export function AgendaTab({ business }: { business: Business }) {
                   <li key={b.id} className="flex items-center gap-2 rounded-md bg-surface px-3 py-2 text-text">
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-body font-semibold">{b.pets?.name ?? "Mascota"} · {b.business_services?.name ?? "Servicio"}</div>
-                      <div className="text-label text-text-secondary">{new Date(b.starts_at).toLocaleDateString("es-CO", { weekday: "short", day: "numeric", month: "short" })} · {bookingTime(b)}</div>
+                      <div className="text-small text-text-secondary">{new Date(b.starts_at).toLocaleDateString("es-CO", { weekday: "short", day: "numeric", month: "short" })} · {bookingTime(b)}</div>
                     </div>
                     <Button size="icon" variant="primary" aria-label="Confirmar" onClick={() => setStatus(b, "confirmed")} loading={busy === b.id}><Check size={18} /></Button>
                     <Button size="icon" variant="dangerTonal" aria-label="Rechazar" onClick={() => setStatus(b, "cancelled")} disabled={busy === b.id}><X size={18} /></Button>
@@ -157,7 +157,7 @@ export function AgendaTab({ business }: { business: Business }) {
                     <div className="flex min-w-0 flex-1 items-center gap-3 px-3 py-3">
                       <div className="w-14 shrink-0">
                         <div className="font-semibold text-subtitle leading-none text-text">{bookingTime(b)}</div>
-                        {dur && <div className="mt-1 text-label text-text-secondary">{dur} min</div>}
+                        {dur && <div className="mt-1 text-small text-text-secondary">{dur} min</div>}
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="truncate text-body font-semibold text-text">{b.pets?.name ?? "Mascota"} · {b.business_services?.name ?? "Servicio"}</div>

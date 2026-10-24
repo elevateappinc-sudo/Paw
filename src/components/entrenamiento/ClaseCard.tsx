@@ -26,7 +26,7 @@ function DetailBlock({ label, tone, children }: { label: string; tone: "warn" | 
   const toneClass = { warn: "text-warning-text", ok: "text-success-text", primary: "text-primary-text" }[tone];
   return (
     <div>
-      <p className={cn("mb-1 text-label font-semibold uppercase tracking-wider", toneClass)}>{label}</p>
+      <p className={cn("mb-1 text-label font-semibold", toneClass)}>{label}</p>
       {children}
     </div>
   );
@@ -127,7 +127,7 @@ export function ClaseCard({ clase }: ClaseCardProps) {
                 )}
 
                 <div>
-                  <p className="mb-2 text-label font-semibold uppercase tracking-wider text-text-secondary">Video de sesión</p>
+                  <p className="mb-2 text-label font-semibold text-text-secondary">Video de sesión</p>
                   {videoUploading && <ProgressBar value={videoProgress / 100} className="mb-2" />}
                   {sessionVideo ? (
                     <Button variant="secondary" full leading={<Video size={16} />} onClick={() => setShowVideoFullscreen(true)}>

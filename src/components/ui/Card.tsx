@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 
 type Elevation = 0 | 1 | 2 | 3;
 
+/** Las tarjetas priorizan borde de 1 px; la sombra queda para elementos flotantes */
 const elevationClass: Record<Elevation, string> = {
   0: "",
   1: "shadow-1",
@@ -29,7 +30,7 @@ const toneClass = {
   overdue: "bg-overdue-soft border border-transparent text-overdue-text",
 };
 
-export function Card({ className, elevation = 1, tone = "surface", padded = true, interactive, children, ...props }: CardProps) {
+export function Card({ className, elevation = 0, tone = "surface", padded = true, interactive, children, ...props }: CardProps) {
   return (
     <div
       className={cn(
@@ -54,7 +55,7 @@ export function CardHeader({ title, action, className, subtitle }: { title: Reac
         <h3 className="font-semibold text-subtitle leading-tight text-text">{title}</h3>
         {subtitle && <p className="mt-1 text-small text-text-secondary">{subtitle}</p>}
       </div>
-      {action && <div className="flex min-h-11 shrink-0 items-center text-label font-semibold text-primary-text">{action}</div>}
+      {action && <div className="flex min-h-11 shrink-0 items-center text-small font-semibold text-primary-text">{action}</div>}
     </div>
   );
 }
@@ -63,7 +64,7 @@ export function SectionTitle({ children, action, className }: { children: React.
   return (
     <div className={cn("flex items-baseline justify-between gap-3", className)}>
       <h2 className="font-semibold text-title leading-tight text-text">{children}</h2>
-      {action && <div className="flex min-h-11 shrink-0 items-center text-label font-semibold text-primary-text">{action}</div>}
+      {action && <div className="flex min-h-11 shrink-0 items-center text-small font-semibold text-primary-text">{action}</div>}
     </div>
   );
 }
@@ -73,7 +74,7 @@ export function InfoCell({ label, value, tone, className, onClick }: { label: st
   const valueTone = tone === "warn" ? "text-warning-text" : tone === "info" ? "text-info-text" : tone === "ok" ? "text-success-text" : "text-text";
   return (
     <div onClick={onClick} role={onClick ? "button" : undefined} tabIndex={onClick ? 0 : undefined} className={cn("rounded-md bg-surface-elevated px-3 py-3", onClick && "cursor-pointer active:opacity-80", className)}>
-      <div className="text-label font-semibold text-text-secondary">{label}</div>
+      <div className="text-small text-text-secondary">{label}</div>
       <div className={cn("mt-1 text-body font-semibold leading-tight", valueTone)}>{value}</div>
     </div>
   );

@@ -179,7 +179,7 @@ export function DatePicker({
             if (e.target.value) onChange(new Date(e.target.value + "T00:00:00"));
           }}
         />
-        {error && <p className="text-label text-overdue-text">{error}</p>}
+        {error && <p className="text-small text-overdue-text">{error}</p>}
       </div>
     );
   }
@@ -211,7 +211,7 @@ export function DatePicker({
         aria-haspopup="dialog"
         aria-expanded={open}
       />
-      {error && <p className="text-label text-overdue-text">{error}</p>}
+      {error && <p className="text-small text-overdue-text">{error}</p>}
 
       {open && (
         <div

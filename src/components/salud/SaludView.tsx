@@ -208,7 +208,7 @@ export function SaludView() {
   if (!pet) {
     return (
       <div className="pb-6">
-        <PageHeader title="Salud" />
+        <PageHeader title="Salud" sos />
         <EmptyState title="Añade una mascota" description="Para llevar su salud al día necesitas registrarla primero." action={<Button full onClick={() => router.push("/mascotas/nueva")}>Añadir mascota</Button>} />
       </div>
     );
@@ -220,6 +220,7 @@ export function SaludView() {
     <PullToRefresh onRefresh={() => (pet ? load(pet.id, true) : undefined)}>
     <div className="pb-20">
       <PageHeader
+        sos
         eyebrow={pet.name}
         title="Salud"
         actions={

@@ -34,7 +34,7 @@ export function NextEventRow({ event, loading, error, onRetry }: { event: PetEve
           <Link href={`/eventos/${event.id}`} className="pressable flex items-center gap-3 rounded-lg border border-border bg-surface p-3">
             {/* Bloque de fecha estilo Calendario */}
             <span className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-md bg-surface-elevated">
-              <span className="text-label font-semibold uppercase text-primary-text">{eventDateLabel(event.starts_at).dow}</span>
+              <span className="text-small font-semibold capitalize text-primary-text">{eventDateLabel(event.starts_at).dow}</span>
               <span className="text-title font-semibold leading-none text-text">{eventDateLabel(event.starts_at).day}</span>
             </span>
             <span className="min-w-0 flex-1">
