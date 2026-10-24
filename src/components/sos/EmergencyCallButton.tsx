@@ -1,6 +1,7 @@
 "use client";
 import { Phone } from "lucide-react";
-import { Skeleton } from "@/components/ui";
+import { useState } from "react";
+import { Button, Sheet, Skeleton, buttonVariants } from "@/components/ui";
 import { PetEmergency } from "@/components/icons/pet";
 import { distanceLabel } from "@/lib/api/businesses";
 import type { Business } from "@/types/db";
@@ -11,6 +12,7 @@ import type { Business } from "@/types/db";
  * nombre de la clínica y un dato (distancia o barrio).
  */
 export function EmergencyCallButton({ business, distance, loading, fromCache }: { business: Business | null; distance: number | null; loading: boolean; fromCache: boolean }) {
+  const [confirming, setConfirming] = useState(false);
   if (loading && !business) {
     return (
       <div className="flex flex-col items-center gap-3" aria-hidden="true">
@@ -43,7 +45,7 @@ export function EmergencyCallButton({ business, distance, loading, fromCache }: 
       <span
         className={
           phone
-            ? "relative flex h-32 w-32 items-center justify-center rounded-full bg-danger text-on-danger shadow-3"
+            ? "relative flex h-32 w-32 items-center justify-center rounded-full bg-danger text-on-danger"
             : "relative flex h-32 w-32 items-center justify-center rounded-full bg-surface-elevated text-text-secondary"
         }
       >
@@ -72,9 +74,25 @@ export function EmergencyCallButton({ business, distance, loading, fromCache }: 
   }
 
   return (
-    <a href={`tel:${phone.replace(/\s+/g, "")}`} aria-label={`Llamar a ${business.name}`} className="pressable flex flex-col items-center gap-3 rounded-xl">
-      {circle}
-      {caption}
-    </a>
+    <>
+      <button type="button" onClick={() => setConfirming(true)} aria-label={`Llamar a ${business.name}`} aria-haspopup="dialog" className="pressable flex flex-col items-center gap-3 rounded-xl">
+        {circle}
+        {caption}
+      </button>
+      {/* Confirmar la intención: dice exactamente qué va a pasar antes de llamar */}
+      <Sheet open={confirming} onClose={() => setConfirming(false)} title={`¿Llamar a ${business.name}?`}>
+        <p className="text-body text-text-secondary">
+          Se abrirá tu app de teléfono para llamar al <span className="font-semibold tabular-nums text-text">{phone}</span>.
+        </p>
+        <div className="mt-4 flex flex-col gap-2">
+          <a href={`tel:${phone.replace(/\s+/g, "")}`} onClick={() => setConfirming(false)} className={buttonVariants({ variant: "destructive", size: "lg", full: true })}>
+            <Phone size={18} aria-hidden="true" /> Llamar ahora
+          </a>
+          <Button variant="outline" size="lg" full onClick={() => setConfirming(false)}>
+            Cancelar
+          </Button>
+        </div>
+      </Sheet>
+    </>
   );
 }

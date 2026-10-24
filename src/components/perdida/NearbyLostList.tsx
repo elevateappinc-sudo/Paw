@@ -54,7 +54,7 @@ export function NearbyLostList() {
   return (
     <LostModeRoot className="pb-28">
     <PullToRefresh onRefresh={() => load()}>
-      <PageHeader title="Mascotas perdidas" eyebrow={usingDefault ? `Cerca de ${DEFAULT_CENTER.label}` : "Cerca de ti"} back />
+      <PageHeader sos title="Mascotas perdidas" eyebrow={usingDefault ? `Cerca de ${DEFAULT_CENTER.label}` : "Cerca de ti"} back />
       {usingDefault && (
         <div className="flex items-center gap-2 px-4 pb-3">
           <Button variant="secondary" size="sm" leading={<MapPin size={16} aria-hidden="true" />} onClick={geo.request} loading={geo.status === "loading"}>

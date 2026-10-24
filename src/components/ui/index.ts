@@ -1,4 +1,5 @@
 export { Button, buttonVariants } from "./Button";
+export { IconButton } from "./IconButton";
 export { Card, CardHeader, SectionTitle, InfoCell, Row, Divider } from "./Card";
 export { Sheet } from "./Sheet";
 export { Skeleton, SkeletonRow, SkeletonBiz, SkeletonPets, SkeletonPetAvatar, SkeletonPetCard, RouteFallback } from "./Skeleton";

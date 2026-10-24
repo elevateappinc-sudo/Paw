@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Bell, ChevronLeft, Info, PartyPopper } from "lucide-react";
 import { ProgressBar, Input, SegmentedControl, Toggle, Button, Card, SEVERITY, buttonVariants, showToast } from "@/components/ui";
-import { SOSButton } from "@/components/layout/SOSButton";
 import { ChipsInput } from "@/components/pets/ChipsInput";
 import { uploadPetProfilePhoto } from "@/components/pets/petPhoto";
 import { PhotoDropCircle } from "@/components/pets/PhotoDropCircle";
@@ -210,7 +209,6 @@ export function NewPetFlow({ userId, mode = "new" }: { userId: string; mode?: "n
               Después
             </Button>
           )}
-          <SOSButton />
         </div>
       </header>
       {step !== 3 && (

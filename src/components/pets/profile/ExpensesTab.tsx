@@ -44,7 +44,7 @@ export function ExpensesTab({ petId }: { petId: string }) {
         ) : summary === null ? (
           <Skeleton className="mt-1 h-5 w-24" />
         ) : (
-          <span className="block text-body font-semibold text-text">
+          <span className="block text-body font-semibold tabular-nums text-text">
             {formatCurrency(summary.total)}
             <span className="font-normal text-text-secondary"> · {summary.count === 0 ? "sin gastos" : `${summary.count} ${summary.count === 1 ? "gasto" : "gastos"}`}</span>
           </span>

@@ -149,7 +149,7 @@ function CareTile({ cycle, onComplete }: { cycle: CareCycle; onComplete: () => v
     >
       <div
         className={cn(
-          "relative flex h-36 w-36 flex-col justify-between rounded-lg border border-border bg-surface p-3 shadow-1 transition-opacity duration-[var(--duration-base)]",
+          "relative flex h-36 w-36 flex-col justify-between rounded-lg border border-border bg-surface p-3 transition-opacity duration-[var(--duration-base)]",
           checked && "opacity-60"
         )}
       >
@@ -185,7 +185,7 @@ function CareTile({ cycle, onComplete }: { cycle: CareCycle; onComplete: () => v
         </div>
         <div className="min-w-0">
           <div className="line-clamp-2 text-body font-semibold leading-tight text-text">{cycle.name}</div>
-          <div className={cn("mt-1 text-label font-semibold", tone.text)}>{shortDue(days)}</div>
+          <div className={cn("mt-1 text-small font-semibold", tone.text)}>{shortDue(days)}</div>
         </div>
       </div>
     </motion.li>

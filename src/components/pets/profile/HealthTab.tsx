@@ -69,11 +69,11 @@ export function HealthTab({ petId, petName, cycles, onRefresh }: { petId: string
           </div>
           {rows !== null && total > 0 && (
             allGood ? (
-              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-success px-3 py-1 text-label font-semibold text-on-primary">
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-success px-3 py-1 text-small font-semibold text-on-primary">
                 Al día <ShieldCheck size={14} aria-hidden="true" />
               </span>
             ) : pending.length > 0 ? (
-              <span className="inline-flex shrink-0 items-center rounded-full bg-warning-soft px-3 py-1 text-label font-semibold text-warning-text">
+              <span className="inline-flex shrink-0 items-center rounded-full bg-warning-soft px-3 py-1 text-small font-semibold text-warning-text">
                 {pending.length} {pending.length === 1 ? "pendiente" : "pendientes"}
               </span>
             ) : null
@@ -95,7 +95,7 @@ export function HealthTab({ petId, petName, cycles, onRefresh }: { petId: string
         ) : (
           <>
             {/* Avance */}
-            <p className="mt-4 text-small text-text">
+            <p className="mt-4 text-small tabular-nums text-text">
               <span className="font-semibold">
                 {upToDate.length} de {total}
               </span>{" "}
@@ -157,7 +157,7 @@ export function HealthTab({ petId, petName, cycles, onRefresh }: { petId: string
                         </span>
                         <span className="min-w-0">
                           <span className="block truncate text-small font-semibold text-text">{c.name}</span>
-                          <span className="block text-label text-text-secondary">{formatDate(c.last_done_at!.slice(0, 10))}</span>
+                          <span className="block text-small text-text-secondary">{formatDate(c.last_done_at!.slice(0, 10))}</span>
                         </span>
                       </li>
                     );

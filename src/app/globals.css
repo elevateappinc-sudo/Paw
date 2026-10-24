@@ -2,7 +2,7 @@
 @import "../styles/tokens.css";
 
 /* ───────────────────────────────────────────────────────────────
-   Paw · Paleta Lavanda
+   Paw · Lavanda refinado
    Los valores viven en src/styles/tokens.css y las reglas de uso en
    docs/design-system.md. Aquí solo se exponen esos tokens como
    utilidades de Tailwind (bg-primary, text-text-secondary,
@@ -47,6 +47,7 @@
   --color-success: var(--color-success);
   --color-success-soft: var(--color-success-soft);
   --color-success-text: var(--color-success-text);
+  --color-info: var(--color-info);
   --color-info-soft: var(--color-info-soft);
   --color-info-text: var(--color-info-text);
 
@@ -58,6 +59,8 @@
   --color-glass: var(--color-glass);
   --color-pastel-lilac: var(--color-pastel-lilac);
   --color-pastel-mint: var(--color-pastel-mint);
+  --color-pastel-sky: var(--color-pastel-sky);
+  --color-pastel-peach: var(--color-pastel-peach);
   --color-pastel-glass: var(--color-pastel-glass);
   --color-scrim: var(--color-scrim);
   --color-scrim-strong: var(--color-scrim-strong);
@@ -71,17 +74,19 @@
   --shadow-*: initial;
   --font-sans: var(--font-sans);
   --text-display: var(--text-display);
-  --text-display--line-height: var(--leading-tight);
+  --text-display--line-height: var(--leading-display);
   --text-title: var(--text-title);
-  --text-title--line-height: var(--leading-tight);
+  --text-title--line-height: var(--leading-title);
   --text-subtitle: var(--text-subtitle);
-  --text-subtitle--line-height: var(--leading-tight);
+  --text-subtitle--line-height: var(--leading-subtitle);
   --text-body: var(--text-body);
-  --text-body--line-height: var(--leading-normal);
+  --text-body--line-height: var(--leading-body);
   --text-small: var(--text-secondary);
-  --text-small--line-height: var(--leading-normal);
+  --text-small--line-height: var(--leading-small);
   --text-label: var(--text-label);
-  --text-label--line-height: var(--leading-tight);
+  --text-label--line-height: var(--leading-label);
+  --text-input: var(--text-input);
+  --text-input--line-height: var(--leading-input);
   --font-weight-normal: var(--font-weight-regular);
   --font-weight-semibold: var(--font-weight-semibold);
 
@@ -120,7 +125,7 @@
     color: var(--color-text);
     font-family: var(--font-sans);
     font-size: var(--text-body);
-    line-height: var(--leading-normal);
+    line-height: var(--leading-body);
     font-weight: var(--font-weight-regular);
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
@@ -147,6 +152,13 @@
     text-decoration: none;
   }
 
+  /* Números tabulares para comparar peso, fechas, gasto y avance */
+  dd,
+  td,
+  time {
+    font-variant-numeric: tabular-nums;
+  }
+
   button,
   input,
   select,
@@ -160,7 +172,8 @@
   input,
   select,
   textarea {
-    font-size: max(16px, 1em);
+    font-size: var(--text-input);
+    line-height: var(--leading-input);
   }
 
   input[type="date"]::-webkit-calendar-picker-indicator {
@@ -233,7 +246,7 @@
   transition: transform var(--duration-fast) var(--ease-standard);
 }
 .pressable:active {
-  transform: scale(0.97);
+  transform: scale(var(--press-scale));
 }
 
 /* ─── skeleton ─────────────────────────────────────────────────

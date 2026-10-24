@@ -48,9 +48,9 @@ export function WeightChart({ logs }: { logs: WeightLog[] }) {
             <circle cx={x(i)} cy={y(v)} r={i === active ? 5 : 4} className="fill-primary stroke-surface" strokeWidth={2} />
           </g>
         ))}
-        <text x={PAD.left} y={H - 6} className="fill-text-secondary text-label font-normal">{fmtDate(logs[0].measured_at)}</text>
+        <text x={PAD.left} y={H - 6} className="fill-text-secondary text-small font-normal">{fmtDate(logs[0].measured_at)}</text>
         {logs.length > 1 && (
-          <text x={W - PAD.right} y={H - 6} textAnchor="end" className="fill-text-secondary text-label font-normal">{fmtDate(logs[logs.length - 1].measured_at)}</text>
+          <text x={W - PAD.right} y={H - 6} textAnchor="end" className="fill-text-secondary text-small font-normal">{fmtDate(logs[logs.length - 1].measured_at)}</text>
         )}
       </svg>
       <figcaption className="mt-1 flex flex-wrap items-center justify-between gap-x-2 text-small">

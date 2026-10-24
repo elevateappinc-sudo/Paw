@@ -39,10 +39,10 @@ export function severityFromDays(days: number | null | undefined): Severity {
   return "ok";
 }
 
-/** Etiqueta de estado (no interactiva) */
+/** Etiqueta de estado (no interactiva). Texto de 12 px: el estado es información funcional */
 export function Tag({ tone = "neutral", children, className, size = "sm" }: { tone?: ChipTone; children: React.ReactNode; className?: string; size?: "xs" | "sm" }) {
   return (
-    <span className={cn("inline-flex items-center gap-1 rounded-full text-label font-semibold", size === "xs" ? "px-2 py-1" : "px-3 py-1", toneClass[tone], className)}>
+    <span className={cn("inline-flex items-center gap-1 rounded-full text-small font-semibold", size === "xs" ? "px-2 py-1" : "px-3 py-1", toneClass[tone], className)}>
       {children}
     </span>
   );
@@ -77,7 +77,7 @@ export function Chip({ selected, onClick, children, className, leading, glass, c
       aria-pressed={selected}
       onClick={onClick}
       className={cn(
-        "pressable relative inline-flex min-h-9 shrink-0 items-center gap-1 rounded-full border px-3 text-label font-semibold transition-colors duration-[var(--duration-fast)] after:absolute after:inset-x-0 after:-inset-y-1 after:content-['']",
+        "pressable relative inline-flex min-h-9 shrink-0 items-center gap-1 rounded-full border px-3 text-small font-semibold transition-colors duration-[var(--duration-fast)] after:absolute after:inset-x-0 after:-inset-y-1 after:content-['']",
         selected
           ? "border-accent bg-accent text-on-accent"
           : glass

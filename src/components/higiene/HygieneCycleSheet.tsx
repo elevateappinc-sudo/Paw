@@ -105,7 +105,7 @@ export function HygieneCycleSheet({ cycle, logs, businessNames, onClose, onMarkD
         {cycle.notes && <p className="text-body leading-relaxed text-text-secondary">{cycle.notes}</p>}
 
         <div>
-          <h4 className="mb-2 text-small font-semibold uppercase tracking-wide text-text-secondary">Últimas veces</h4>
+          <h4 className="mb-2 text-small font-semibold text-text-secondary">Últimas veces</h4>
           {recent.length === 0 ? (
             <p className="text-body text-text-secondary">Todavía no lo has registrado.</p>
           ) : (

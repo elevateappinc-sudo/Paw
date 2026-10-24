@@ -40,9 +40,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({ label, hint, er
         {trailing && <span className="shrink-0 text-text-secondary">{trailing}</span>}
       </div>
       {error ? (
-        <p id={`${inputId}-err`} className="text-label font-semibold text-overdue-text">{error}</p>
+        <p id={`${inputId}-err`} className="text-small font-semibold text-overdue-text">{error}</p>
       ) : hint ? (
-        <p id={`${inputId}-hint`} className="text-label text-text-secondary">{hint}</p>
+        <p id={`${inputId}-hint`} className="text-small text-text-secondary">{hint}</p>
       ) : null}
     </div>
   );
@@ -67,7 +67,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({ label,
         )}
         {...props}
       />
-      {error ? <p className="text-label font-semibold text-overdue-text">{error}</p> : hint ? <p className="text-label text-text-secondary">{hint}</p> : null}
+      {error ? <p className="text-small font-semibold text-overdue-text">{error}</p> : hint ? <p className="text-small text-text-secondary">{hint}</p> : null}
     </div>
   );
 });
@@ -98,7 +98,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(({ label, hint,
           <option key={o.value} value={o.value}>{o.label}</option>
         ))}
       </select>
-      {error ? <p className="text-label font-semibold text-overdue-text">{error}</p> : hint ? <p className="text-label text-text-secondary">{hint}</p> : null}
+      {error ? <p className="text-small font-semibold text-overdue-text">{error}</p> : hint ? <p className="text-small text-text-secondary">{hint}</p> : null}
     </div>
   );
 });

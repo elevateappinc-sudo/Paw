@@ -1,85 +1,80 @@
 /* ==========================================================================
-   Design tokens · Paleta Lavanda
+   Design tokens · Paw · Lavanda refinado
    Fuente de verdad de color, tipografía, espaciado, radios y movimiento.
-   Los componentes SOLO deben usar estas variables, nunca hex directos.
+   Reglas de uso: docs/design-system.md. Los componentes SOLO consumen estas
+   variables, nunca hex directos. Pares de texto/fondo validados con WCAG AA
+   (4.5:1 texto normal) en claro y oscuro.
    Modo oscuro: automático con prefers-color-scheme, o forzado con
    data-theme="dark" / data-theme="light" en <html>.
    ========================================================================== */
 
 :root {
-  /* ---------- Color · modo claro ---------- */
-  --color-bg: #F6F5FC;
+  /* Superficies y texto */
+  --color-bg: #F7F6FC;
   --color-surface: #FFFFFF;
-  --color-surface-elevated: #EFEEFC;
-  --color-border: #E6E5F5;
+  --color-surface-elevated: #F0EFFA;
+  --color-border: #E3E1F2;
+  --color-text: #19182B;
+  --color-text-secondary: #575971;
 
-  --color-text: #0D1020;
-  --color-text-secondary: #5A6075;
-
-  --color-primary: #6B6BFF;
+  /* Marca: lavanda principal y rosa acento */
+  --color-primary: #625FE8;
   --color-on-primary: #FFFFFF;
-  --color-primary-soft: #E8E7FC;
-  --color-primary-text: #6B6BFF;
+  --color-primary-soft: #E9E8FF;
+  --color-primary-text: #514CCB;
+  --color-accent: #F28CCB;
+  --color-on-accent: #19182B;
+  --color-accent-soft: #FCE8F4;
 
-  --color-accent: #FF9AD5;
-  --color-on-accent: #0D1020;
-  --color-accent-soft: #FFE8F5;    /* Círculo de íconos de estados vacíos */
+  /* Pastel: superficies destacadas (nunca texto pequeño) */
+  --color-pastel-lilac: #DDD8FC;
+  --color-pastel-mint: #D6F1E2;
+  --color-pastel-sky: #D8EAFE;
+  --color-pastel-peach: #FFE4D5;
+  --color-pastel-glass: rgba(255, 255, 255, 0.72);
 
-  /* Capas translúcidas */
-  --color-glass: rgba(255, 255, 255, 0.82); /* Menú flotante, controles sobre mapa */
-  --color-scrim: rgba(13, 16, 32, 0.45);    /* Fondo detrás de hojas y modales */
-  --color-scrim-strong: rgba(13, 16, 32, 0.92); /* Visor de fotos y documentos */
+  /* Estados (escala de severidad). Danger: solo SOS, perdida, urgencias y destructivo */
+  --color-overdue: #C2416F;
+  --color-overdue-soft: #FAE6EF;
+  --color-overdue-text: #A92F5E;
+  --color-warning: #956000;
+  --color-warning-soft: #FBEFD9;
+  --color-warning-text: #7F5200;
+  --color-success: #217A55;
+  --color-success-soft: #DDF3E8;
+  --color-success-text: #1B6A49;
+  --color-info: #3564B8;
+  --color-info-soft: #E3ECFB;
+  --color-info-text: #2D57A3;
+  --color-danger: #D93645;
+  --color-on-danger: #FFFFFF;
+  --color-danger-soft: #FCE6E8;
+  --color-danger-text: #B3283A;
 
-  /* Color de identificación de cada mascota (lo elige el dueño) */
-  /* Tarjetas pastel destacadas (tarjeta de mascota, recomendado). Texto encima: --color-text */
-  --color-pastel-lilac: #DCD6FB;
-  --color-pastel-mint: #D3F0DF;
-  --color-pastel-glass: rgba(255, 255, 255, 0.72); /* tarjeta interna sobre pastel */
+  /* Capas, elevación (solo elementos flotantes) y detalles */
+  --color-glass: rgba(255, 255, 255, 0.84);
+  --color-scrim: rgba(25, 24, 43, 0.45);
+  --color-scrim-strong: rgba(25, 24, 43, 0.92);
+  --shadow-1: 0 1px 2px rgba(25, 24, 43, 0.05);
+  --shadow-2: 0 4px 16px rgba(82, 76, 200, 0.10);
+  --shadow-3: 0 12px 32px rgba(82, 76, 200, 0.16);
+  --shadow-nav: 0 10px 28px rgba(82, 76, 200, 0.18), 0 1px 3px rgba(25, 24, 43, 0.06); /* menú inferior y FAB flotantes */
+  --nav-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.9); /* brillo del borde superior del vidrio */
+  --tag-hole: inset 0 2px 3px rgba(25, 24, 43, 0.35);
+  --color-map-road: #DCDAEF;
+  --color-map-water: #D2E2FB;
 
-  /* Placa de identificación (Datos clave): perforación hundida */
-  --tag-hole: inset 0 2px 3px rgba(13, 16, 32, 0.35);
-
-  /* Mapa (Explorar): calles y agua con más contraste que --color-border */
-  --color-map-road: #DDDBF1;
-  --color-map-water: #CFD6FB;
-
-  --color-pet-lavanda: #6B6BFF;
-  --color-pet-rosa: #E86FB5;
+  /* Color de identidad de cada mascota (lo elige el dueño) */
+  --color-pet-lavanda: #625FE8;
+  --color-pet-rosa: #E26BB4;
   --color-pet-menta: #2FA37E;
   --color-pet-cielo: #4A90E2;
   --color-pet-durazno: #F08A5D;
   --color-pet-ciruela: #8E5BD0;
 
-  /* Elevación (solo modo claro; en oscuro se usan capas de superficie) */
-  --shadow-1: 0 1px 2px rgba(13, 16, 32, 0.05);
-  --shadow-2: 0 4px 16px rgba(56, 52, 140, 0.10);
-  --shadow-3: 0 12px 32px rgba(56, 52, 140, 0.16);
-
-  /* Estados (escala de severidad) */
-  --color-overdue: #D94A7A;        /* Vencido: frambuesa lavanda */
-  --color-overdue-soft: #FAE6EF;
-  --color-overdue-text: #B03566;
-
-  --color-warning: #FFB224;        /* Vence pronto */
-  --color-warning-soft: #F8E9D5;
-  --color-warning-text: #9A5800;
-
-  --color-success: #138A64;        /* Al día */
-  --color-success-soft: #DDF5EC;
-  --color-success-text: #0E6E50;
-
-  --color-info-soft: var(--color-primary-soft);   /* Informativo */
-  --color-info-text: var(--color-primary-text);
-
-  /* Peligro: SOS y mascota perdida (no usar para tareas vencidas) */
-  --color-danger: #E5484D;
-  --color-on-danger: #FFFFFF;
-  --color-danger-soft: #FCE8E9;
-  --color-danger-text: #C62F35;
-
   /* Skeleton */
-  --skeleton-base: #ECEBF8;
-  --skeleton-highlight: #F7F6FD;
+  --skeleton-base: #ECEBF7;
+  --skeleton-highlight: #F8F7FD;
 
   /* ---------- Tipografía ---------- */
   /* --font-jakarta lo define next/font en layout.tsx */
@@ -87,180 +82,208 @@
   --font-weight-regular: 400;
   --font-weight-semibold: 600;
 
-  --text-display: 24px;   /* Título grande · semibold · títulos de pantalla */
-  --text-title: 19px;     /* Título · semibold · secciones */
-  --text-subtitle: 16px;  /* Subtítulo · semibold · nombres en tarjetas */
-  --text-body: 14px;      /* Cuerpo · regular */
-  --text-secondary: 12px; /* Secundario · regular · metadatos */
-  --text-label: 11px;     /* Etiqueta · semibold · chips, links, menú */
-
+  --text-display: 26px;   /* 600 · título de pantalla o cifra destacada */
+  --leading-display: 1.15;
+  --text-title: 20px;     /* 600 · título de sección y saludo */
+  --leading-title: 1.2;
+  --text-subtitle: 16px;  /* 600 · nombre de mascota, tarjeta y tarea */
+  --leading-subtitle: 1.3;
+  --text-body: 14px;      /* 400 · contenido general y botones */
+  --leading-body: 1.45;
+  --text-secondary: 12px; /* 400 · metadatos (clase text-small); mínimo para contenido funcional */
+  --leading-small: 1.4;
+  --text-label: 11px;     /* 600 · chips y etiquetas cortas; nunca información crítica */
+  --leading-label: 1.3;
+  --text-input: 16px;     /* 400 · campos de entrada: evita el zoom automático de iOS */
+  --leading-input: 1.4;
+  /* compatibilidad */
   --leading-tight: 1.2;
   --leading-normal: 1.45;
 
-  /* ---------- Espaciado (cuadrícula de 4 px) ---------- */
-  --space-1: 4px;   /* ícono ↔ texto */
-  --space-2: 8px;   /* relleno de chips y botones pequeños */
-  --space-3: 12px;  /* entre chips, filas, elementos de tarjeta */
-  --space-4: 16px;  /* margen lateral de pantalla, relleno de tarjetas */
+  /* ---------- Espaciado (múltiplos de 4 px; 20 px es excepción documentada) ---------- */
+  --space-1: 4px;   /* icono ↔ texto, microajustes */
+  --space-2: 8px;   /* chips, controles compactos */
+  --space-3: 12px;  /* filas y grupos internos */
+  --space-4: 16px;  /* padding de tarjeta y margen lateral */
+  --space-5: 20px;  /* entre bloques compactos (ritmo editorial) */
   --space-6: 24px;  /* entre secciones */
-  --space-8: 32px;  /* antes del título de pantalla */
+  --space-8: 32px;  /* inicio de pantalla, separación mayor */
 
   /* ---------- Radios ---------- */
-  --radius-sm: 8px;     /* íconos, miniaturas */
-  --radius-md: 12px;    /* tarjetas */
-  --radius-lg: 16px;    /* banners, fotos */
-  --radius-xl: 24px;    /* hojas inferiores */
-  --radius-full: 999px; /* botones, chips, menú */
+  --radius-sm: 8px;     /* miniaturas, controles pequeños */
+  --radius-md: 12px;    /* campos, tarjetas pequeñas */
+  --radius-lg: 16px;    /* tarjetas y mosaicos */
+  --radius-xl: 24px;    /* tarjetas destacadas, sheets, perfiles */
+  --radius-full: 999px; /* píldoras, chips, botones, avatares */
 
   /* ---------- Layout ---------- */
   --touch-target: 44px;
   --nav-height: 72px;
+  --app-max-width: 640px;
   --content-bottom-padding: calc(var(--nav-height) + var(--space-6) + env(safe-area-inset-bottom));
 
   /* ---------- Movimiento ---------- */
-  --duration-fast: 120ms;     /* hover, press */
-  --duration-base: 200ms;     /* aparición de contenido, cambios de estado */
-  --duration-slow: 320ms;     /* hojas, modales, transiciones de pantalla */
+  --duration-fast: 120ms;     /* pressed, hover, microfeedback */
+  --duration-base: 200ms;     /* entrada de contenido, cambios de estado */
+  --duration-slow: 320ms;     /* sheets, modales, transiciones de contexto */
   --duration-shimmer: 1400ms; /* barrido del skeleton */
   --duration-loader: 1200ms;  /* ciclo de loaders temáticos */
 
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
-  --ease-enter: cubic-bezier(0, 0, 0, 1);
+  --ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-exit: cubic-bezier(0.3, 0, 1, 1);
-  --ease-playful: cubic-bezier(0.34, 1.56, 0.64, 1); /* rebote leve, solo loaders y celebraciones */
+  --ease-playful: cubic-bezier(0.2, 0.8, 0.2, 1); /* check de tarea, microanimación lúdica */
 
-  --stagger-step: 40ms;     /* retraso entre elementos de una lista */
-  --loader-delay: 300ms;    /* no mostrar loader si la carga dura menos */
+  --press-scale: 0.98;
+  --stagger-step: 40ms;     /* máximo 6–8 elementos escalonados */
+  --loader-delay: 300ms;    /* no mostrar loader ni skeleton si la carga dura menos */
   --loader-min-visible: 500ms;
 
   color-scheme: light;
 }
 
-/* ---------- Color · modo oscuro ---------- */
+/* ---------- Modo oscuro (sistema) ---------- */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --color-bg: #0A0914;
-    --color-surface: #15142A;
-    --color-surface-elevated: #1D1C36;
-    --color-border: #25243F;
+    /* Superficies y texto */
+    --color-bg: #0D0C1B;
+    --color-surface: #17162B;
+    --color-surface-elevated: #211F3A;
+    --color-border: #302E4A;
+    --color-text: #F4F2FF;
+    --color-text-secondary: #B0AEC9;
 
-    --color-text: #EEF0FA;
-    --color-text-secondary: #9AA0B8;
+    /* Marca: lavanda principal y rosa acento */
+    --color-primary: #A5A2FF;
+    --color-on-primary: #0D0C1B;
+    --color-primary-soft: #29264D;
+    --color-primary-text: #C0BDFF;
+    --color-accent: #F5A2D7;
+    --color-on-accent: #19182B;
+    --color-accent-soft: #43243A;
 
-    --color-primary: #9494FF;
-    --color-on-primary: #0A0914;
-    --color-primary-soft: #1F1E3A;
-    --color-primary-text: #9494FF;
+    /* Pastel: superficies destacadas (nunca texto pequeño) */
+    --color-pastel-lilac: #302C59;
+    --color-pastel-mint: #1D3A30;
+    --color-pastel-sky: #1D344B;
+    --color-pastel-peach: #472F2B;
+    --color-pastel-glass: rgba(13, 12, 27, 0.35);
 
-    --color-accent: #FF9AD5;
-    --color-on-accent: #0D1020;
-    --color-accent-soft: #3A1B33;
+    /* Estados (escala de severidad). Danger: solo SOS, perdida, urgencias y destructivo */
+    --color-overdue: #FF7BA6;
+    --color-overdue-soft: #3A1A2B;
+    --color-overdue-text: #FF93B6;
+    --color-warning: #F2C66D;
+    --color-warning-soft: #3A2E14;
+    --color-warning-text: #F5D184;
+    --color-success: #71D5A7;
+    --color-success-soft: #173A2C;
+    --color-success-text: #8BE0B8;
+    --color-info: #8CB6FF;
+    --color-info-soft: #1C2C4A;
+    --color-info-text: #A6C6FF;
+    --color-danger: #FF7584;
+    --color-on-danger: #0D0C1B;
+    --color-danger-soft: #3D1A22;
+    --color-danger-text: #FF8F9B;
 
-    --color-glass: rgba(21, 20, 42, 0.84);
+    /* Capas, elevación (solo elementos flotantes) y detalles */
+    --color-glass: rgba(23, 22, 43, 0.84);
     --color-scrim: rgba(0, 0, 0, 0.6);
     --color-scrim-strong: rgba(0, 0, 0, 0.92);
-
-  --color-pastel-lilac: #2A2654;
-  --color-pastel-mint: #17342A;
-  --color-pastel-glass: rgba(10, 9, 20, 0.35);
-  --tag-hole: inset 0 2px 3px rgba(0, 0, 0, 0.7);
-  --color-map-road: #2C2B4A;
-  --color-map-water: #1B2046;
-
-  --color-pet-lavanda: #9494FF;
-  --color-pet-rosa: #FF9AD5;
-  --color-pet-menta: #4FD6A6;
-  --color-pet-cielo: #7FB2F0;
-  --color-pet-durazno: #F7A985;
-  --color-pet-ciruela: #B48CEB;
-
-    --color-pastel-lilac: #2A2654;
-    --color-pastel-mint: #17342A;
-    --color-pastel-glass: rgba(10, 9, 20, 0.35);
-    --tag-hole: inset 0 2px 3px rgba(0, 0, 0, 0.7);
-    --color-map-road: #2C2B4A;
-    --color-map-water: #1B2046;
-
-    --color-pet-lavanda: #9494FF;
-    --color-pet-rosa: #FF9AD5;
-    --color-pet-menta: #4FD6A6;
-    --color-pet-cielo: #7FB2F0;
-    --color-pet-durazno: #F7A985;
-    --color-pet-ciruela: #B48CEB;
-
     --shadow-1: none;
     --shadow-2: none;
     --shadow-3: none;
+  --shadow-nav: none;
+  --nav-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    --shadow-nav: none;
+    --nav-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    --tag-hole: inset 0 2px 3px rgba(0, 0, 0, 0.7);
+    --color-map-road: #302E4A;
+    --color-map-water: #1D344B;
 
-    --color-overdue: #FF7BA6;
-    --color-overdue-soft: #34152A;
-    --color-overdue-text: #FF8FB4;
+    /* Color de identidad de cada mascota (lo elige el dueño) */
+    --color-pet-lavanda: #A5A2FF;
+    --color-pet-rosa: #F5A2D7;
+    --color-pet-menta: #71D5A7;
+    --color-pet-cielo: #8CB6FF;
+    --color-pet-durazno: #F7A985;
+    --color-pet-ciruela: #B48CEB;
 
-    --color-warning: #FFC861;
-    --color-warning-soft: #2F2414;
-    --color-warning-text: #FFC861;
-
-    --color-success: #4FD6A6;
-    --color-success-soft: #0F3329;
-    --color-success-text: #6FE3B8;
-
-    --color-danger: #E46A7E;
-    --color-on-danger: #0A0914;
-    --color-danger-soft: #2E1420;
-    --color-danger-text: #F2909C;
-
-    --skeleton-base: #1A1932;
-    --skeleton-highlight: #24233F;
+    /* Skeleton */
+    --skeleton-base: #1E1C36;
+    --skeleton-highlight: #2A2846;
 
     color-scheme: dark;
   }
 }
 
+/* ---------- Modo oscuro (forzado) ---------- */
 :root[data-theme="dark"] {
-  --color-bg: #0A0914;
-  --color-surface: #15142A;
-  --color-surface-elevated: #1D1C36;
-  --color-border: #25243F;
+  /* Superficies y texto */
+  --color-bg: #0D0C1B;
+  --color-surface: #17162B;
+  --color-surface-elevated: #211F3A;
+  --color-border: #302E4A;
+  --color-text: #F4F2FF;
+  --color-text-secondary: #B0AEC9;
 
-  --color-text: #EEF0FA;
-  --color-text-secondary: #9AA0B8;
+  /* Marca: lavanda principal y rosa acento */
+  --color-primary: #A5A2FF;
+  --color-on-primary: #0D0C1B;
+  --color-primary-soft: #29264D;
+  --color-primary-text: #C0BDFF;
+  --color-accent: #F5A2D7;
+  --color-on-accent: #19182B;
+  --color-accent-soft: #43243A;
 
-  --color-primary: #9494FF;
-  --color-on-primary: #0A0914;
-  --color-primary-soft: #1F1E3A;
-  --color-primary-text: #9494FF;
+  /* Pastel: superficies destacadas (nunca texto pequeño) */
+  --color-pastel-lilac: #302C59;
+  --color-pastel-mint: #1D3A30;
+  --color-pastel-sky: #1D344B;
+  --color-pastel-peach: #472F2B;
+  --color-pastel-glass: rgba(13, 12, 27, 0.35);
 
-  --color-accent: #FF9AD5;
-  --color-on-accent: #0D1020;
-  --color-accent-soft: #3A1B33;
+  /* Estados (escala de severidad). Danger: solo SOS, perdida, urgencias y destructivo */
+  --color-overdue: #FF7BA6;
+  --color-overdue-soft: #3A1A2B;
+  --color-overdue-text: #FF93B6;
+  --color-warning: #F2C66D;
+  --color-warning-soft: #3A2E14;
+  --color-warning-text: #F5D184;
+  --color-success: #71D5A7;
+  --color-success-soft: #173A2C;
+  --color-success-text: #8BE0B8;
+  --color-info: #8CB6FF;
+  --color-info-soft: #1C2C4A;
+  --color-info-text: #A6C6FF;
+  --color-danger: #FF7584;
+  --color-on-danger: #0D0C1B;
+  --color-danger-soft: #3D1A22;
+  --color-danger-text: #FF8F9B;
 
-  --color-glass: rgba(21, 20, 42, 0.84);
+  /* Capas, elevación (solo elementos flotantes) y detalles */
+  --color-glass: rgba(23, 22, 43, 0.84);
   --color-scrim: rgba(0, 0, 0, 0.6);
   --color-scrim-strong: rgba(0, 0, 0, 0.92);
-
   --shadow-1: none;
   --shadow-2: none;
   --shadow-3: none;
+  --tag-hole: inset 0 2px 3px rgba(0, 0, 0, 0.7);
+  --color-map-road: #302E4A;
+  --color-map-water: #1D344B;
 
-  --color-overdue: #FF7BA6;
-  --color-overdue-soft: #34152A;
-  --color-overdue-text: #FF8FB4;
+  /* Color de identidad de cada mascota (lo elige el dueño) */
+  --color-pet-lavanda: #A5A2FF;
+  --color-pet-rosa: #F5A2D7;
+  --color-pet-menta: #71D5A7;
+  --color-pet-cielo: #8CB6FF;
+  --color-pet-durazno: #F7A985;
+  --color-pet-ciruela: #B48CEB;
 
-  --color-warning: #FFC861;
-  --color-warning-soft: #2F2414;
-  --color-warning-text: #FFC861;
-
-  --color-success: #4FD6A6;
-  --color-success-soft: #0F3329;
-  --color-success-text: #6FE3B8;
-
-  --color-danger: #E46A7E;
-  --color-on-danger: #0A0914;
-  --color-danger-soft: #2E1420;
-  --color-danger-text: #F2909C;
-
-  --skeleton-base: #1A1932;
-  --skeleton-highlight: #24233F;
+  /* Skeleton */
+  --skeleton-base: #1E1C36;
+  --skeleton-highlight: #2A2846;
 
   color-scheme: dark;
 }
@@ -272,5 +295,6 @@
     --duration-base: 0ms;
     --duration-slow: 0ms;
     --stagger-step: 0ms;
+    --press-scale: 1;
   }
 }

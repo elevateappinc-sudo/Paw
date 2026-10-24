@@ -115,7 +115,7 @@ export function BusinessPlanSelector({ currentPlan = "free", onSelect }: Busines
         })}
       </div>
 
-      <p className="text-center text-label text-text-secondary">Precios en pesos colombianos. Cambia o cancela cuando quieras.</p>
+      <p className="text-center text-small text-text-secondary">Precios en pesos colombianos. Cambia o cancela cuando quieras.</p>
     </div>
   );
 }

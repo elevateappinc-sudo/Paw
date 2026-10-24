@@ -59,20 +59,20 @@ export function EventCard({ event, distanceM, onRsvp, rsvpBusy, eligibleNote, va
 
   if (variant === "large") {
     return (
-      <article className="overflow-hidden rounded-md border border-border bg-surface shadow-1">
+      <article className="overflow-hidden rounded-md border border-border bg-surface">
         <Link href={`/eventos/${event.id}`} className="block">
           <div className="relative h-[150px] bg-border">
             {event.cover_url ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={event.cover_url} alt="" className="h-full w-full object-cover" />
+              <img src={event.cover_url} alt="" className="h-full w-full object-cover" onError={(e) => (e.currentTarget.style.visibility = "hidden")} />
             ) : (
               <div className="h-full w-full bg-gradient-to-br from-primary-soft via-surface-elevated to-info-soft" aria-hidden="true" />
             )}
-            <div className="absolute left-3 top-3 flex h-[52px] w-[48px] flex-col items-center justify-center rounded-md bg-surface shadow-2">
-              <span className="text-label font-semibold uppercase text-primary-text">{dow}</span>
+            <div className="absolute left-3 top-3 flex h-[52px] w-[48px] flex-col items-center justify-center rounded-md bg-surface">
+              <span className="text-small font-semibold capitalize text-primary-text">{dow}</span>
               <span className="font-semibold text-title leading-none text-text">{day}</span>
             </div>
-            <div className="absolute right-3 top-3 shadow-2">
+            <div className="absolute right-3 top-3">
               <PriceTag price={event.price} />
             </div>
           </div>
@@ -95,10 +95,10 @@ export function EventCard({ event, distanceM, onRsvp, rsvpBusy, eligibleNote, va
   }
 
   return (
-    <article className="flex gap-3 rounded-md border border-border bg-surface p-3 shadow-1">
+    <article className="flex gap-3 rounded-md border border-border bg-surface p-3">
       <Link href={`/eventos/${event.id}`} className="flex min-w-0 flex-1 gap-3">
         <div className="flex h-[60px] w-[52px] shrink-0 flex-col items-center justify-center rounded-md bg-surface-elevated">
-          <span className="text-label font-semibold uppercase text-primary-text">{dow}</span>
+          <span className="text-small font-semibold capitalize text-primary-text">{dow}</span>
           <span className="font-semibold text-title leading-none text-text">{day}</span>
         </div>
         <div className="min-w-0 flex-1">

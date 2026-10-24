@@ -314,7 +314,7 @@ export function BookingFlow() {
                       }}
                       className={cn("flex h-16 w-14 shrink-0 flex-col items-center justify-center rounded-md border transition-colors", sel ? "border-accent bg-accent text-on-accent" : "border-border bg-surface text-text")}
                     >
-                      <span className={cn("text-label font-semibold uppercase", sel ? "text-on-primary" : "text-text-secondary")}>{dow}</span>
+                      <span className={cn("text-small font-semibold capitalize", sel ? "text-on-primary" : "text-text-secondary")}>{dow}</span>
                       <span className="font-semibold text-title leading-none">{day}</span>
                     </button>
                   );

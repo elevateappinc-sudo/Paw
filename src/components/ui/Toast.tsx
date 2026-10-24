@@ -36,7 +36,7 @@ function ToastItem({ toast, onDismiss }: { toast: ToastMessage; onDismiss: (id: 
             toast.onRetry?.();
             onDismiss(toast.id);
           }}
-          className="relative min-h-9 shrink-0 rounded-full border border-border bg-surface px-3 text-label font-semibold text-primary-text after:absolute after:inset-x-0 after:-inset-y-1 after:content-['']"
+          className="relative min-h-9 shrink-0 rounded-full border border-border bg-surface px-3 text-small font-semibold text-primary-text after:absolute after:inset-x-0 after:-inset-y-1 after:content-['']"
         >
           Reintentar
         </button>
