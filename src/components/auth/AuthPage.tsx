@@ -6,7 +6,7 @@ import { motion, useReducedMotion } from "motion/react";
 import { Eye, EyeOff, Mail } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { fadeUp, stagger } from "@/lib/motion";
-import { Button, Card, Input, SegmentedControl } from "@/components/ui";
+import { Button, Card, Input, SegmentedControl, SpotsLoader } from "@/components/ui";
 import { GoogleLogo } from "@/components/settings/GoogleLogo";
 
 type Tab = "login" | "register";
@@ -76,7 +76,7 @@ export function AuthPage() {
   }
 
   const passwordToggle = (
-    <button type="button" onClick={() => setShowPass((s) => !s)} aria-label={showPass ? "Ocultar contraseña" : "Mostrar contraseña"} className="flex h-9 w-9 items-center justify-center rounded-full text-on-variant active:scale-95">
+    <button type="button" onClick={() => setShowPass((s) => !s)} aria-label={showPass ? "Ocultar contraseña" : "Mostrar contraseña"} className="pressable -mr-2 flex h-11 w-11 items-center justify-center rounded-full text-text-secondary">
       {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
     </button>
   );
@@ -85,11 +85,11 @@ export function AuthPage() {
     return (
       <main className="flex min-h-dvh flex-col items-center justify-center bg-bg px-5 py-8">
         <Card className="w-full max-w-[400px] text-center" elevation={2}>
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-ok-container text-ok">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-success-soft text-success-text">
             <Mail size={30} aria-hidden="true" />
           </div>
-          <h1 className="font-display text-[26px] leading-tight text-on">Revisa tu correo</h1>
-          <p className="mt-2 text-[15px] leading-relaxed text-on-variant">{successMessage}</p>
+          <h1 className="font-semibold text-display leading-tight text-text">Revisa tu correo</h1>
+          <p className="mt-2 text-body leading-relaxed text-text-secondary">{successMessage}</p>
           <Button
             full
             size="lg"
@@ -103,9 +103,9 @@ export function AuthPage() {
           >
             Ya confirmé mi correo
           </Button>
-          <p className="mt-4 text-[13px] text-on-variant">
+          <p className="mt-4 text-small text-text-secondary">
             ¿No llegó el correo?{" "}
-            <button type="button" onClick={() => setSuccessMessage("")} className="font-bold text-primary">
+            <button type="button" onClick={() => setSuccessMessage("")} className="font-semibold text-primary-text">
               Intentar de nuevo
             </button>
           </p>
@@ -116,11 +116,13 @@ export function AuthPage() {
 
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center bg-bg px-5 py-8">
-      <motion.div className="flex w-full max-w-[400px] flex-col gap-6" variants={reduce ? undefined : stagger(0.06)} initial={reduce ? false : "hidden"} animate="show">
-        <motion.div className="flex flex-col items-center text-center" variants={fadeUp}>
-          <Image src="/icon.svg" alt="" width={80} height={80} priority className="mb-4 h-20 w-20 rounded-card-lg shadow-2" />
-          <h1 className="font-display text-[36px] leading-none text-on">Paw</h1>
-          <p className="mt-2 text-[15px] text-on-variant">Todo lo que tu mascota necesita, cerca de ti.</p>
+      <motion.div className="enter-list flex w-full max-w-[400px] flex-col gap-6" variants={reduce ? undefined : stagger(0.06)} animate="show">
+        <motion.div className="relative flex flex-col items-center text-center" variants={fadeUp}>
+          {/* Bienvenida: manchas orgánicas detrás del logo (loader temático "Manchas") */}
+          <SpotsLoader decorative size={240} className="pointer-events-none absolute -top-16 left-1/2 -translate-x-1/2" />
+          <Image src="/icon.svg" alt="" width={80} height={80} priority className="relative mb-4 h-20 w-20 rounded-md shadow-2" />
+          <h1 className="relative font-semibold text-display leading-none text-text">Paw</h1>
+          <p className="relative mt-2 text-body text-text-secondary">Todo lo que tu mascota necesita, cerca de ti.</p>
         </motion.div>
 
         <motion.div className="flex flex-col gap-4" variants={fadeUp}>
@@ -129,9 +131,9 @@ export function AuthPage() {
           </Button>
 
           <div className="flex items-center gap-3" role="separator" aria-label="o continúa con correo">
-            <span className="h-px flex-1 bg-outline-variant" />
-            <span className="text-[13px] text-on-variant">o continúa con correo</span>
-            <span className="h-px flex-1 bg-outline-variant" />
+            <span className="h-px flex-1 bg-border" />
+            <span className="text-small text-text-secondary">o continúa con correo</span>
+            <span className="h-px flex-1 bg-border" />
           </div>
 
           <SegmentedControl<Tab>
@@ -177,21 +179,21 @@ export function AuthPage() {
           )}
 
           {error && (
-            <Card tone="danger" elevation={0} role="alert" className="py-3 text-center text-[14px] font-semibold">
+            <Card tone="overdue" elevation={0} role="alert" className="py-3 text-center text-body font-semibold">
               {error}
             </Card>
           )}
 
-          <Button type="submit" size="lg" full variant="tonal" loading={loading} className="mt-1">
+          <Button type="submit" size="lg" full variant="secondary" loading={loading} className="mt-1">
             {tab === "login" ? "Entrar" : "Crear cuenta"}
           </Button>
         </motion.form>
 
         <motion.div variants={fadeUp} className="flex flex-col items-center gap-1 pt-2 text-center">
-          <a href="/demo" className="inline-flex min-h-[44px] items-center justify-center rounded-full px-4 text-[15px] font-bold text-primary">
+          <a href="/demo" className="inline-flex min-h-11 items-center justify-center rounded-full px-4 text-body font-semibold text-primary-text">
             Ver la demo con datos de ejemplo
           </a>
-          <span className="text-[12px] text-on-variant">Sin cuenta. Mascotas, negocios y citas ficticios.</span>
+          <span className="text-label text-text-secondary">Sin cuenta. Mascotas, negocios y citas ficticios.</span>
         </motion.div>
       </motion.div>
     </main>

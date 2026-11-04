@@ -76,8 +76,8 @@ export default function PermissionsEditor({ petMemberId, onClose }: Props) {
   return (
     <section className="flex flex-col gap-3" aria-label="Permisos de acceso">
       <div className="flex items-center justify-between gap-3">
-        <h3 className="font-display text-[18px] leading-tight text-on">Permisos de acceso</h3>
-        <Button variant="tonal" size="sm" onClick={onClose}>
+        <h3 className="font-semibold text-subtitle leading-tight text-text">Permisos de acceso</h3>
+        <Button variant="secondary" size="sm" onClick={onClose}>
           Listo
         </Button>
       </div>
@@ -95,7 +95,7 @@ export default function PermissionsEditor({ petMemberId, onClose }: Props) {
             const isSaving = saving === module;
             return (
               <Card key={module} tone="container" elevation={0} className="flex flex-col gap-2 p-3" aria-busy={isSaving || undefined}>
-                <p className="text-[15px] font-bold text-on">{label}</p>
+                <p className="text-body font-semibold text-text">{label}</p>
                 <SegmentedControl<AccessLevel>
                   ariaLabel={`Acceso a ${label}`}
                   size="sm"

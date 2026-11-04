@@ -72,9 +72,9 @@ export function VideoFullscreen({ video, onClose, onDeleted }: VideoFullscreenPr
         onClick={(e) => {
           if (e.target === overlayRef.current) onClose();
         }}
-        className="fixed inset-0 z-[55] flex flex-col items-center justify-center bg-on text-bg"
+        className="fixed inset-0 z-[55] flex flex-col items-center justify-center bg-text text-bg"
       >
-        <div className="absolute inset-x-0 top-0 flex items-center justify-between px-4 pt-[max(14px,env(safe-area-inset-top))] pb-3">
+        <div className="absolute inset-x-0 top-0 flex items-center justify-between px-4 pt-[max(16px,env(safe-area-inset-top))] pb-3">
           <button type="button" onClick={onClose} aria-label="Cerrar" className="flex h-11 w-11 items-center justify-center rounded-full bg-bg/15 text-bg active:scale-95">
             <X size={20} />
           </button>
@@ -82,16 +82,16 @@ export function VideoFullscreen({ video, onClose, onDeleted }: VideoFullscreenPr
             type="button"
             onClick={() => setShowDeleteModal(true)}
             aria-label="Eliminar video"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-danger-container text-danger active:scale-95"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-danger-soft text-danger-text active:scale-95"
           >
             <Trash2 size={18} />
           </button>
         </div>
 
-        <video src={video.videoUrl} controls autoPlay playsInline className="max-h-[80vh] max-w-full rounded-card shadow-3" />
+        <video src={video.videoUrl} controls autoPlay playsInline className="max-h-[80vh] max-w-full rounded-md shadow-3" />
 
         {video.durationSeconds !== undefined && video.durationSeconds !== null && (
-          <p className="mt-3 text-[13px] text-bg/60">
+          <p className="mt-3 text-small text-bg/60">
             {Math.floor(video.durationSeconds / 60)}:{String(video.durationSeconds % 60).padStart(2, "0")} min
           </p>
         )}

@@ -70,9 +70,8 @@ export function EventDetail({ id }: { id: string }) {
   if (error || !event) {
     return (
       <div className="min-h-dvh bg-bg">
-        <PageHeader title="Evento" back backHref="/eventos" large={false} />
+        <PageHeader title="Evento" back backHref="/eventos" />
         <EmptyState
-          tone={error ? "danger" : "neutral"}
           title={error ? "No pudimos cargar el evento" : "No encontramos este evento"}
           description={error ?? "Puede que ya haya pasado o se haya cancelado."}
           action={error ? <Button full variant="secondary" onClick={() => setReload((n) => n + 1)}>Reintentar</Button> : <Button full variant="secondary" onClick={() => router.push("/eventos")}>Ver eventos</Button>}
@@ -88,47 +87,47 @@ export function EventDetail({ id }: { id: string }) {
 
   return (
     <div className="min-h-dvh bg-bg pb-[calc(120px+env(safe-area-inset-bottom))]">
-      <PageHeader title={EVENT_CATEGORY_LABEL[event.category]} back backHref="/eventos" large={false} />
+      <PageHeader title={EVENT_CATEGORY_LABEL[event.category]} back backHref="/eventos" />
       <div className="flex flex-col gap-4 px-4 pt-2">
-        <div className="relative h-[200px] overflow-hidden rounded-card-lg bg-surface-3">
+        <div className="relative h-[200px] overflow-hidden rounded-md bg-border">
           {event.cover_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={event.cover_url} alt="" className="h-full w-full object-cover" />
           ) : (
-            <div className="h-full w-full bg-gradient-to-br from-primary-container via-surface-2 to-info-container" aria-hidden="true" />
+            <div className="h-full w-full bg-gradient-to-br from-primary-soft via-surface-elevated to-info-soft" aria-hidden="true" />
           )}
           <div className="absolute right-3 top-3 shadow-2">{event.price > 0 ? <Tag tone="neutral">{formatCurrency(event.price)}</Tag> : <Tag tone="ok">Gratis</Tag>}</div>
         </div>
 
         <header>
-          <h1 className="font-display text-[26px] leading-[1.1] text-on">{event.title}</h1>
-          <p className="mt-1 text-[15px] font-semibold capitalize text-on">{formatDateLong(event.starts_at)}</p>
-          <p className="text-[14px] text-on-variant">
+          <h1 className="font-semibold text-display leading-[1.1] text-text">{event.title}</h1>
+          <p className="mt-1 text-body font-semibold capitalize text-text">{formatDateLong(event.starts_at)}</p>
+          <p className="text-body text-text-secondary">
             {formatTime(event.starts_at)}
             {event.ends_at ? ` – ${formatTime(event.ends_at)}` : ""}
             {distance != null ? ` · ${distanceLabel(distance)}` : ""}
           </p>
           {eligible && (
-            <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-ok-container px-2.5 py-1 text-[12px] font-bold text-on-ok-container">
-              <ShieldCheck size={14} className="text-ok" aria-hidden="true" /> {pet.name} cumple los requisitos · vacunas al día
+            <p className="mt-2 inline-flex items-center gap-2 rounded-full bg-success-soft px-3 py-1 text-label font-semibold text-success-text">
+              <ShieldCheck size={14} className="text-success-text" aria-hidden="true" /> {pet.name} cumple los requisitos · vacunas al día
             </p>
           )}
         </header>
 
         {event.description && (
           <Card>
-            <p className="whitespace-pre-line text-[15px] leading-relaxed text-on">{event.description}</p>
+            <p className="whitespace-pre-line text-body leading-relaxed text-text">{event.description}</p>
           </Card>
         )}
 
         {(event.address || dir) && (
           <Card className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-surface-2 text-on-variant">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-surface-elevated text-text-secondary">
               <MapPin size={20} />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[15px] font-bold text-on">{event.address ?? "Lugar por confirmar"}</p>
-              {event.city && <p className="text-[13px] text-on-variant">{event.city}</p>}
+              <p className="text-body font-semibold text-text">{event.address ?? "Lugar por confirmar"}</p>
+              {event.city && <p className="text-small text-text-secondary">{event.city}</p>}
               {dir && (
                 <a href={dir} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: "secondary", size: "sm" }), "mt-2")}>
                   <Navigation size={16} /> Cómo llegar
@@ -139,24 +138,24 @@ export function EventDetail({ id }: { id: string }) {
         )}
 
         <Card className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-primary-container text-on-primary-container">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-primary-soft text-primary-text">
             <Users size={20} />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[15px] font-bold text-on">{event.organizer_name ?? "Comunidad Paw"}</p>
-            <p className="text-[13px] text-on-variant">
+            <p className="text-body font-semibold text-text">{event.organizer_name ?? "Comunidad Paw"}</p>
+            <p className="text-small text-text-secondary">
               Organiza · {(event.going_count ?? 0) > 0 ? `${event.going_count} van` : "sé la primera persona en ir"}
               {event.capacity ? ` · cupo ${event.capacity}` : ""}
             </p>
           </div>
         </Card>
 
-        <a href={calendarLink(event)} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: "tonal" }), "w-full")}>
+        <a href={calendarLink(event)} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: "secondary" }), "w-full")}>
           <CalendarPlus size={18} /> Añadir al calendario
         </a>
       </div>
 
-      <div className="glass fixed inset-x-0 bottom-0 z-40 mx-auto w-full max-w-[640px] border-t border-outline-variant px-4 pt-3 pb-[max(16px,env(safe-area-inset-bottom))]">
+      <div className="glass fixed inset-x-0 bottom-0 z-40 mx-auto w-full max-w-[640px] border-t border-border px-4 pt-3 pb-[max(16px,env(safe-area-inset-bottom))]">
         <Button full size="lg" variant={going ? "secondary" : "primary"} onClick={onRsvp} loading={busy} aria-pressed={going} leading={going ? <Check size={18} /> : undefined}>
           {going ? "Vas · cancelar asistencia" : "Voy"}
         </Button>

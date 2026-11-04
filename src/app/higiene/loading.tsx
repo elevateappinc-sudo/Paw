@@ -1,5 +1,14 @@
+import { RouteFallback } from "@/components/ui/Skeleton";
 import { HigieneSkeleton } from "@/components/higiene/HigieneSkeleton";
 
-export default function Loading() {
+function LoadingContent() {
   return <HigieneSkeleton />;
+}
+
+export default function Loading() {
+  return (
+    <RouteFallback>
+      <LoadingContent />
+    </RouteFallback>
+  );
 }

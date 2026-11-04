@@ -1,0 +1,276 @@
+/* ==========================================================================
+   Design tokens · Paleta Lavanda
+   Fuente de verdad de color, tipografía, espaciado, radios y movimiento.
+   Los componentes SOLO deben usar estas variables, nunca hex directos.
+   Modo oscuro: automático con prefers-color-scheme, o forzado con
+   data-theme="dark" / data-theme="light" en <html>.
+   ========================================================================== */
+
+:root {
+  /* ---------- Color · modo claro ---------- */
+  --color-bg: #F6F5FC;
+  --color-surface: #FFFFFF;
+  --color-surface-elevated: #EFEEFC;
+  --color-border: #E6E5F5;
+
+  --color-text: #0D1020;
+  --color-text-secondary: #5A6075;
+
+  --color-primary: #6B6BFF;
+  --color-on-primary: #FFFFFF;
+  --color-primary-soft: #E8E7FC;
+  --color-primary-text: #6B6BFF;
+
+  --color-accent: #FF9AD5;
+  --color-on-accent: #0D1020;
+  --color-accent-soft: #FFE8F5;    /* Círculo de íconos de estados vacíos */
+
+  /* Capas translúcidas */
+  --color-glass: rgba(255, 255, 255, 0.82); /* Menú flotante, controles sobre mapa */
+  --color-scrim: rgba(13, 16, 32, 0.45);    /* Fondo detrás de hojas y modales */
+  --color-scrim-strong: rgba(13, 16, 32, 0.92); /* Visor de fotos y documentos */
+
+  /* Color de identificación de cada mascota (lo elige el dueño) */
+  /* Tarjetas pastel destacadas (tarjeta de mascota, recomendado). Texto encima: --color-text */
+  --color-pastel-lilac: #DCD6FB;
+  --color-pastel-mint: #D3F0DF;
+  --color-pastel-glass: rgba(255, 255, 255, 0.72); /* tarjeta interna sobre pastel */
+
+  /* Placa de identificación (Datos clave): perforación hundida */
+  --tag-hole: inset 0 2px 3px rgba(13, 16, 32, 0.35);
+
+  /* Mapa (Explorar): calles y agua con más contraste que --color-border */
+  --color-map-road: #DDDBF1;
+  --color-map-water: #CFD6FB;
+
+  --color-pet-lavanda: #6B6BFF;
+  --color-pet-rosa: #E86FB5;
+  --color-pet-menta: #2FA37E;
+  --color-pet-cielo: #4A90E2;
+  --color-pet-durazno: #F08A5D;
+  --color-pet-ciruela: #8E5BD0;
+
+  /* Elevación (solo modo claro; en oscuro se usan capas de superficie) */
+  --shadow-1: 0 1px 2px rgba(13, 16, 32, 0.05);
+  --shadow-2: 0 4px 16px rgba(56, 52, 140, 0.10);
+  --shadow-3: 0 12px 32px rgba(56, 52, 140, 0.16);
+
+  /* Estados (escala de severidad) */
+  --color-overdue: #D94A7A;        /* Vencido: frambuesa lavanda */
+  --color-overdue-soft: #FAE6EF;
+  --color-overdue-text: #B03566;
+
+  --color-warning: #FFB224;        /* Vence pronto */
+  --color-warning-soft: #F8E9D5;
+  --color-warning-text: #9A5800;
+
+  --color-success: #138A64;        /* Al día */
+  --color-success-soft: #DDF5EC;
+  --color-success-text: #0E6E50;
+
+  --color-info-soft: var(--color-primary-soft);   /* Informativo */
+  --color-info-text: var(--color-primary-text);
+
+  /* Peligro: SOS y mascota perdida (no usar para tareas vencidas) */
+  --color-danger: #E5484D;
+  --color-on-danger: #FFFFFF;
+  --color-danger-soft: #FCE8E9;
+  --color-danger-text: #C62F35;
+
+  /* Skeleton */
+  --skeleton-base: #ECEBF8;
+  --skeleton-highlight: #F7F6FD;
+
+  /* ---------- Tipografía ---------- */
+  /* --font-jakarta lo define next/font en layout.tsx */
+  --font-sans: var(--font-jakarta, "Plus Jakarta Sans"), "Inter", system-ui, -apple-system, sans-serif;
+  --font-weight-regular: 400;
+  --font-weight-semibold: 600;
+
+  --text-display: 24px;   /* Título grande · semibold · títulos de pantalla */
+  --text-title: 19px;     /* Título · semibold · secciones */
+  --text-subtitle: 16px;  /* Subtítulo · semibold · nombres en tarjetas */
+  --text-body: 14px;      /* Cuerpo · regular */
+  --text-secondary: 12px; /* Secundario · regular · metadatos */
+  --text-label: 11px;     /* Etiqueta · semibold · chips, links, menú */
+
+  --leading-tight: 1.2;
+  --leading-normal: 1.45;
+
+  /* ---------- Espaciado (cuadrícula de 4 px) ---------- */
+  --space-1: 4px;   /* ícono ↔ texto */
+  --space-2: 8px;   /* relleno de chips y botones pequeños */
+  --space-3: 12px;  /* entre chips, filas, elementos de tarjeta */
+  --space-4: 16px;  /* margen lateral de pantalla, relleno de tarjetas */
+  --space-6: 24px;  /* entre secciones */
+  --space-8: 32px;  /* antes del título de pantalla */
+
+  /* ---------- Radios ---------- */
+  --radius-sm: 8px;     /* íconos, miniaturas */
+  --radius-md: 12px;    /* tarjetas */
+  --radius-lg: 16px;    /* banners, fotos */
+  --radius-xl: 24px;    /* hojas inferiores */
+  --radius-full: 999px; /* botones, chips, menú */
+
+  /* ---------- Layout ---------- */
+  --touch-target: 44px;
+  --nav-height: 72px;
+  --content-bottom-padding: calc(var(--nav-height) + var(--space-6) + env(safe-area-inset-bottom));
+
+  /* ---------- Movimiento ---------- */
+  --duration-fast: 120ms;     /* hover, press */
+  --duration-base: 200ms;     /* aparición de contenido, cambios de estado */
+  --duration-slow: 320ms;     /* hojas, modales, transiciones de pantalla */
+  --duration-shimmer: 1400ms; /* barrido del skeleton */
+  --duration-loader: 1200ms;  /* ciclo de loaders temáticos */
+
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-enter: cubic-bezier(0, 0, 0, 1);
+  --ease-exit: cubic-bezier(0.3, 0, 1, 1);
+  --ease-playful: cubic-bezier(0.34, 1.56, 0.64, 1); /* rebote leve, solo loaders y celebraciones */
+
+  --stagger-step: 40ms;     /* retraso entre elementos de una lista */
+  --loader-delay: 300ms;    /* no mostrar loader si la carga dura menos */
+  --loader-min-visible: 500ms;
+
+  color-scheme: light;
+}
+
+/* ---------- Color · modo oscuro ---------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #0A0914;
+    --color-surface: #15142A;
+    --color-surface-elevated: #1D1C36;
+    --color-border: #25243F;
+
+    --color-text: #EEF0FA;
+    --color-text-secondary: #9AA0B8;
+
+    --color-primary: #9494FF;
+    --color-on-primary: #0A0914;
+    --color-primary-soft: #1F1E3A;
+    --color-primary-text: #9494FF;
+
+    --color-accent: #FF9AD5;
+    --color-on-accent: #0D1020;
+    --color-accent-soft: #3A1B33;
+
+    --color-glass: rgba(21, 20, 42, 0.84);
+    --color-scrim: rgba(0, 0, 0, 0.6);
+    --color-scrim-strong: rgba(0, 0, 0, 0.92);
+
+  --color-pastel-lilac: #2A2654;
+  --color-pastel-mint: #17342A;
+  --color-pastel-glass: rgba(10, 9, 20, 0.35);
+  --tag-hole: inset 0 2px 3px rgba(0, 0, 0, 0.7);
+  --color-map-road: #2C2B4A;
+  --color-map-water: #1B2046;
+
+  --color-pet-lavanda: #9494FF;
+  --color-pet-rosa: #FF9AD5;
+  --color-pet-menta: #4FD6A6;
+  --color-pet-cielo: #7FB2F0;
+  --color-pet-durazno: #F7A985;
+  --color-pet-ciruela: #B48CEB;
+
+    --color-pastel-lilac: #2A2654;
+    --color-pastel-mint: #17342A;
+    --color-pastel-glass: rgba(10, 9, 20, 0.35);
+    --tag-hole: inset 0 2px 3px rgba(0, 0, 0, 0.7);
+    --color-map-road: #2C2B4A;
+    --color-map-water: #1B2046;
+
+    --color-pet-lavanda: #9494FF;
+    --color-pet-rosa: #FF9AD5;
+    --color-pet-menta: #4FD6A6;
+    --color-pet-cielo: #7FB2F0;
+    --color-pet-durazno: #F7A985;
+    --color-pet-ciruela: #B48CEB;
+
+    --shadow-1: none;
+    --shadow-2: none;
+    --shadow-3: none;
+
+    --color-overdue: #FF7BA6;
+    --color-overdue-soft: #34152A;
+    --color-overdue-text: #FF8FB4;
+
+    --color-warning: #FFC861;
+    --color-warning-soft: #2F2414;
+    --color-warning-text: #FFC861;
+
+    --color-success: #4FD6A6;
+    --color-success-soft: #0F3329;
+    --color-success-text: #6FE3B8;
+
+    --color-danger: #E46A7E;
+    --color-on-danger: #0A0914;
+    --color-danger-soft: #2E1420;
+    --color-danger-text: #F2909C;
+
+    --skeleton-base: #1A1932;
+    --skeleton-highlight: #24233F;
+
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --color-bg: #0A0914;
+  --color-surface: #15142A;
+  --color-surface-elevated: #1D1C36;
+  --color-border: #25243F;
+
+  --color-text: #EEF0FA;
+  --color-text-secondary: #9AA0B8;
+
+  --color-primary: #9494FF;
+  --color-on-primary: #0A0914;
+  --color-primary-soft: #1F1E3A;
+  --color-primary-text: #9494FF;
+
+  --color-accent: #FF9AD5;
+  --color-on-accent: #0D1020;
+  --color-accent-soft: #3A1B33;
+
+  --color-glass: rgba(21, 20, 42, 0.84);
+  --color-scrim: rgba(0, 0, 0, 0.6);
+  --color-scrim-strong: rgba(0, 0, 0, 0.92);
+
+  --shadow-1: none;
+  --shadow-2: none;
+  --shadow-3: none;
+
+  --color-overdue: #FF7BA6;
+  --color-overdue-soft: #34152A;
+  --color-overdue-text: #FF8FB4;
+
+  --color-warning: #FFC861;
+  --color-warning-soft: #2F2414;
+  --color-warning-text: #FFC861;
+
+  --color-success: #4FD6A6;
+  --color-success-soft: #0F3329;
+  --color-success-text: #6FE3B8;
+
+  --color-danger: #E46A7E;
+  --color-on-danger: #0A0914;
+  --color-danger-soft: #2E1420;
+  --color-danger-text: #F2909C;
+
+  --skeleton-base: #1A1932;
+  --skeleton-highlight: #24233F;
+
+  color-scheme: dark;
+}
+
+/* ---------- Movimiento reducido ---------- */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
+    --stagger-step: 0ms;
+  }
+}

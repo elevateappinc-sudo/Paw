@@ -1,5 +1,14 @@
+import { RouteFallback } from "@/components/ui/Skeleton";
 import { BusinessSkeleton } from "@/components/negocios/BusinessSkeleton";
 
-export default function Loading() {
+function LoadingContent() {
   return <BusinessSkeleton />;
+}
+
+export default function Loading() {
+  return (
+    <RouteFallback>
+      <LoadingContent />
+    </RouteFallback>
+  );
 }

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { CloudUpload } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { Button, Card, PawIllustration, Sheet } from "@/components/ui";
+import { Button, Card, PawIllustration, PetSilhouetteLoader, SpotsLoader, Sheet, useLoaderVisibility } from "@/components/ui";
 import type { User } from "@supabase/supabase-js";
 
 interface LocalPet {
@@ -87,26 +87,35 @@ export function MigrationModal({ user, onComplete }: MigrationModalProps) {
   }
 
   const busy = status === "loading" || skipping;
+  const showSync = useLoaderVisibility(status === "loading");
 
   return (
     <Sheet open onClose={() => {}} hideClose title={status === "success" ? undefined : "Datos guardados en este dispositivo"}>
       {status === "success" ? (
         <div className="flex flex-col items-center gap-3 py-4 text-center">
           <PawIllustration className="h-24 w-24" />
-          <h2 className="font-display text-[22px] leading-tight text-on">Todo listo</h2>
-          <p className="text-[15px] text-on-variant">Tus datos están seguros en tu cuenta.</p>
+          <h2 className="font-semibold text-title leading-tight text-text">Todo listo</h2>
+          <p className="text-body text-text-secondary">Tus datos están seguros en tu cuenta.</p>
         </div>
       ) : (
         <div className="flex flex-col gap-4 pb-2">
           <div className="flex items-start gap-3">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] bg-primary-container text-on-primary-container">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-sm bg-primary-soft text-primary-text">
               <CloudUpload size={22} aria-hidden="true" />
             </div>
-            <p className="text-[15px] leading-relaxed text-on-variant">Encontramos mascotas guardadas en este dispositivo. ¿Las pasamos a tu cuenta para tenerlas en todos tus dispositivos?</p>
+            <p className="text-body leading-relaxed text-text-secondary">Encontramos mascotas guardadas en este dispositivo. ¿Las pasamos a tu cuenta para tenerlas en todos tus dispositivos?</p>
           </div>
 
+          {showSync && (
+            // Espera larga: silueta en movimiento sobre un fondo de manchas
+            <div className="relative flex justify-center py-2">
+              <SpotsLoader decorative size={200} className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" />
+              <PetSilhouetteLoader showLabel label="Pasando tus datos a tu cuenta" className="relative" />
+            </div>
+          )}
+
           {status === "error" && (
-            <Card tone="danger" elevation={0} role="alert" className="py-3 text-[14px]">
+            <Card tone="overdue" elevation={0} role="alert" className="py-3 text-body">
               {errorMsg}
             </Card>
           )}

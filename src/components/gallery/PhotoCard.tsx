@@ -35,14 +35,14 @@ export function PhotoCard({ photo, badges, onClick }: PhotoCardProps) {
       type="button"
       onClick={onClick}
       aria-label={label}
-      className="relative aspect-square overflow-hidden rounded-card bg-surface-2 transition-transform active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-primary"
+      className="relative aspect-square overflow-hidden rounded-md bg-surface-elevated transition-transform active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-primary"
     >
       {!loaded && !errored && <div className="skeleton absolute inset-0 rounded-none" aria-hidden="true" />}
 
       {errored && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-on-variant">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-text-secondary">
           <ImageOff size={20} aria-hidden="true" />
-          <span className="text-[10px] font-semibold">No se pudo cargar</span>
+          <span className="text-label font-semibold">No se pudo cargar</span>
         </div>
       )}
 
@@ -62,17 +62,17 @@ export function PhotoCard({ photo, badges, onClick }: PhotoCardProps) {
       )}
 
       {loaded && !errored && badges.length > 0 && (
-        <div className="absolute bottom-1.5 left-1.5 flex flex-wrap gap-1" aria-hidden="true">
+        <div className="absolute bottom-2 left-2 flex flex-wrap gap-1" aria-hidden="true">
           {badges.slice(0, 3).map((b) => {
             const Icon = BADGE_ICON[b.kind];
             return (
-              <span key={b.kind} title={b.label} className="flex h-5 w-5 items-center justify-center rounded-full bg-on/75 text-bg">
+              <span key={b.kind} title={b.label} className="flex h-5 w-5 items-center justify-center rounded-full bg-text/75 text-bg">
                 <Icon size={12} />
               </span>
             );
           })}
           {badges.length > 3 && (
-            <span className="flex h-5 items-center rounded-full bg-on/75 px-1.5 text-[10px] font-bold text-bg">+{badges.length - 3}</span>
+            <span className="flex h-5 items-center rounded-full bg-text/75 px-2 text-label font-semibold text-bg">+{badges.length - 3}</span>
           )}
         </div>
       )}

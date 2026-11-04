@@ -1,16 +1,19 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Receipt } from "lucide-react";
-import { Card, Skeleton, buttonVariants, showToast } from "@/components/ui";
+import { ChevronRight, Receipt } from "lucide-react";
+import { Skeleton } from "@/components/ui";
 import { fetchExpenses } from "@/lib/api/expenses";
 import { formatCurrency } from "@/lib/utils";
 
 export function ExpensesTab({ petId }: { petId: string }) {
   const [summary, setSummary] = useState<{ total: number; count: number } | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
+    setFailed(false);
     const month = new Date().toISOString().slice(0, 7);
     fetchExpenses(petId)
       .then((rows) => {
@@ -19,39 +22,48 @@ export function ExpensesTab({ petId }: { petId: string }) {
         setSummary({ total: mine.reduce((s, g) => s + g.monto, 0), count: mine.length });
       })
       .catch(() => {
-        if (!cancelled) {
-          setSummary({ total: 0, count: 0 });
-          showToast("No pudimos cargar los gastos", undefined, "error");
-        }
+        if (!cancelled) setFailed(true);
       });
     return () => {
       cancelled = true;
     };
-  }, [petId]);
+  }, [petId, attempt]);
 
   const monthLabel = new Date().toLocaleDateString("es-CO", { month: "long" });
 
+  // Fila compacta: el detalle vive en /gastos
   return (
-    <div className="flex flex-col gap-4 px-4 pt-4">
-      <Card tone="container" elevation={0}>
-        <div className="flex items-center gap-3">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-surface text-primary">
-            <Receipt size={22} aria-hidden="true" />
+    <Link href="/gastos" className="pressable flex min-h-16 items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-pastel-lilac text-primary-text">
+        <Receipt size={20} aria-hidden="true" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-small text-text-secondary first-letter:uppercase">Gastos de {monthLabel}</span>
+        {failed ? (
+          <span className="block text-body text-text">No pudimos cargarlos</span>
+        ) : summary === null ? (
+          <Skeleton className="mt-1 h-5 w-24" />
+        ) : (
+          <span className="block text-body font-semibold text-text">
+            {formatCurrency(summary.total)}
+            <span className="font-normal text-text-secondary"> · {summary.count === 0 ? "sin gastos" : `${summary.count} ${summary.count === 1 ? "gasto" : "gastos"}`}</span>
           </span>
-          <div className="min-w-0 flex-1">
-            <div className="text-[13px] font-semibold capitalize text-on-variant">Gastos de {monthLabel}</div>
-            {summary === null ? (
-              <Skeleton className="mt-1 h-7 w-32" />
-            ) : (
-              <div className="font-display text-[28px] leading-tight text-on">{formatCurrency(summary.total)}</div>
-            )}
-            {summary !== null && <div className="text-[13px] text-on-variant">{summary.count === 0 ? "Sin gastos este mes" : `${summary.count} ${summary.count === 1 ? "gasto" : "gastos"}`}</div>}
-          </div>
-        </div>
-      </Card>
-      <Link href="/gastos" className={buttonVariants({ variant: "tonal", size: "lg", full: true })}>
-        Ver todos los gastos
-      </Link>
-    </div>
+        )}
+      </span>
+      {failed ? (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            setAttempt((n) => n + 1);
+          }}
+          className="min-h-11 px-2 text-label font-semibold text-primary-text"
+        >
+          Reintentar
+        </button>
+      ) : (
+        <ChevronRight size={18} className="shrink-0 text-text-secondary" aria-hidden="true" />
+      )}
+    </Link>
   );
 }

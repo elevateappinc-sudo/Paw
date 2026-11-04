@@ -12,6 +12,7 @@ import { fetchPet } from "@/lib/api/pets";
 import { isMissingSchema } from "@/lib/api/schemaErrors";
 import { PetPicker } from "@/components/sos/PetPicker";
 import { RADIUS_OPTIONS } from "./lostData";
+import { LostModeRoot } from "./LostMode";
 
 export function LostAlertForm() {
   const router = useRouter();
@@ -73,7 +74,7 @@ export function LostAlertForm() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-bg pb-[max(24px,env(safe-area-inset-bottom))]">
+    <LostModeRoot className="pb-[max(24px,env(safe-area-inset-bottom))]">
       <PageHeader title="Reportar perdida" eyebrow="Avisaremos a la comunidad cerca" back />
       <div className="flex flex-col gap-4 px-4">
         {pet ? (
@@ -81,13 +82,13 @@ export function LostAlertForm() {
             <div className="flex items-center gap-3">
               {photoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={photoUrl} alt={pet.name} className="h-16 w-16 shrink-0 rounded-card object-cover" />
+                <img src={photoUrl} alt={pet.name} className="h-16 w-16 shrink-0 rounded-md object-cover" />
               ) : (
-                <PetAvatar pet={pet} size="md" style={{ width: 64, height: 64, borderRadius: 16 }} />
+                <PetAvatar pet={pet} size="md" style={{ width: 64, height: 64, borderRadius: "var(--radius-md)" }} />
               )}
               <div className="min-w-0">
-                <div className="font-display text-[18px] leading-tight text-on">{pet.name}</div>
-                <div className="text-[13px] text-on-variant">{pet.breed ?? "Sin raza registrada"} · usaremos su foto de perfil</div>
+                <div className="font-semibold text-subtitle leading-tight text-text">{pet.name}</div>
+                <div className="text-small text-text-secondary">{pet.breed ?? "Sin raza registrada"} · usaremos su foto de perfil</div>
               </div>
             </div>
             <PetPicker pets={pets} activeId={pet.id} onSelect={selectPet} />
@@ -95,15 +96,15 @@ export function LostAlertForm() {
         ) : (
           <Card tone="container">
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-surface text-on-variant"><PawPrint size={22} aria-hidden="true" /></span>
-              <div className="text-[15px] font-bold text-on">Primero agrega una mascota en Paw</div>
+              <span className="flex h-11 w-11 items-center justify-center rounded-sm bg-surface text-text-secondary"><PawPrint size={22} aria-hidden="true" /></span>
+              <div className="text-body font-semibold text-text">Primero agrega una mascota en Paw</div>
             </div>
           </Card>
         )}
 
         <Card>
-          <div className="text-[13px] font-semibold text-on-variant">Último lugar donde la viste</div>
-          <Button variant={geo.lat !== null ? "tonal" : "outline"} className="mt-2" full leading={<MapPin size={18} aria-hidden="true" />} onClick={geo.request} loading={geo.status === "loading"}>
+          <div className="text-small font-semibold text-text-secondary">Último lugar donde la viste</div>
+          <Button variant="secondary" className="mt-2" full leading={<MapPin size={18} aria-hidden="true" />} onClick={geo.request} loading={geo.status === "loading"}>
             {geo.lat !== null ? "Ubicación guardada" : geo.status === "denied" ? "Ubicación no permitida · escribe la dirección" : "Usar mi ubicación"}
           </Button>
           <Input className="mt-3" label="Dirección o referencia" placeholder="Ej.: Parque de la 93, entrada norte" value={address} onChange={(e) => setAddress(e.target.value)} error={errors.place} />
@@ -112,22 +113,22 @@ export function LostAlertForm() {
         <Card>
           <Textarea label="Mensaje para quien la vea" placeholder="Ej.: responde a su nombre, lleva collar azul, es tímida" value={message} onChange={(e) => setMessage(e.target.value)} />
           <Input className="mt-3" label="Teléfono de contacto" type="tel" inputMode="tel" placeholder="300 123 4567" value={phone} onChange={(e) => setPhone(e.target.value)} error={errors.phone} />
-          <div className="mt-3 text-[13px] font-semibold text-on-variant">Radio de aviso</div>
-          <ChipRow className="mt-1.5">
+          <div className="mt-3 text-small font-semibold text-text-secondary">Radio de aviso</div>
+          <ChipRow className="mt-2">
             {RADIUS_OPTIONS.map((o) => (
               <Chip key={o.value} selected={radius === o.value} onClick={() => setRadius(o.value)}>
                 {o.label}
               </Chip>
             ))}
           </ChipRow>
-          <Input className="mt-3" label="Recompensa (opcional)" type="number" inputMode="numeric" placeholder="0" value={reward} onChange={(e) => setReward(e.target.value)} leading={<span className="text-[15px] font-bold">$</span>} />
+          <Input className="mt-3" label="Recompensa (opcional)" type="number" inputMode="numeric" placeholder="0" value={reward} onChange={(e) => setReward(e.target.value)} leading={<span className="text-body font-semibold">$</span>} />
         </Card>
 
-        <Button size="lg" full variant="danger" onClick={submit} loading={saving} disabled={!pet || !user}>
+        <Button size="lg" full onClick={submit} loading={saving} disabled={!pet || !user}>
           Publicar alerta
         </Button>
-        <p className="px-2 text-center text-[13px] text-on-variant">Los usuarios de Paw en el radio elegido recibirán el aviso con la foto y tu teléfono.</p>
+        <p className="px-2 text-center text-small text-text-secondary">Los usuarios de Paw en el radio elegido recibirán el aviso con la foto y tu teléfono.</p>
       </div>
-    </div>
+    </LostModeRoot>
   );
 }

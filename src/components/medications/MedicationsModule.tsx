@@ -1,11 +1,13 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Pill } from "lucide-react";
+import { Plus } from "lucide-react";
+import { PetMedication } from "@/components/icons/pet";
 import { motion } from "motion/react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useStore } from "@/store";
-import { PageHeader, Button, Card, CardHeader, SegmentedControl, Sheet, EmptyState, Skeleton } from "@/components/ui";
+import { PageHeader, Button, Card, CardHeader, SegmentedControl, Sheet, EmptyState, Skeleton, showToast } from "@/components/ui";
+import { TaskCheck, TaskDue, TaskIcon } from "@/components/tasks/TaskRow";
 import { fadeUp, stagger } from "@/lib/motion";
 import { AddMedicationForm } from "./AddMedicationForm";
 import { MedicationCard, type MedicationData, type MedicationLogData } from "./MedicationCard";
@@ -22,7 +24,7 @@ export function MedicationsSkeleton({ embedded }: { embedded?: boolean }) {
   return (
     <div className="flex flex-col gap-3 px-4 pb-8" aria-busy="true">
       {!embedded && (
-        <div className="flex items-end justify-between pt-[max(14px,env(safe-area-inset-top))] pb-2">
+        <div className="flex items-end justify-between pt-[max(16px,env(safe-area-inset-top))] pb-2">
           <div className="flex flex-col gap-2">
             <Skeleton className="h-3 w-16" />
             <Skeleton className="h-8 w-40" />
@@ -30,9 +32,9 @@ export function MedicationsSkeleton({ embedded }: { embedded?: boolean }) {
           <Skeleton className="h-11 w-11 rounded-full" />
         </div>
       )}
-      <Skeleton className="h-11 w-full rounded-[11px]" />
+      <Skeleton className="h-11 w-full rounded-full" />
       {[0, 1, 2].map((i) => (
-        <Skeleton key={i} className="h-[120px] w-full rounded-card-lg" />
+        <Skeleton key={i} className="h-32 w-full rounded-md" />
       ))}
     </div>
   );
@@ -53,6 +55,7 @@ export function MedicationsModule({ embedded = false }: { embedded?: boolean }) 
   const [logs, setLogs] = useState<MedicationLogData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [doneLogIds, setDoneLogIds] = useState<string[]>([]);
 
   const fetchData = useCallback(async () => {
     if (!user || !selectedPetId) return;
@@ -114,12 +117,29 @@ export function MedicationsModule({ embedded = false }: { embedded?: boolean }) 
     return l.status === "pending" && t >= todayStart && t <= todayEnd;
   });
 
+  /** Marca la toma como administrada; el check se dibuja antes de recargar */
+  async function registerDose(logId: string) {
+    setDoneLogIds((ids) => [...ids, logId]);
+    try {
+      const supabase = createClient();
+      const { error: updErr } = await supabase.from("medication_logs").update({ status: "administered", administered_at: new Date().toISOString() }).eq("id", logId);
+      if (updErr) throw updErr;
+      setTimeout(() => {
+        setDoneLogIds((ids) => ids.filter((id) => id !== logId));
+        void fetchData();
+      }, 700);
+    } catch {
+      setDoneLogIds((ids) => ids.filter((id) => id !== logId));
+      showToast("No pudimos registrar la toma", () => void registerDose(logId), "error");
+    }
+  }
+
   function getLogsForMed(medId: string) {
     return logs.filter((l) => l.medication_id === medId);
   }
 
   const addButton = (
-    <Button variant="primary" size="icon" aria-label="Nuevo medicamento" onClick={() => setShowAdd(true)}>
+    <Button variant="secondary" size="icon" aria-label="Nuevo medicamento" onClick={() => setShowAdd(true)}>
       <Plus size={22} />
     </Button>
   );
@@ -135,20 +155,32 @@ export function MedicationsModule({ embedded = false }: { embedded?: boolean }) 
           {embedded && <div className="flex justify-end">{addButton}</div>}
 
           {todayLogs.length > 0 && (
-            <Card tone="warn" elevation={0}>
-              <CardHeader title={`Tomas de hoy (${todayLogs.length})`} />
-              <ul className="flex flex-col gap-1.5">
+            <Card padded={false} elevation={0}>
+              <CardHeader title={`Tomas de hoy (${todayLogs.length})`} className="mb-0 px-4 pt-4" />
+              <ul className="flex flex-col">
                 {todayLogs.map((log) => {
                   const med = medications.find((m) => m.id === log.medication_id);
                   if (!med) return null;
-                  const timeStr = new Date(log.scheduled_at).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" });
+                  const at = new Date(log.scheduled_at);
+                  const timeStr = at.toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" });
+                  const done = doneLogIds.includes(log.id);
+                  // Escala de severidad: hora pasada = vencida; más tarde hoy = vence pronto
+                  const severity = done ? "ok" : at.getTime() < Date.now() ? "overdue" : "soon";
                   return (
-                    <li key={log.id} className="flex items-center gap-2 text-[14px]">
-                      <Pill size={15} className="shrink-0 text-warn" aria-hidden="true" />
-                      <span className="min-w-0 flex-1 truncate">
-                        {med.name} · {med.dose_amount} {med.dose_unit}
-                      </span>
-                      <span className="shrink-0 text-[12px] font-bold text-warn">{timeStr}</span>
+                    <li key={log.id} className="flex items-center gap-3 py-2 pr-2 pl-4" style={{ opacity: done ? 0.6 : 1, transition: "opacity var(--duration-slow) var(--ease-standard)" }}>
+                      <TaskIcon severity={severity}>
+                        <PetMedication size={18} />
+                      </TaskIcon>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-subtitle font-semibold text-text">{med.name}</div>
+                        <div className="flex flex-wrap items-center gap-x-2">
+                          <TaskDue severity={severity}>{done ? "Tomada" : severity === "overdue" ? `Pendiente desde las ${timeStr}` : `Hoy a las ${timeStr}`}</TaskDue>
+                          <span className="text-small text-text-secondary">
+                            {med.dose_amount} {med.dose_unit}
+                          </span>
+                        </div>
+                      </div>
+                      <TaskCheck done={done} disabled={done} onClick={() => void registerDose(log.id)} label={`Registrar toma de ${med.name} de las ${timeStr}`} />
                     </li>
                   );
                 })}
@@ -159,11 +191,11 @@ export function MedicationsModule({ embedded = false }: { embedded?: boolean }) 
           <SegmentedControl ariaLabel="Filtro de medicamentos" options={TABS} value={tab} onChange={setTab} />
 
           {error ? (
-            <EmptyState tone="danger" title="No pudimos cargar" description={error} action={<Button full onClick={() => void fetchData()}>Reintentar</Button>} />
+            <EmptyState title="No pudimos cargar" description={error} action={<Button full onClick={() => void fetchData()}>Reintentar</Button>} />
           ) : filteredMeds.length === 0 ? (
             <EmptyState
               compact
-              icon={<Pill size={26} />}
+              icon={<PetMedication size={26} />}
               title={tab === "activos" ? "Sin medicamentos activos" : tab === "completados" ? "Nada completado aún" : "Sin medicamentos"}
               description={tab === "activos" ? `Cuando ${pet?.name ?? "tu mascota"} tenga un tratamiento, anótalo aquí para no olvidar ninguna toma.` : undefined}
               action={tab === "activos" ? <Button full onClick={() => setShowAdd(true)} leading={<Plus size={18} />}>Agregar medicamento</Button> : undefined}

@@ -1,8 +1,10 @@
 "use client";
 import Link from "next/link";
-import { SectionTitle, SkeletonBiz, PhotoBadge, Rating } from "@/components/ui";
+import { MapPinned } from "lucide-react";
+import { EmptyState, Skeleton, PhotoBadge, Rating, buttonVariants, SkeletonSwap } from "@/components/ui";
+import { HomeSectionHeader } from "./HomeSectionHeader";
+import { HomeSectionError } from "./HomeSectionError";
 import { distanceLabel } from "@/lib/api/businesses";
-import { formatCurrency } from "@/lib/utils";
 import { BUSINESS_CATEGORY_LABEL, type BusinessCategory } from "@/types/db";
 
 /** Forma común de `NearbyBusiness` (RPC) y `Business` (populares) */
@@ -20,24 +22,47 @@ export interface NearbyCard {
   promo_text: string | null;
 }
 
-export function NearbyCarousel({ items }: { items: NearbyCard[] | null }) {
+export function NearbyCarousel({ items, error, onRetry }: { items: NearbyCard[] | null; error?: boolean; onRetry?: () => void }) {
+  const loading = items === null && !error;
   return (
     <section aria-labelledby="home-nearby">
-      <div className="px-4">
-        <SectionTitle action={<Link href="/explorar">Ver mapa</Link>}>
-          <span id="home-nearby">Cerca de ti</span>
-        </SectionTitle>
-      </div>
-      {items === null ? (
-        <div className="no-scrollbar mt-3 flex gap-3 overflow-x-auto px-4">
-          <SkeletonBiz />
-          <SkeletonBiz />
-          <SkeletonBiz />
+      <HomeSectionHeader id="home-nearby" title="Cerca de ti" href="/explorar" linkLabel="Ver el mapa" />
+      <SkeletonSwap
+        loading={loading}
+        reserveSpace
+        label="Cargando negocios cercanos"
+        skeleton={
+          <div className="mt-1 flex gap-3 overflow-hidden px-4">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="w-40 shrink-0">
+                <Skeleton className="h-28 w-full rounded-lg" />
+                <Skeleton className="mt-2 h-4 w-3/4" />
+                <Skeleton className="mt-2 h-3 w-1/3" />
+              </div>
+            ))}
+          </div>
+        }
+      >
+      {error ? (
+        <div className="mt-1 px-4">
+          <HomeSectionError message="No pudimos cargar los negocios cercanos." onRetry={() => onRetry?.()} />
         </div>
-      ) : items.length === 0 ? (
-        <p className="mt-3 px-4 text-[14px] text-on-variant">Todavía no hay negocios en tu zona. Explora el mapa para ampliar la búsqueda.</p>
+      ) : items === null ? null : items.length === 0 ? (
+        <div className="mt-1 px-4">
+          <EmptyState
+            compact
+            icon={<MapPinned size={24} aria-hidden="true" />}
+            title="Aún no hay negocios en tu zona"
+            description="Abre el mapa para ampliar la búsqueda."
+            action={
+              <Link href="/explorar" className={buttonVariants({ variant: "secondary", full: true })}>
+                Abrir el mapa
+              </Link>
+            }
+          />
+        </div>
       ) : (
-        <ul className="no-scrollbar mt-3 flex gap-3 overflow-x-auto px-4 pb-1">
+        <ul className="no-scrollbar fade-edge enter-soft-list mt-1 flex gap-3 overflow-x-auto px-4 pb-1">
           {items.map((b) => (
             <li key={b.id} className="shrink-0">
               <BizCard b={b} />
@@ -45,44 +70,29 @@ export function NearbyCarousel({ items }: { items: NearbyCard[] | null }) {
           ))}
         </ul>
       )}
+      </SkeletonSwap>
     </section>
   );
 }
 
+/** Tarjeta mínima: foto con calificación, nombre y un solo dato (distancia o categoría) */
 function BizCard({ b }: { b: NearbyCard }) {
-  const status = b.emergency_24h
-    ? { label: "Abierto 24 h", tone: "ok" as const }
-    : b.is_open
-      ? { label: "Abierto", tone: "ok" as const }
-      : b.promo_text
-        ? { label: b.promo_text, tone: "primary" as const }
-        : null;
-  const meta = [BUSINESS_CATEGORY_LABEL[b.type] ?? "Negocio", b.distance_m !== null ? distanceLabel(b.distance_m) : null, b.price_from ? `desde ${formatCurrency(b.price_from)}` : null]
-    .filter(Boolean)
-    .join(" · ");
-
+  const meta = b.distance_m !== null ? distanceLabel(b.distance_m) : BUSINESS_CATEGORY_LABEL[b.type] ?? "Negocio";
   return (
-    <Link href={`/negocios/${b.id}`} className="block w-[200px] overflow-hidden rounded-card-lg border border-outline-variant bg-surface shadow-1 active:scale-[0.985]">
-      <div className="relative h-[110px] w-full bg-gradient-to-br from-surface-2 to-surface-3">
+    <Link href={`/negocios/${b.id}`} className="pressable block w-40">
+      <div className="relative h-28 w-full overflow-hidden rounded-lg bg-surface-elevated">
         {b.cover_url && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={b.cover_url} alt="" className="h-full w-full object-cover" loading="lazy" />
+          <img src={b.cover_url} alt="" className="h-full w-full object-cover" loading="lazy" onError={(e) => (e.currentTarget.style.visibility = "hidden")} />
         )}
         {b.rating_count > 0 && (
           <PhotoBadge className="left-2 top-2">
             <Rating value={b.rating_avg} />
           </PhotoBadge>
         )}
-        {status && (
-          <PhotoBadge tone={status.tone} className="bottom-2 right-2 max-w-[150px] truncate">
-            {status.label}
-          </PhotoBadge>
-        )}
       </div>
-      <div className="p-3">
-        <div className="truncate font-display text-[15px] leading-tight text-on">{b.name}</div>
-        <div className="mt-1 truncate text-[12px] font-semibold text-on-variant">{meta}</div>
-      </div>
+      <div className="mt-2 truncate text-body font-semibold text-text">{b.name}</div>
+      <div className="truncate text-small text-text-secondary">{meta}</div>
     </Link>
   );
 }

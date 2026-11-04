@@ -61,11 +61,11 @@ export function ClientesTab({ business }: { business: Business }) {
       </Card>
     );
   }
-  if (error) return <EmptyState tone="danger" compact title="Algo salió mal" description={error} action={<Button full onClick={load}>Reintentar</Button>} />;
+  if (error) return <EmptyState compact title="Algo salió mal" description={error} action={<Button full onClick={load}>Reintentar</Button>} />;
   if (clients.length === 0) return <EmptyState compact title="Aún no tienes clientes" description="Cuando completes una cita, la mascota aparecerá aquí con su última visita." />;
 
   return (
-    <Card padded={false} className="divide-y divide-outline-variant">
+    <Card padded={false} className="divide-y divide-border">
       {clients.map((c) => (
         <Row
           key={c.pet_id}
@@ -73,7 +73,7 @@ export function ClientesTab({ business }: { business: Business }) {
           iconTone="primary"
           title={c.name}
           subtitle={`Última visita ${relativeTime(c.last)}${c.lastService ? ` · ${c.lastService}` : ""}`}
-          trailing={<span className="text-[13px] font-bold text-on-variant">{c.visits} {c.visits === 1 ? "visita" : "visitas"}</span>}
+          trailing={<span className="text-small font-semibold text-text-secondary">{c.visits} {c.visits === 1 ? "visita" : "visitas"}</span>}
         />
       ))}
     </Card>

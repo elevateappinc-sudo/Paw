@@ -319,7 +319,7 @@ export function PhotoGallery({ initialSection = "fotos" }: { initialSection?: "f
         eyebrow={pet?.name}
         back
         actions={
-          <Button size="icon" variant="tonal" onClick={() => fileInputRef.current?.click()} loading={uploading} aria-label="Agregar foto">
+          <Button size="icon" variant="secondary" onClick={() => fileInputRef.current?.click()} loading={uploading} aria-label="Agregar foto">
             <Camera size={20} />
           </Button>
         }
@@ -343,7 +343,6 @@ export function PhotoGallery({ initialSection = "fotos" }: { initialSection?: "f
       <div className="px-4 pt-2">
         {loadError && !hasPhotos && (
           <EmptyState
-            tone="danger"
             icon={<Images size={24} />}
             title="No pudimos cargar las fotos"
             description="Revisa tu conexión e inténtalo otra vez."
@@ -379,7 +378,7 @@ export function PhotoGallery({ initialSection = "fotos" }: { initialSection?: "f
         <section ref={videosRef} className="mt-6 scroll-mt-4 flex flex-col gap-3" aria-label="Videos">
           <SectionTitle
             action={
-              <Button size="sm" variant="tonal" leading={<Upload size={14} />} onClick={() => videoInputRef.current?.click()} loading={videoUploading}>
+              <Button size="sm" variant="secondary" leading={<Upload size={14} />} onClick={() => videoInputRef.current?.click()} loading={videoUploading}>
                 {videoUploading ? `Subiendo ${videoProgress}%` : "Subir video"}
               </Button>
             }
@@ -392,7 +391,7 @@ export function PhotoGallery({ initialSection = "fotos" }: { initialSection?: "f
           {videosLoading ? (
             <div className="grid grid-cols-3 gap-1">
               {[0, 1, 2].map((i) => (
-                <Skeleton key={i} className="aspect-[9/16] rounded-card" />
+                <Skeleton key={i} className="aspect-[9/16] rounded-md" />
               ))}
             </div>
           ) : videos.length === 0 ? (
@@ -405,13 +404,13 @@ export function PhotoGallery({ initialSection = "fotos" }: { initialSection?: "f
                   type="button"
                   onClick={() => setFullscreenVideo(vid)}
                   aria-label={`Reproducir video${vid.durationSeconds != null ? ` de ${formatDuration(vid.durationSeconds)}` : ""}`}
-                  className="relative aspect-[9/16] overflow-hidden rounded-card bg-surface-3 transition-transform active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-primary"
+                  className="relative aspect-[9/16] overflow-hidden rounded-md bg-border transition-transform active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-primary"
                 >
-                  <div className="absolute inset-0 flex items-center justify-center text-on-variant">
+                  <div className="absolute inset-0 flex items-center justify-center text-text-secondary">
                     <PlayCircle size={36} aria-hidden="true" />
                   </div>
                   {vid.durationSeconds !== undefined && vid.durationSeconds !== null && (
-                    <span className="absolute right-1.5 bottom-1.5 rounded-full bg-on/75 px-1.5 py-0.5 text-[11px] font-bold text-bg">{formatDuration(vid.durationSeconds)}</span>
+                    <span className="absolute right-2 bottom-2 rounded-full bg-text/75 px-2 py-1 text-label font-semibold text-bg">{formatDuration(vid.durationSeconds)}</span>
                   )}
                 </button>
               ))}

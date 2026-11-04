@@ -1,13 +1,13 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
-import { Bell, Plus, Trash2, CheckCheck, Syringe, AlertTriangle, Check, Trophy, StickyNote } from "lucide-react";
+import { Bell, Plus, Trash2, CheckCheck, AlertTriangle, AlertCircle, Clock, Check, Trophy, StickyNote } from "lucide-react";
 import { useStore } from "@/store";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useActivePet } from "@/hooks/useActivePet";
 import { cn, today, formatDate } from "@/lib/utils";
 import { fadeUp, stagger } from "@/lib/motion";
-import { Button, Card, Divider, EmptyState, PageHeader, Row, SectionTitle, Tag, showToast } from "@/components/ui";
+import { Button, Card, Divider, EmptyState, PageHeader, Row, SectionTitle, StatusChip, Tag, showToast } from "@/components/ui";
 import type { ChipTone } from "@/components/ui/Chip";
 import { NotaForm, TIPO_LABEL } from "./NotaForm";
 import { NotificacionesSkeleton } from "./NotificacionesSkeleton";
@@ -82,14 +82,14 @@ export function NotificacionesModule() {
   if (loadingNotifications && petNotifs.length === 0) return <NotificacionesSkeleton />;
 
   return (
-    <motion.div className="flex flex-col gap-4 pb-6" variants={reduce ? undefined : stagger()} initial={reduce ? false : "hidden"} animate="show">
+    <motion.div className="enter-list flex flex-col gap-4 pb-6" variants={reduce ? undefined : stagger()} animate="show">
       <PageHeader
         title="Notificaciones"
         eyebrow={pet?.name ?? "Mascota"}
         back
         actions={
           !isEmpty ? (
-            <Button size="icon" variant="tonal" onClick={() => setShowForm(true)} aria-label="Nueva nota">
+            <Button size="icon" variant="secondary" onClick={() => setShowForm(true)} aria-label="Nueva nota">
               <Plus size={20} />
             </Button>
           ) : undefined
@@ -101,14 +101,14 @@ export function NotificacionesModule() {
           <SectionTitle>Alertas automáticas</SectionTitle>
           <div className="flex flex-col gap-2">
             {overdueVacunas.map((v) => (
-              <Card key={v.id} tone="danger" padded={false} elevation={0}>
+              <Card key={v.id} tone="overdue" padded={false} elevation={0}>
                 <Row
-                  icon={<AlertTriangle size={20} aria-hidden="true" />}
-                  iconTone="danger"
+                  icon={<AlertCircle size={20} aria-hidden="true" />}
+                  iconTone="overdue"
                   title="Vacuna vencida"
                   subtitle={`${v.nombre} · venció el ${formatDate(v.proximaFecha!)}`}
                   href={`/salud/vacunas?pet=${v.petId}`}
-                  trailing={<Tag tone="danger" size="xs">Vencida</Tag>}
+                  trailing={<StatusChip severity="overdue" />}
                 />
               </Card>
             ))}
@@ -117,12 +117,12 @@ export function NotificacionesModule() {
               return (
                 <Card key={v.id} tone="warn" padded={false} elevation={0}>
                   <Row
-                    icon={<Syringe size={20} aria-hidden="true" />}
+                    icon={<Clock size={20} aria-hidden="true" />}
                     iconTone="warn"
                     title="Vacuna próxima"
                     subtitle={`${v.nombre} · en ${days} día${days !== 1 ? "s" : ""} (${formatDate(v.proximaFecha!)})`}
                     href={`/salud/vacunas?pet=${v.petId}`}
-                    trailing={<Tag tone="warn" size="xs">Pronto</Tag>}
+                    trailing={<StatusChip severity="soon" />}
                   />
                 </Card>
               );
@@ -150,39 +150,39 @@ export function NotificacionesModule() {
               const Icon = cfg.icon;
               return (
                 <div key={n.id}>
-                  {i > 0 && <Divider className="ml-[72px] mr-0" />}
-                  <div className={cn("relative", !n.leida && "bg-primary-container/25")}>
-                    {!n.leida && <span className="absolute top-1/2 left-1.5 h-2 w-2 -translate-y-1/2 rounded-full bg-primary" aria-hidden="true" />}
+                  {i > 0 && <Divider className="ml-18 mr-0" />}
+                  <div className={cn("relative", !n.leida && "bg-primary-soft/25")}>
+                    {!n.leida && <span className="absolute top-1/2 left-2 h-2 w-2 -translate-y-1/2 rounded-full bg-primary" aria-hidden="true" />}
                     <Row
                       icon={<Icon size={18} aria-hidden="true" />}
                       iconTone={cfg.rowTone}
                       title={
-                        <span className="flex items-center gap-1.5">
-                          <span className={cn("truncate", !n.leida && "font-extrabold")}>{n.titulo}</span>
+                        <span className="flex items-center gap-2">
+                          <span className={cn("truncate", !n.leida && "font-semibold")}>{n.titulo}</span>
                           {!n.leida && <span className="sr-only">(sin leer)</span>}
                         </span>
                       }
                       subtitle={
-                        <span className="flex flex-wrap items-center gap-1.5">
+                        <span className="flex flex-wrap items-center gap-2">
                           <Tag tone={cfg.tone} size="xs">
                             {TIPO_LABEL[n.tipo]}
                           </Tag>
                           <span>
                             {authorName(n.autorId)} · {timeAgo(n.createdAt)}
                           </span>
-                          {n.mensaje && <span className="w-full truncate text-on">{n.mensaje}</span>}
+                          {n.mensaje && <span className="w-full truncate text-text">{n.mensaje}</span>}
                         </span>
                       }
                       className="items-start"
                       trailing={
                         <div className="flex flex-col gap-1">
                           {!n.leida && (
-                            <Button variant="tonal" size="icon" aria-label={`Marcar "${n.titulo}" como leída`} onClick={() => void marcarLeida(n.id)} className="min-h-[36px] min-w-[36px]">
+                            <Button variant="secondary" size="icon" aria-label={`Marcar "${n.titulo}" como leída`} onClick={() => void marcarLeida(n.id)}>
                               <Check size={15} />
                             </Button>
                           )}
                           {n.autorId === currentUser?.id && (
-                            <Button variant="dangerTonal" size="icon" aria-label={`Eliminar "${n.titulo}"`} onClick={() => void handleDelete(n.id)} className="min-h-[36px] min-w-[36px] border-transparent">
+                            <Button variant="dangerTonal" size="icon" aria-label={`Eliminar "${n.titulo}"`} onClick={() => void handleDelete(n.id)} className="border-transparent">
                               <Trash2 size={15} />
                             </Button>
                           )}

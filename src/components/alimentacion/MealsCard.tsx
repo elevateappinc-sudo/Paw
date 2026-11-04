@@ -117,11 +117,11 @@ export function MealsCard({ meals, totalGrams, explanation, isDone, toggleMeal }
     <Card>
       <CardHeader title="Ración diaria" subtitle={explanation} action={meals.length > 0 ? `${doneCount}/${meals.length}` : undefined} />
       <div className="mb-3 flex items-baseline gap-1">
-        <span className="font-display text-[40px] leading-none text-on">{totalGrams ?? "—"}</span>
-        <span className="text-[15px] font-bold text-on-variant">g al día</span>
+        <span className="font-semibold text-display leading-none text-text">{totalGrams ?? "—"}</span>
+        <span className="text-body font-semibold text-text-secondary">g al día</span>
       </div>
       {meals.length === 0 ? (
-        <p className="text-[14px] text-on-variant">Añade las horas de comida con el botón Editar.</p>
+        <p className="text-body text-text-secondary">Añade las horas de comida con el botón Editar.</p>
       ) : (
         <ul className="grid grid-cols-2 gap-2">
           {meals.map((m) => {
@@ -133,21 +133,21 @@ export function MealsCard({ meals, totalGrams, explanation, isDone, toggleMeal }
                   onClick={() => toggleMeal(m.time)}
                   aria-pressed={done}
                   className={cn(
-                    "flex min-h-[64px] w-full items-center gap-3 rounded-card px-3 py-2.5 text-left transition-colors active:scale-[0.98]",
-                    done ? "bg-ok-container text-on-ok-container" : "bg-surface-2 text-on"
+                    "flex min-h-16 w-full items-center gap-3 rounded-md px-3 py-3 text-left transition-colors active:scale-[0.98]",
+                    done ? "bg-success-soft text-success-text" : "bg-surface-elevated text-text"
                   )}
                 >
                   <motion.span
                     initial={false}
                     animate={done && !reduce ? { scale: [1, 1.25, 1] } : { scale: 1 }}
                     transition={{ duration: 0.25 }}
-                    className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-full", done ? "bg-ok text-white" : "bg-surface text-on-variant")}
+                    className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-full", done ? "bg-success text-on-primary" : "bg-surface text-text-secondary")}
                   >
                     {done ? <Check size={18} strokeWidth={3} /> : <Clock size={16} />}
                   </motion.span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[15px] font-bold">{m.time}</span>
-                    <span className="block text-[12px] opacity-80">{m.grams} g</span>
+                    <span className="block text-body font-semibold">{m.time}</span>
+                    <span className="block text-label opacity-80">{m.grams} g</span>
                   </span>
                   <Tag tone={done ? "ok" : "neutral"} size="xs">{done ? "Hecho" : "Pendiente"}</Tag>
                 </button>

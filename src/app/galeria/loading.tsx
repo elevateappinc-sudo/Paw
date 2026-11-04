@@ -1,5 +1,14 @@
+import { RouteFallback } from "@/components/ui/Skeleton";
 import { GallerySkeleton } from "@/components/gallery/GallerySkeleton";
 
-export default function Loading() {
+function LoadingContent() {
   return <GallerySkeleton />;
+}
+
+export default function Loading() {
+  return (
+    <RouteFallback>
+      <LoadingContent />
+    </RouteFallback>
+  );
 }

@@ -11,6 +11,7 @@ export function WeightSheet({ open, onClose, petId, userId, onSaved }: { open: b
   const [saving, setSaving] = useState(false);
   const value = Number(kg.replace(",", "."));
   const valid = value > 0 && value < 200;
+  const error = kg.trim() !== "" && !valid ? "Escribe un peso entre 0,1 y 200 kg" : undefined;
 
   async function save() {
     if (!valid) return;
@@ -41,7 +42,7 @@ export function WeightSheet({ open, onClose, petId, userId, onSaved }: { open: b
       }
     >
       <div className="flex flex-col gap-4 py-2">
-        <Input label="Peso" type="number" inputMode="decimal" step="0.1" min="0.1" placeholder="12,4" value={kg} onChange={(e) => setKg(e.target.value)} trailing={<span className="text-[15px] font-bold">kg</span>} autoFocus />
+        <Input label="Peso" type="number" inputMode="decimal" step="0.1" min="0.1" placeholder="12,4" value={kg} onChange={(e) => setKg(e.target.value)} error={error} trailing={<span className="text-body text-text-secondary">kg</span>} autoFocus />
         <Input label="Fecha" type="date" value={date} max={today()} onChange={(e) => setDate(e.target.value)} />
       </div>
     </Sheet>

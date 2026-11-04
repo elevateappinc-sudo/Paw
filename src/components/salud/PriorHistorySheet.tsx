@@ -51,8 +51,8 @@ function entryFrom(c: CareCycle): Entry {
   return { active: c.active, value: c.interval_value ?? c.interval_days, unit: c.interval_value ? c.interval_unit : "days", date: "", product: "" };
 }
 
-const inputCls = "min-h-[44px] rounded-control border border-outline-variant bg-surface px-3 text-[15px] text-on outline-none placeholder:text-outline focus:border-primary";
-const selectCls = "min-h-[44px] rounded-control border border-outline-variant bg-surface px-2 text-[15px] text-on outline-none focus:border-primary";
+const inputCls = "min-h-11 rounded-md border border-border bg-surface px-3 text-body text-text outline-none placeholder:text-text-secondary focus:border-primary";
+const selectCls = "min-h-11 rounded-md border border-border bg-surface px-2 text-body text-text outline-none focus:border-primary";
 
 /**
  * Configurador del plan de cuidados de la mascota:
@@ -165,11 +165,11 @@ export function PriorHistorySheet({
           <Button full size="lg" onClick={() => void save()} loading={saving}>
             {total > 0 ? `Guardar ${total} ${total === 1 ? "cambio" : "cambios"}` : "Sin cambios"}
           </Button>
-          <p className="text-center text-[12px] text-on-variant">Las próximas fechas se recalculan solas a partir de lo que registres.</p>
+          <p className="text-center text-label text-text-secondary">Las próximas fechas se recalculan solas a partir de lo que registres.</p>
         </div>
       }
     >
-      <ul className="flex flex-col divide-y divide-outline-variant">
+      <ul className="flex flex-col divide-y divide-border">
         {list.map((c) => {
           const e = entries[c.id] ?? entryFrom(c);
           const days = intervalToDays(e.value, e.unit);
@@ -179,8 +179,8 @@ export function PriorHistorySheet({
             <li key={c.id} className={`flex flex-col gap-2 py-3 ${e.active ? "" : "opacity-60"}`}>
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <div className="truncate text-[15px] font-bold text-on">{c.name}</div>
-                  <div className="text-[12px] text-on-variant">
+                  <div className="truncate text-body font-semibold text-text">{c.name}</div>
+                  <div className="text-label text-text-secondary">
                     {CARE_KIND_LABEL[c.kind]} · {intervalLabel({ interval_days: days, interval_value: e.value, interval_unit: e.unit })}
                     {nextLabel ? ` · ${nextLabel}` : ""}
                   </div>
@@ -190,7 +190,7 @@ export function PriorHistorySheet({
               <Toggle checked={e.active} onChange={(v) => update(c.id, { active: v })} label="Dar seguimiento" description={e.active ? "Recibirás recordatorios" : "No aparecerá en el plan"} />
               {e.active && (
                 <div className="grid grid-cols-[1fr_1fr] gap-2">
-                  <label className="flex flex-col gap-1 text-[12px] font-semibold text-on-variant">
+                  <label className="flex flex-col gap-1 text-label font-semibold text-text-secondary">
                     Cada
                     <span className="grid grid-cols-[64px_1fr] gap-1">
                       <input type="number" min={1} max={365} value={e.value} onChange={(ev) => update(c.id, { value: Math.max(1, Number(ev.target.value) || 1) })} className={inputCls} aria-label={`Frecuencia de ${c.name}`} />
@@ -201,12 +201,12 @@ export function PriorHistorySheet({
                       </select>
                     </span>
                   </label>
-                  <label className="flex flex-col gap-1 text-[12px] font-semibold text-on-variant">
+                  <label className="flex flex-col gap-1 text-label font-semibold text-text-secondary">
                     Última vez
                     <input type="date" max={today} value={e.date} onChange={(ev) => update(c.id, { date: ev.target.value })} className={inputCls} aria-label={`Última fecha de ${c.name}`} />
                   </label>
                   {(c.kind === "vaccine" || c.kind === "deworm_internal" || c.kind === "deworm_external") && e.date && (
-                    <label className="col-span-2 flex flex-col gap-1 text-[12px] font-semibold text-on-variant">
+                    <label className="col-span-2 flex flex-col gap-1 text-label font-semibold text-text-secondary">
                       Producto (opcional)
                       <input type="text" value={e.product} onChange={(ev) => update(c.id, { product: ev.target.value })} placeholder={c.kind === "vaccine" ? "Marca o lote" : "Ej. Bravecto, NexGard"} className={inputCls} aria-label={`Producto de ${c.name}`} />
                     </label>
@@ -221,12 +221,12 @@ export function PriorHistorySheet({
           <li key={n.key} className="flex flex-col gap-2 py-3">
             <div className="flex items-center justify-between gap-2">
               <input type="text" value={n.name} onChange={(ev) => updateNew(n.key, { name: ev.target.value })} placeholder="Nombre, ej. Control de dermatitis" className={`${inputCls} flex-1`} aria-label="Nombre del cuidado" />
-              <button type="button" onClick={() => setAdded((a) => a.filter((x) => x.key !== n.key))} aria-label="Quitar" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-2 text-on-variant">
+              <button type="button" onClick={() => setAdded((a) => a.filter((x) => x.key !== n.key))} aria-label="Quitar" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-elevated text-text-secondary">
                 <Trash2 size={18} />
               </button>
             </div>
             <div className="grid grid-cols-[1fr_1fr] gap-2">
-              <label className="col-span-2 flex flex-col gap-1 text-[12px] font-semibold text-on-variant">
+              <label className="col-span-2 flex flex-col gap-1 text-label font-semibold text-text-secondary">
                 Tipo
                 <select value={n.kind} onChange={(ev) => updateNew(n.key, { kind: ev.target.value as CareCycleKind })} className={selectCls}>
                   {KIND_OPTIONS.map((k) => (
@@ -234,7 +234,7 @@ export function PriorHistorySheet({
                   ))}
                 </select>
               </label>
-              <label className="flex flex-col gap-1 text-[12px] font-semibold text-on-variant">
+              <label className="flex flex-col gap-1 text-label font-semibold text-text-secondary">
                 Cada
                 <span className="grid grid-cols-[64px_1fr] gap-1">
                   <input type="number" min={1} max={365} value={n.value} onChange={(ev) => updateNew(n.key, { value: Math.max(1, Number(ev.target.value) || 1) })} className={inputCls} aria-label="Frecuencia" />
@@ -245,7 +245,7 @@ export function PriorHistorySheet({
                   </select>
                 </span>
               </label>
-              <label className="flex flex-col gap-1 text-[12px] font-semibold text-on-variant">
+              <label className="flex flex-col gap-1 text-label font-semibold text-text-secondary">
                 Última vez (opcional)
                 <input type="date" max={today} value={n.date} onChange={(ev) => updateNew(n.key, { date: ev.target.value })} className={inputCls} />
               </label>
@@ -254,7 +254,7 @@ export function PriorHistorySheet({
         ))}
       </ul>
 
-      <button type="button" onClick={addRow} className="mt-3 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full border border-dashed border-outline text-[15px] font-bold text-primary">
+      <button type="button" onClick={addRow} className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-dashed border-text-secondary text-body font-semibold text-primary-text">
         <Plus size={18} /> Añadir otro cuidado o seguimiento
       </button>
     </Sheet>
@@ -268,13 +268,13 @@ export function PriorHistoryBanner({ count, onOpen }: { count: number; onOpen: (
     <button
       type="button"
       onClick={onOpen}
-      className={`flex w-full items-center gap-3 rounded-card-lg px-4 py-3 text-left active:scale-[0.99] ${warn ? "border border-warn/40 bg-warn-container text-on-warn-container" : "bg-surface-2 text-on"}`}
+      className={`flex w-full items-center gap-3 rounded-md px-4 py-3 text-left active:scale-[0.99] ${warn ? "border border-warning/40 bg-warning-soft text-warning-text" : "bg-surface-elevated text-text"}`}
     >
       <div className="min-w-0 flex-1">
-        <div className="text-[15px] font-bold">{warn ? `${count} ${count === 1 ? "cuidado sin fecha registrada" : "cuidados sin fecha registrada"}` : "Ajustar el plan de cuidados"}</div>
-        <div className="text-[13px] opacity-90">{warn ? "Registra lo que ya le han puesto, cambia la frecuencia o quita lo que no quieras seguir." : "Frecuencia, qué seguir y cuidados propios."}</div>
+        <div className="text-body font-semibold">{warn ? `${count} ${count === 1 ? "cuidado sin fecha registrada" : "cuidados sin fecha registrada"}` : "Ajustar el plan de cuidados"}</div>
+        <div className="text-small opacity-90">{warn ? "Registra lo que ya le han puesto, cambia la frecuencia o quita lo que no quieras seguir." : "Frecuencia, qué seguir y cuidados propios."}</div>
       </div>
-      <span className="shrink-0 text-[13px] font-extrabold">{warn ? "Registrar" : "Ajustar"}</span>
+      <span className="shrink-0 text-small font-semibold">{warn ? "Registrar" : "Ajustar"}</span>
     </button>
   );
 }

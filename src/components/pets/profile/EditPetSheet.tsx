@@ -47,12 +47,14 @@ export function EditPetSheet({ open, onClose, pet, userId, onSaved }: { open: bo
   const updatePet = useStore((s) => s.updatePet);
   const [form, setForm] = useState<Form>(() => fromRow(pet));
   const [saving, setSaving] = useState(false);
+  const [nameError, setNameError] = useState<string | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
       setForm(fromRow(pet));
+      setNameError(null);
       setPhotoFile(null);
       setPreview(null);
     }
@@ -69,7 +71,7 @@ export function EditPetSheet({ open, onClose, pet, userId, onSaved }: { open: bo
 
   async function save() {
     if (!form.name.trim()) {
-      showToast("Ponle un nombre", undefined, "error");
+      setNameError("Ponle un nombre");
       return;
     }
     setSaving(true);
@@ -124,14 +126,22 @@ export function EditPetSheet({ open, onClose, pet, userId, onSaved }: { open: bo
       <div className="flex flex-col gap-4 py-2">
         <div className="flex items-center gap-4">
           <PhotoDropCircle preview={currentPhoto} onFile={setPhotoFile} label="Cambiar foto" />
-          <div className="text-[13px] text-on-variant">Toca el círculo o arrastra una foto aquí. Sin texto encima, solo la mascota.</div>
+          <div className="text-small text-text-secondary">Toca el círculo o arrastra una foto aquí. Sin texto encima, solo la mascota.</div>
         </div>
-        <Input label="Nombre" value={form.name} onChange={(e) => set("name", e.target.value)} />
+        <Input
+          label="Nombre"
+          value={form.name}
+          error={nameError ?? undefined}
+          onChange={(e) => {
+            set("name", e.target.value);
+            if (nameError && e.target.value.trim()) setNameError(null);
+          }}
+        />
         <Select label="Especie" value={form.species} onChange={(e) => set("species", e.target.value as Species)} options={Object.entries(SPECIES_LABEL).map(([value, label]) => ({ value, label }))} />
         <Input label="Raza" value={form.breed} onChange={(e) => set("breed", e.target.value)} placeholder="Criollo, labrador, siamés…" />
         <Input label="Nacimiento" type="date" value={form.birth_date} max={today()} onChange={(e) => set("birth_date", e.target.value)} />
-        <div className="flex flex-col gap-1.5">
-          <span className="text-[13px] font-semibold text-on-variant">Sexo</span>
+        <div className="flex flex-col gap-2">
+          <span className="text-small font-semibold text-text-secondary">Sexo</span>
           <SegmentedControl
             ariaLabel="Sexo"
             value={form.sex}
@@ -152,8 +162,8 @@ export function EditPetSheet({ open, onClose, pet, userId, onSaved }: { open: bo
           <Input label="Contacto de emergencia" value={form.ec_name} onChange={(e) => set("ec_name", e.target.value)} placeholder="Nombre" />
           <Input label="Teléfono" type="tel" value={form.ec_phone} onChange={(e) => set("ec_phone", e.target.value)} placeholder="300 000 0000" />
         </div>
-        <div className="flex flex-col gap-1.5">
-          <span className="text-[13px] font-semibold text-on-variant">Nivel de actividad</span>
+        <div className="flex flex-col gap-2">
+          <span className="text-small font-semibold text-text-secondary">Nivel de actividad</span>
           <SegmentedControl
             ariaLabel="Nivel de actividad"
             value={form.activity_level}

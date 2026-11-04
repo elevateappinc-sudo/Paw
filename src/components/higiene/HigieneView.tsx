@@ -2,7 +2,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
-import { CalendarDays, Sparkles } from "lucide-react";
+import { CalendarDays } from "lucide-react";
+import { PetBath } from "@/components/icons/pet";
 import { PageHeader, Card, CardHeader, Button, EmptyState, Divider, Tag } from "@/components/ui";
 import { showToast } from "@/components/ui/Toast";
 import { useActivePet } from "@/hooks/useActivePet";
@@ -125,15 +126,15 @@ export function HigieneView() {
 
       {error ? (
         <div className="px-4">
-          <EmptyState tone="danger" title="No pudimos cargar" description={error} action={<Button full onClick={() => void load(pet.id)}>Reintentar</Button>} />
+          <EmptyState title="No pudimos cargar" description={error} action={<Button full onClick={() => void load(pet.id)}>Reintentar</Button>} />
         </div>
       ) : (
         <div className="flex flex-col gap-4 px-4">
           {banner && (
             <Card tone={banner.tone} elevation={0} className="flex items-center gap-3">
               <div className="min-w-0 flex-1">
-                <div className="text-[12px] font-bold uppercase tracking-wide opacity-80">Tocan juntos</div>
-                <div className="text-[15px] font-bold leading-snug">{banner.text}</div>
+                <div className="text-label font-semibold uppercase tracking-wide opacity-80">Tocan juntos</div>
+                <div className="text-body font-semibold leading-snug">{banner.text}</div>
               </div>
               <Button size="sm" variant={banner.tone === "warn" ? "primary" : "secondary"} leading={<CalendarDays size={16} />} onClick={() => router.push("/explorar?cat=peluqueria")}>
                 Reservar
@@ -143,7 +144,7 @@ export function HigieneView() {
 
           {cycles.length === 0 ? (
             <EmptyState
-              icon={<Sparkles size={26} />}
+              icon={<PetBath size={26} />}
               title="Sin plan de higiene"
               description={`Creamos baños, uñas, oídos y dientes según la especie y edad de ${pet.name}.`}
               action={<Button full loading={creating} onClick={() => void createPlan()}>Crear plan de higiene</Button>}
@@ -161,7 +162,7 @@ export function HigieneView() {
               <CardHeader title="Historial" subtitle="Últimos cuidados registrados" />
             </div>
             {recentLogs.length === 0 ? (
-              <p className="px-4 pb-4 text-[14px] text-on-variant">Cuando marques un cuidado como hecho aparecerá aquí.</p>
+              <p className="px-4 pb-4 text-body text-text-secondary">Cuando marques un cuidado como hecho aparecerá aquí.</p>
             ) : (
               <ul className="pb-2">
                 {recentLogs.map((l, i) => {
@@ -173,13 +174,13 @@ export function HigieneView() {
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                             {l.care_cycles && <Tag size="xs">{CARE_KIND_LABEL[l.care_cycles.kind]}</Tag>}
-                            <span className="text-[12px] font-semibold text-on-variant">{shortDate(l.done_at)}</span>
+                            <span className="text-label font-semibold text-text-secondary">{shortDate(l.done_at)}</span>
                           </div>
-                          <div className="mt-0.5 text-[15px] font-bold text-on">{l.care_cycles?.name ?? "Cuidado"}</div>
-                          {(biz || l.notes) && <div className="text-[13px] text-on-variant">{[biz ? `En ${biz}` : null, l.notes].filter(Boolean).join(" · ")}</div>}
-                          {biz && <div className="text-[12px] font-bold text-ok">Registrado por {biz}</div>}
+                          <div className="mt-1 text-body font-semibold text-text">{l.care_cycles?.name ?? "Cuidado"}</div>
+                          {(biz || l.notes) && <div className="text-small text-text-secondary">{[biz ? `En ${biz}` : null, l.notes].filter(Boolean).join(" · ")}</div>}
+                          {biz && <div className="text-label font-semibold text-success-text">Registrado por {biz}</div>}
                         </div>
-                        {l.cost != null && <div className="shrink-0 text-[14px] font-bold text-on">{formatCurrency(Number(l.cost))}</div>}
+                        {l.cost != null && <div className="shrink-0 text-body font-semibold text-text">{formatCurrency(Number(l.cost))}</div>}
                       </div>
                     </li>
                   );

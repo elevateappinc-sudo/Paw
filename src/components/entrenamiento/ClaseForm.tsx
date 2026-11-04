@@ -79,15 +79,15 @@ export function ClaseForm({ open, onClose, editClase }: ClaseFormProps) {
         <Textarea label="Avances observados" rows={2} placeholder="Opcional" value={avances} onChange={(e) => setAvances(e.target.value)} />
 
         <fieldset className="flex flex-col gap-2">
-          <legend className="mb-1.5 text-[13px] font-semibold text-on-variant">Tareas para casa</legend>
+          <legend className="mb-2 text-small font-semibold text-text-secondary">Tareas para casa</legend>
           {tareas.length > 0 && (
-            <ul className="overflow-hidden rounded-control bg-surface-2">
+            <ul className="overflow-hidden rounded-md bg-surface-elevated">
               {tareas.map((t, i) => (
-                <li key={t.id} className={i > 0 ? "border-t border-outline-variant" : undefined}>
-                  <div className="flex min-h-[48px] items-center gap-2 py-1 pr-1 pl-4">
-                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" aria-hidden="true" />
-                    <span className="flex-1 text-[14px] text-on">{t.descripcion}</span>
-                    <Button type="button" variant="ghost" size="icon" aria-label={`Quitar tarea ${t.descripcion}`} onClick={() => removeTarea(t.id)} className="text-danger">
+                <li key={t.id} className={i > 0 ? "border-t border-border" : undefined}>
+                  <div className="flex min-h-12 items-center gap-2 py-1 pr-1 pl-4">
+                    <span className="h-2 w-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />
+                    <span className="flex-1 text-body text-text">{t.descripcion}</span>
+                    <Button type="button" variant="dangerTonal" size="icon" aria-label={`Quitar tarea ${t.descripcion}`} onClick={() => removeTarea(t.id)} className="border-transparent">
                       <Trash2 size={16} />
                     </Button>
                   </div>
@@ -109,7 +109,7 @@ export function ClaseForm({ open, onClose, editClase }: ClaseFormProps) {
               }}
               className="flex-1"
             />
-            <Button type="button" variant="tonal" size="icon" aria-label="Agregar tarea" onClick={addTarea} disabled={!newTarea.trim()} className="min-h-[50px] min-w-[50px]">
+            <Button type="button" variant="secondary" size="icon" aria-label="Agregar tarea" onClick={addTarea} disabled={!newTarea.trim()} className="min-h-12 min-w-12">
               <Plus size={18} />
             </Button>
           </div>

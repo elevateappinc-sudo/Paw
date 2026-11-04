@@ -1,32 +1,30 @@
 "use client";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
-import { CalendarCheck, ChevronRight, Droplets, GraduationCap, Utensils } from "lucide-react";
-import { Card } from "@/components/ui";
+import { CalendarCheck } from "lucide-react";
+import { PetBath, PetFood, PetTraining } from "@/components/icons/pet";
 
+/** Rutina: cuadrícula 2×2 de accesos con ícono y una línea (menos texto que una lista) */
 export function RoutineTab({ petId }: { petId: string }) {
-  const links: { title: string; line: string; href: string; icon: LucideIcon }[] = [
-    { title: "Alimentación", line: "Ración diaria y recompra de alimento", href: `/alimentacion?pet=${petId}`, icon: Utensils },
-    { title: "Higiene", line: "Baño, uñas, oídos y dientes", href: `/higiene?pet=${petId}`, icon: Droplets },
-    { title: "Itinerario", line: "Comidas y salidas de cada día", href: "/actividad/itinerario", icon: CalendarCheck },
-    { title: "Entrenamiento", line: "Clases, ejercicios y avances", href: "/actividad/entrenamiento", icon: GraduationCap },
+  const links: { title: string; line: string; href: string; icon: LucideIcon; tone: string }[] = [
+    { title: "Alimentación", line: "Ración y recompra", href: `/alimentacion?pet=${petId}`, icon: PetFood, tone: "bg-pastel-mint text-success-text" },
+    { title: "Higiene", line: "Baño, uñas y oídos", href: `/higiene?pet=${petId}`, icon: PetBath, tone: "bg-pastel-lilac text-primary-text" },
+    { title: "Itinerario", line: "Comidas y salidas", href: "/actividad/itinerario", icon: CalendarCheck, tone: "bg-pastel-lilac text-primary-text" },
+    { title: "Entreno", line: "Clases y avances", href: "/actividad/entrenamiento", icon: PetTraining, tone: "bg-pastel-mint text-success-text" },
   ];
   return (
-    <div className="flex flex-col gap-3 px-4 pt-4">
+    <div className="enter-soft-list grid grid-cols-2 gap-3 px-4 pt-4">
       {links.map((l) => {
         const Icon = l.icon;
         return (
-          <Link key={l.href} href={l.href} className="block">
-            <Card padded={false} interactive className="flex min-h-[64px] items-center gap-3 px-4 py-3">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-primary-container text-on-primary-container">
-                <Icon size={22} aria-hidden="true" />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-[16px] font-bold text-on">{l.title}</span>
-                <span className="block truncate text-[13px] text-on-variant">{l.line}</span>
-              </span>
-              <ChevronRight size={20} className="shrink-0 text-on-variant" aria-hidden="true" />
-            </Card>
+          <Link key={l.href} href={l.href} className="pressable flex min-h-32 flex-col justify-between rounded-xl border border-border bg-surface p-4">
+            <span className={`flex h-11 w-11 items-center justify-center rounded-md ${l.tone}`}>
+              <Icon size={22} aria-hidden="true" />
+            </span>
+            <span>
+              <span className="block text-body font-semibold text-text">{l.title}</span>
+              <span className="block text-small text-text-secondary">{l.line}</span>
+            </span>
           </Link>
         );
       })}

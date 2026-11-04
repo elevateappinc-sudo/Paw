@@ -5,6 +5,16 @@
  */
 export const DEMO_COOKIE = "paw_demo";
 export const DEMO_USER_ID = "demo-user-andrea";
+/** Latencia simulada (ms) de cada consulta en la demo, para ver skeletons y loaders */
+export const DEMO_LATENCY_COOKIE = "paw_demo_latency";
+export const DEMO_DEFAULT_LATENCY = 900;
+
+/** Latencia configurada en el navegador (0 si no hay) */
+export function demoLatency(): number {
+  if (typeof document === "undefined") return 0;
+  const m = document.cookie.match(new RegExp(`(?:^|; )${DEMO_LATENCY_COOKIE}=(\\d+)`));
+  return m ? Number(m[1]) : 0;
+}
 
 export function isDemoEnv(): boolean {
   return process.env.NEXT_PUBLIC_PAW_DEMO === "1";

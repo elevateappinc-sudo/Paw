@@ -80,11 +80,11 @@ export function NegocioScreen() {
   if (authLoading || (loading && !business)) {
     return (
       <Shell title="Mi negocio">
-        <div className="flex flex-col gap-3 px-4">
-          <Skeleton className="h-[72px] rounded-card-lg" />
+        <div className="delay-in flex flex-col gap-3 px-4" aria-busy="true">
+          <Skeleton className="h-[72px] rounded-md" />
           <Skeleton className="h-11 w-full" />
-          <Skeleton className="h-[76px] rounded-card" />
-          <Skeleton className="h-[200px] rounded-card-lg" />
+          <Skeleton className="h-[76px] rounded-md" />
+          <Skeleton className="h-[200px] rounded-md" />
         </div>
       </Shell>
     );
@@ -101,7 +101,7 @@ export function NegocioScreen() {
   if (error) {
     return (
       <Shell title="Mi negocio">
-        <EmptyState tone="danger" title="Algo salió mal" description={error} action={<Button full onClick={load}>Reintentar</Button>} />
+        <EmptyState title="Algo salió mal" description={error} action={<Button full onClick={load}>Reintentar</Button>} />
       </Shell>
     );
   }
@@ -121,15 +121,15 @@ export function NegocioScreen() {
       <div className="flex items-center gap-3 px-4 pb-3">
         {business.logo_url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={business.logo_url} alt="" className="h-14 w-14 shrink-0 rounded-card object-cover" />
+          <img src={business.logo_url} alt="" className="h-14 w-14 shrink-0 rounded-md object-cover" />
         ) : (
-          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-card bg-primary-container text-on-primary-container"><Building2 size={26} aria-hidden="true" /></span>
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary-text"><Building2 size={26} aria-hidden="true" /></span>
         )}
-        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
           <Tag tone={plan === "free" ? "neutral" : "primary"}>{PLAN_LABEL[plan]}</Tag>
           {business.verified && <Verified />}
           {business.emergency_24h && <Tag tone="danger" size="xs">24 h</Tag>}
-          <button type="button" onClick={() => setPlanOpen(true)} className="inline-flex min-h-[36px] items-center gap-1 text-[13px] font-bold text-primary">
+          <button type="button" onClick={() => setPlanOpen(true)} className="inline-flex min-h-11 items-center gap-1 text-small font-semibold text-primary-text">
             <BadgeCheck size={14} aria-hidden="true" /> Cambiar plan
           </button>
         </div>

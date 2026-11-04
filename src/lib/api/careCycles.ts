@@ -145,7 +145,7 @@ export type CycleUrgency = "overdue" | "soon" | "upcoming" | "ok";
 export function cycleUrgency(c: Pick<CareCycle, "next_due_at" | "interval_days">): CycleUrgency {
   const d = daysUntil(c.next_due_at);
   if (d < 0) return "overdue";
-  if (d <= 3) return "soon";
+  if (d <= 7) return "soon"; // design-system: vence pronto = 7 días o menos
   if (d <= 14) return "upcoming";
   return "ok";
 }

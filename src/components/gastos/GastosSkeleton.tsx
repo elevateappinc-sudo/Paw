@@ -4,7 +4,7 @@ import { Skeleton, SkeletonRow } from "@/components/ui";
 export function GastosSkeleton() {
   return (
     <div className="flex flex-col gap-4 pb-6" aria-busy="true" aria-label="Cargando gastos">
-      <div className="flex items-end justify-between px-4 pt-[max(14px,env(safe-area-inset-top))] pb-2">
+      <div className="flex items-end justify-between px-4 pt-[max(16px,env(safe-area-inset-top))] pb-2">
         <div className="flex flex-col gap-2">
           <Skeleton className="h-3 w-16" />
           <Skeleton className="h-8 w-32" />
@@ -14,15 +14,15 @@ export function GastosSkeleton() {
       <div className="px-4">
         <div className="grid grid-cols-2 gap-2">
           {[0, 1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-[58px] rounded-control" />
+            <Skeleton key={i} className="h-[58px] rounded-md" />
           ))}
         </div>
       </div>
       <div className="px-4">
-        <Skeleton className="h-[232px] rounded-card-lg" />
+        <Skeleton className="h-[232px] rounded-md" />
       </div>
       <div className="px-4">
-        <div className="overflow-hidden rounded-card-lg border border-outline-variant bg-surface">
+        <div className="overflow-hidden rounded-md border border-border bg-surface">
           <SkeletonRow trailing={false} />
           <SkeletonRow trailing={false} />
           <SkeletonRow trailing={false} />

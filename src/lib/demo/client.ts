@@ -7,7 +7,14 @@
  * Los datos viven en memoria y, en el navegador, se guardan en localStorage.
  */
 import { buildDataset, DEMO_USER, type Dataset, type Row } from "./data";
-import { DEMO_USER_ID } from "./index";
+import { DEMO_USER_ID, demoLatency } from "./index";
+
+/** Espera simulada de red (±30 %) para que la demo muestre skeletons y loaders */
+function networkDelay(): Promise<void> {
+  const ms = demoLatency();
+  if (!ms) return Promise.resolve();
+  return new Promise((r) => setTimeout(r, ms * (0.7 + Math.random() * 0.6)));
+}
 
 const LS_KEY = "paw.demo.db";
 const DB_VERSION = 3;
@@ -400,13 +407,15 @@ class Query implements PromiseLike<{ data: any; error: any; count?: number }> {
   }
 
   then<T1 = any, T2 = never>(onfulfilled?: ((v: { data: any; error: any; count?: number }) => T1 | PromiseLike<T1>) | null, onrejected?: ((e: any) => T2 | PromiseLike<T2>) | null): PromiseLike<T1 | T2> {
-    let res;
-    try {
-      res = this.exec();
-    } catch (e) {
-      return Promise.resolve({ data: null, error: { message: String(e) } }).then(onfulfilled as any, onrejected);
-    }
-    return Promise.resolve(res).then(onfulfilled as any, onrejected);
+    return networkDelay()
+      .then(() => {
+        try {
+          return this.exec();
+        } catch (e) {
+          return { data: null, error: { message: String(e) } };
+        }
+      })
+      .then(onfulfilled as any, onrejected);
   }
 }
 
@@ -437,6 +446,7 @@ function localToday(): string {
 }
 
 async function rpc(name: string, args: Record<string, any> = {}) {
+  await networkDelay();
   const data = load();
   try {
     switch (name) {

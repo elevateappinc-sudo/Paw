@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Footprints, UtensilsCrossed } from "lucide-react";
+import { PetFood, PetWalk } from "@/components/icons/pet";
 import { useStore } from "@/store";
 import { cn } from "@/lib/utils";
 import { Button, Input, SegmentedControl, Sheet, Textarea } from "@/components/ui";
@@ -66,16 +66,16 @@ export function ItemForm({ open, onClose, editItem }: { open: boolean; onClose: 
             {
               value: "comida",
               label: (
-                <span className="inline-flex items-center gap-1.5">
-                  <UtensilsCrossed size={15} aria-hidden="true" /> Comida
+                <span className="inline-flex items-center gap-2">
+                  <PetFood size={15} aria-hidden="true" /> Comida
                 </span>
               ),
             },
             {
               value: "salida",
               label: (
-                <span className="inline-flex items-center gap-1.5">
-                  <Footprints size={15} aria-hidden="true" /> Salida
+                <span className="inline-flex items-center gap-2">
+                  <PetWalk size={15} aria-hidden="true" /> Salida
                 </span>
               ),
             },
@@ -99,8 +99,8 @@ export function ItemForm({ open, onClose, editItem }: { open: boolean; onClose: 
         </div>
 
         <fieldset>
-          <legend className="mb-1.5 text-[13px] font-semibold text-on-variant">Días de la semana</legend>
-          <div className="flex justify-between gap-1.5" role="group">
+          <legend className="mb-2 text-small font-semibold text-text-secondary">Días de la semana</legend>
+          <div className="flex justify-between gap-2" role="group">
             {DIAS_ORDER.map((d) => {
               const on = dias.includes(d);
               return (
@@ -111,8 +111,8 @@ export function ItemForm({ open, onClose, editItem }: { open: boolean; onClose: 
                   aria-label={DIAS_LABEL[d]}
                   onClick={() => toggleDia(d)}
                   className={cn(
-                    "flex h-11 flex-1 items-center justify-center rounded-control text-[13px] font-bold transition-colors active:scale-95",
-                    on ? "bg-primary text-on-primary" : "bg-surface-2 text-on-variant"
+                    "flex h-11 flex-1 items-center justify-center rounded-md text-small font-semibold transition-colors active:scale-95",
+                    on ? "bg-primary text-on-primary" : "bg-surface-elevated text-text-secondary"
                   )}
                 >
                   {DIAS_LABEL[d].charAt(0)}
@@ -120,7 +120,7 @@ export function ItemForm({ open, onClose, editItem }: { open: boolean; onClose: 
               );
             })}
           </div>
-          {dias.length === 0 && <p className="mt-1.5 text-[12px] font-semibold text-danger">Elige al menos un día.</p>}
+          {dias.length === 0 && <p className="mt-2 text-label font-semibold text-overdue-text">Elige al menos un día.</p>}
         </fieldset>
 
         <Textarea label="Notas (opcional)" rows={2} value={notas} onChange={(e) => setNotas(e.target.value)} placeholder="Marca, lugar, recordatorios" />

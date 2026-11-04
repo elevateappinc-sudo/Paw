@@ -69,6 +69,42 @@ export const CATEGORY_CHIPS: CategoryChip[] = [
   { id: "pet_friendly", label: "Pet friendly" },
 ];
 
+/**
+ * Color de módulo de cada categoría en los marcadores del mapa (y en la
+ * leyenda que lo necesite). Única fuente del mapeo: salud en primario,
+ * estética en acento, actividad en éxito, comercio en aviso y el resto
+ * informativo. El rojo queda reservado para urgencias 24 h.
+ * Las clases van completas para que Tailwind las detecte.
+ */
+export type MarkerTone = "primary" | "accent" | "success" | "warning" | "info" | "danger";
+
+export const MARKER_TONE_CLASS: Record<MarkerTone, { dot: string; selected: string }> = {
+  primary: { dot: "bg-primary", selected: "border-primary bg-primary-soft text-primary-text" },
+  accent: { dot: "bg-accent", selected: "border-accent bg-accent-soft text-text" },
+  success: { dot: "bg-success", selected: "border-success bg-success-soft text-success-text" },
+  warning: { dot: "bg-warning", selected: "border-warning bg-warning-soft text-warning-text" },
+  info: { dot: "bg-info-text", selected: "border-info-text bg-info-soft text-info-text" },
+  danger: { dot: "bg-danger", selected: "border-danger bg-danger-soft text-danger-text" },
+};
+
+export const CATEGORY_MARKER: Record<BusinessCategory, MarkerTone> = {
+  veterinaria: "primary",
+  farmacia: "primary",
+  urgencias: "danger",
+  peluqueria: "accent",
+  entrenador: "success",
+  paseador: "success",
+  guarderia: "success",
+  tienda: "warning",
+  pet_friendly: "info",
+  funeraria: "info",
+  otro: "info",
+};
+
+export function markerTone(b: Pick<ExploreBiz, "type" | "emergency_24h">): MarkerTone {
+  return b.emergency_24h ? "danger" : CATEGORY_MARKER[b.type] ?? "info";
+}
+
 export function isCategory(v: string | null): v is BusinessCategory {
   return !!v && CATEGORY_CHIPS.some((c) => c.id === v && c.id !== "all");
 }
@@ -84,6 +120,11 @@ export const RADIUS_OPTIONS = [2000, 5000] as const;
 export type RadiusM = (typeof RADIUS_OPTIONS)[number];
 
 export const MAX_PINS = 50;
+
+/** Número de filtros aplicados (para el contador del botón "Filtros") */
+export function activeFilterCount(f: { radius: RadiusM; minRating: boolean; sortPrice: boolean; openNow: boolean }, radiusEnabled = true): number {
+  return (radiusEnabled && f.radius !== 2000 ? 1 : 0) + (f.minRating ? 1 : 0) + (f.sortPrice ? 1 : 0) + (f.openNow ? 1 : 0);
+}
 
 export const ZONE_KEY = "paw.zone";
 export const ZONES_KEY = "paw.zones";

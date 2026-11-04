@@ -102,7 +102,7 @@ export function CompleteCycleSheet({
         {fields.business && <Input label="Dónde (opcional)" placeholder="Nombre de la peluquería o veterinaria" value={business} onChange={(e) => setBusiness(e.target.value)} />}
         {fields.cost && <Input label="Costo (opcional)" type="number" inputMode="numeric" min={0} step={1000} placeholder="0" value={cost} onChange={(e) => setCost(e.target.value)} hint="En pesos colombianos" />}
         <Textarea label="Notas (opcional)" placeholder="Algo que quieras recordar" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} />
-        {error && <p role="alert" className="text-[13px] font-semibold text-danger">{error}</p>}
+        {error && <p role="alert" className="text-small font-semibold text-overdue-text">{error}</p>}
       </div>
     </Sheet>
   );

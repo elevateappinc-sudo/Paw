@@ -11,7 +11,7 @@ export interface SearchFieldProps {
   onSubmit?: () => void;
 }
 
-/** Campo de búsqueda en vidrio, 48 px, flotante sobre la tab bar. */
+/** Campo de búsqueda de Explorar, 48 px, en la cabecera de la pantalla. */
 export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(function SearchField({ value, onChange, placeholder, className, onSubmit }, ref) {
   return (
     <form
@@ -20,9 +20,9 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(functi
         e.preventDefault();
         onSubmit?.();
       }}
-      className={cn("glass flex h-12 items-center gap-2 rounded-full border border-outline-variant px-4 shadow-2", className)}
+      className={cn("flex h-12 items-center gap-2 rounded-full border border-border bg-surface pl-4 shadow-1", value ? "pr-1" : "pr-4", className)}
     >
-      <Search size={18} className="shrink-0 text-on-variant" aria-hidden="true" />
+      <Search size={18} className="shrink-0 text-text-secondary" aria-hidden="true" />
       <input
         ref={ref}
         type="search"
@@ -32,11 +32,11 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(functi
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder ?? "Veterinaria, groomer, alimento…"}
         aria-label="Buscar servicios"
-        className="min-w-0 flex-1 bg-transparent text-[16px] text-on outline-none placeholder:text-on-variant [&::-webkit-search-cancel-button]:hidden"
+        className="min-h-11 min-w-0 flex-1 bg-transparent text-body text-text outline-none placeholder:text-text-secondary [&::-webkit-search-cancel-button]:hidden"
       />
       {value && (
-        <button type="button" onClick={() => onChange("")} aria-label="Borrar búsqueda" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-on-variant active:bg-surface-2">
-          <X size={18} />
+        <button type="button" onClick={() => onChange("")} aria-label="Borrar búsqueda" className="pressable flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-text-secondary">
+          <X size={18} aria-hidden="true" />
         </button>
       )}
     </form>

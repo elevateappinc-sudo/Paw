@@ -1,25 +1,27 @@
 import type { LucideIcon } from "lucide-react";
-import { Bath, Bug, Ear, Pill, Scale, Scissors, ShoppingBag, Smile, Sparkles, Stethoscope, Syringe, Footprints } from "lucide-react";
+import { PawPrint } from "lucide-react";
+import { PetBath, PetDental, PetDeworm, PetEar, PetFlea, PetGrooming, PetHealth, PetNails, PetShop, PetVaccine, PetWeight } from "@/components/icons/pet";
 import type { Pet } from "@/types";
 import type { BusinessCategory, CareCycle, CareCycleKind, PetRow } from "@/types/db";
-import { cycleUrgency, dueLabel, type CycleUrgency } from "@/lib/api/careCycles";
-import { SEX_LABEL, SPECIES_LABEL, ageLabel } from "@/lib/api/pets";
-import type { ChipTone } from "@/components/ui/Chip";
+import { daysUntil, dueLabel } from "@/lib/api/careCycles";
+import { SEX_LABEL, SPECIES_LABEL } from "@/lib/api/pets";
+import { formatPetAge } from "@/lib/age";
+import { severityFromDays, type Severity } from "@/components/ui/Chip";
 
 /** Icono lucide por tipo de ciclo */
 export const CARE_KIND_ICON: Record<CareCycleKind, LucideIcon> = {
-  vaccine: Syringe,
-  deworm_internal: Pill,
-  deworm_external: Bug,
-  bath: Bath,
-  grooming: Scissors,
-  nails: Footprints,
-  ears: Ear,
-  dental: Smile,
-  food_restock: ShoppingBag,
-  checkup: Stethoscope,
-  weight: Scale,
-  other: Sparkles,
+  vaccine: PetVaccine,
+  deworm_internal: PetDeworm,
+  deworm_external: PetFlea,
+  bath: PetBath,
+  grooming: PetGrooming,
+  nails: PetNails,
+  ears: PetEar,
+  dental: PetDental,
+  food_restock: PetShop,
+  checkup: PetHealth,
+  weight: PetWeight,
+  other: PawPrint,
 };
 
 /** Categoría de Explorar donde se puede reservar cada tipo de ciclo (si aplica) */
@@ -44,14 +46,15 @@ export function rowToPet(row: PetRow): Pet {
     emoji: row.emoji ?? "",
     color: row.color ?? "",
     photos: [],
+    photoUrl: row.photo_url ?? null,
     avatar_config: (row.avatar_config as Pet["avatar_config"]) ?? null,
     createdAt: row.created_at,
   };
 }
 
-/** "Perro · Labrador · 3 años" */
+/** "Perro · Labrador · 1 año y 8 meses" */
 export function petMetaLine(p: { species: PetRow["species"]; breed?: string | null; birth_date?: string | null }): string {
-  return [SPECIES_LABEL[p.species], p.breed || null, p.birth_date ? ageLabel(p.birth_date) : null].filter(Boolean).join(" · ");
+  return [SPECIES_LABEL[p.species], p.breed || null, formatPetAge(p.birth_date)].filter(Boolean).join(" · ");
 }
 
 /** "Labrador · Macho · 3 años · 24 kg" */
@@ -59,72 +62,85 @@ export function petProfileMeta(p: PetRow): string {
   return [
     p.breed || SPECIES_LABEL[p.species],
     p.sex !== "unknown" ? SEX_LABEL[p.sex] : null,
-    p.birth_date ? ageLabel(p.birth_date) : null,
+    formatPetAge(p.birth_date),
     p.weight ? `${p.weight.toLocaleString("es-CO", { maximumFractionDigits: 1 })} kg` : null,
   ]
     .filter(Boolean)
     .join(" · ");
 }
 
-export interface StatusChip {
-  label: string;
-  tone: ChipTone;
+/** Severidad de un ciclo según la escala del design system (vencido / ≤ 7 días / al día) */
+export function cycleSeverity(c: Pick<CareCycle, "next_due_at">): Severity {
+  return severityFromDays(daysUntil(c.next_due_at));
 }
 
-type Status = { urgency: CycleUrgency; cycle: CareCycle } | null;
+export interface StatusChip {
+  label: string;
+  severity: Severity;
+}
+
+type Status = { severity: Severity; cycle: CareCycle } | null;
+
+const SEVERITY_ORDER: Severity[] = ["overdue", "soon", "ok", "info"];
 
 function worstOf(cycles: CareCycle[], kinds: CareCycleKind[]): Status {
-  const order: CycleUrgency[] = ["overdue", "soon", "upcoming", "ok"];
   let worst: Status = null;
   for (const c of cycles) {
     if (!kinds.includes(c.kind)) continue;
-    const u = cycleUrgency(c);
-    if (!worst || order.indexOf(u) < order.indexOf(worst.urgency)) worst = { urgency: u, cycle: c };
+    const s = cycleSeverity(c);
+    if (!worst || SEVERITY_ORDER.indexOf(s) < SEVERITY_ORDER.indexOf(worst.severity)) worst = { severity: s, cycle: c };
   }
   return worst;
 }
 
-function chipFor(status: Status, labels: { ok: string; soon: string; overdue: string }): StatusChip | null {
-  if (!status) return null;
-  switch (status.urgency) {
-    case "overdue":
-      return { label: labels.overdue, tone: "danger" };
-    case "soon":
-    case "upcoming":
-      return { label: labels.soon, tone: "warn" };
-    default:
-      return { label: labels.ok, tone: "ok" };
-  }
-}
+const CHIP_GROUPS: { kinds: CareCycleKind[]; ok: string; soon: string; overdue: string }[] = [
+  { kinds: ["vaccine"], ok: "Vacunas al día", soon: "Vacuna vence pronto", overdue: "Vacuna vencida" },
+  { kinds: ["deworm_external"], ok: "Antipulgas al día", soon: "Antipulgas vence pronto", overdue: "Antipulgas vencido" },
+  { kinds: ["deworm_internal"], ok: "Desparasitación al día", soon: "Desparasitación pronto", overdue: "Desparasitación vencida" },
+];
 
-/** Chips de estado para listas y cabeceras: vacunas, antipulgas, desparasitación */
+/**
+ * Chips de estado para tarjetas y cabeceras (vacunas, antipulgas, desparasitación).
+ * Lo urgente primero (vencido, luego vence pronto) y los "al día" en un solo chip.
+ */
 export function petStatusChips(cycles: CareCycle[]): StatusChip[] {
-  const chips = [
-    chipFor(worstOf(cycles, ["vaccine"]), { ok: "Vacunas al día", soon: "Vacuna vence pronto", overdue: "Vacuna vencida" }),
-    chipFor(worstOf(cycles, ["deworm_external"]), { ok: "Antipulgas al día", soon: "Antipulgas vence pronto", overdue: "Antipulgas vencido" }),
-    chipFor(worstOf(cycles, ["deworm_internal"]), { ok: "Desparasitación al día", soon: "Desparasitación pronto", overdue: "Desparasitación vencida" }),
-  ].filter((c): c is StatusChip => c !== null);
-  if (chips.length === 0) return [{ label: "Sin plan de cuidados", tone: "neutral" }];
+  const overdue: StatusChip[] = [];
+  const soon: StatusChip[] = [];
+  const ok: string[] = [];
+  for (const g of CHIP_GROUPS) {
+    const w = worstOf(cycles, g.kinds);
+    if (!w) continue;
+    if (w.severity === "overdue") overdue.push({ label: g.overdue, severity: "overdue" });
+    else if (w.severity === "soon") soon.push({ label: g.soon, severity: "soon" });
+    else ok.push(g.ok);
+  }
+  const chips = [...overdue, ...soon];
+  if (ok.length === 1) chips.push({ label: ok[0], severity: "ok" });
+  else if (ok.length > 1) chips.push({ label: `${ok.length} al día`, severity: "ok" });
+  if (chips.length === 0) return [{ label: "Sin plan de cuidados", severity: "info" }];
   return chips;
 }
 
-/** Celda de estado (punto + etiqueta corta) para el resumen del perfil */
-export function statusCell(cycles: CareCycle[], kinds: CareCycleKind[]): { label: string; tone: "ok" | "warn" | "danger" | "neutral"; detail: string } {
-  const s = worstOf(cycles, kinds);
-  if (!s) return { label: "Sin datos", tone: "neutral", detail: "Añade un ciclo" };
-  if (!cycles.some((c) => kinds.includes(c.kind) && c.last_done_at)) return { label: "Sin registro", tone: "neutral", detail: "Registra la última fecha" };
-  const detail = dueLabel(s.cycle.next_due_at);
-  if (s.urgency === "overdue") return { label: "Vencida", tone: "danger", detail };
-  if (s.urgency === "soon" || s.urgency === "upcoming") return { label: "Pronto", tone: "warn", detail };
-  return { label: "Al día", tone: "ok", detail };
+/** Próxima tarea del plan: la de fecha más cercana (o la más vencida) */
+export function nextTask(cycles: CareCycle[]): CareCycle | null {
+  let next: CareCycle | null = null;
+  for (const c of cycles) {
+    if (c.active === false) continue;
+    if (!next || c.next_due_at < next.next_due_at) next = c;
+  }
+  return next;
 }
 
-export const URGENCY_TAG: Record<CycleUrgency, { label: string; tone: ChipTone }> = {
-  overdue: { label: "Vencida", tone: "danger" },
-  soon: { label: "Esta semana", tone: "warn" },
-  upcoming: { label: "Próxima", tone: "warn" },
-  ok: { label: "Al día", tone: "ok" },
-};
+/** Celda de estado (ícono + etiqueta corta) para el resumen del perfil */
+export function statusCell(cycles: CareCycle[], kinds: CareCycleKind[]): { label: string; severity: Severity | null; detail: string } {
+  const s = worstOf(cycles, kinds);
+  if (!s) return { label: "Sin datos", severity: null, detail: "Añade un ciclo" };
+  if (!cycles.some((c) => kinds.includes(c.kind) && c.last_done_at)) return { label: "Sin registro", severity: null, detail: "Registra la última fecha" };
+  const detail = dueLabel(s.cycle.next_due_at);
+  if (s.severity === "overdue") return { label: "Vencida", severity: "overdue", detail };
+  if (s.severity === "soon") return { label: "Pronto", severity: "soon", detail };
+  return { label: "Al día", severity: "ok", detail };
+}
 
 /** Primer error "tabla/función no existe" (migraciones sin aplicar): el código debe degradar sin romper */
 export function isMissingRelation(err: unknown): boolean {

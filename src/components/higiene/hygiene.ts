@@ -1,22 +1,29 @@
-import { Bath, Scissors, Hand, Ear, Sparkles, type LucideIcon } from "lucide-react";
+import { type LucideIcon } from "lucide-react";
+import { PetBath, PetDental, PetEar, PetGrooming, PetNails } from "@/components/icons/pet";
 import type { CareCycle, CareCycleKind } from "@/types/db";
 import { daysUntil } from "@/lib/api/careCycles";
+import { SEVERITY, severityFromDays, type Severity } from "@/components/ui/Chip";
 
 export const HYGIENE_ICON: Partial<Record<CareCycleKind, LucideIcon>> = {
-  bath: Bath,
-  grooming: Scissors,
-  nails: Hand,
-  ears: Ear,
-  dental: Sparkles,
+  bath: PetBath,
+  grooming: PetGrooming,
+  nails: PetNails,
+  ears: PetEar,
+  dental: PetDental,
 };
 
-export type UrgencyTone = "danger" | "warn" | "primary" | "ok";
+export type UrgencyTone = "overdue" | "warn" | "ok";
 
-export function hygieneStatus(c: Pick<CareCycle, "next_due_at" | "interval_days">): { label: string; tone: UrgencyTone; textClass: string; days: number } {
+/**
+ * Estado del ciclo con la escala de severidad: vencido (overdue), vence en
+ * 7 días o menos (warning) y al día (success).
+ */
+export function hygieneStatus(c: Pick<CareCycle, "next_due_at" | "interval_days">): { label: string; severity: Severity; tone: UrgencyTone; textClass: string; days: number } {
   const d = daysUntil(c.next_due_at);
-  if (d < 0) return { label: "Vencido", tone: "danger", textClass: "text-danger", days: d };
-  if (d === 0) return { label: "Hoy", tone: "warn", textClass: "text-warn", days: d };
-  if (d <= 3) return { label: `${d} ${d === 1 ? "día" : "días"}`, tone: "warn", textClass: "text-warn", days: d };
-  if (d <= 14) return { label: `${d} días`, tone: "primary", textClass: "text-primary", days: d };
-  return { label: `${d} días`, tone: "ok", textClass: "text-on-variant", days: d };
+  const severity = severityFromDays(d);
+  const textClass = SEVERITY[severity].text;
+  if (d < 0) return { label: "Vencido", severity, tone: "overdue", textClass, days: d };
+  if (d === 0) return { label: "Hoy", severity, tone: "warn", textClass, days: d };
+  if (d <= 7) return { label: `${d} ${d === 1 ? "día" : "días"}`, severity, tone: "warn", textClass, days: d };
+  return { label: `${d} días`, severity, tone: "ok", textClass, days: d };
 }

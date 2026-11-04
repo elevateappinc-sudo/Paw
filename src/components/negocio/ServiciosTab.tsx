@@ -94,7 +94,7 @@ export function ServiciosTab({ business }: { business: Business }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <Button variant="tonal" full leading={<Plus size={18} aria-hidden="true" />} onClick={() => { setDraft({ ...EMPTY }); setNameError(undefined); }}>
+      <Button variant="secondary" full leading={<Plus size={18} aria-hidden="true" />} onClick={() => { setDraft({ ...EMPTY }); setNameError(undefined); }}>
         Nuevo servicio
       </Button>
 
@@ -104,11 +104,11 @@ export function ServiciosTab({ business }: { business: Business }) {
           <SkeletonRow />
         </Card>
       ) : error ? (
-        <EmptyState tone="danger" compact title="Algo salió mal" description={error} action={<Button full onClick={load}>Reintentar</Button>} />
+        <EmptyState compact title="Algo salió mal" description={error} action={<Button full onClick={load}>Reintentar</Button>} />
       ) : services.length === 0 ? (
         <EmptyState compact title="Aún no tienes servicios" description="Crea el primero: baño, vacuna, consulta… Con un ciclo asociado, la cita completa el cuidado de la mascota." />
       ) : (
-        <Card padded={false} className="divide-y divide-outline-variant">
+        <Card padded={false} className="divide-y divide-border">
           {services.map((s) => (
             <Row
               key={s.id}

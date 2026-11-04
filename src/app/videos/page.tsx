@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { PhotoGallery } from "@/components/gallery/PhotoGallery";
 import { GallerySkeleton } from "@/components/gallery/GallerySkeleton";
+import { RouteFallback } from "@/components/ui/Skeleton";
 
 export default function VideosPage() {
   const { user, loading } = useAuthContext();
@@ -13,7 +14,7 @@ export default function VideosPage() {
     if (!loading && !user) router.replace("/login");
   }, [user, loading, router]);
 
-  if (loading || !user) return <GallerySkeleton />;
+  if (loading || !user) return <RouteFallback><GallerySkeleton /></RouteFallback>;
   // PhotoGallery gestiona fotos y videos; aquí abre desplazada a la sección de videos
   return (
     <Suspense fallback={<GallerySkeleton />}>

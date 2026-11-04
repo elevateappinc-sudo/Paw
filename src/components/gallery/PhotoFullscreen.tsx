@@ -138,12 +138,12 @@ export function PhotoFullscreen({ photo: initialPhoto, group, petId, userId, pet
       role="dialog"
       aria-modal="true"
       aria-label={`Foto ${currentIdx + 1} de ${group.photos.length}`}
-      className="fixed inset-0 z-[55] flex flex-col bg-on text-bg"
+      className="fixed inset-0 z-[55] flex flex-col bg-text text-bg"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="z-10 flex items-center justify-between px-4 pt-[max(14px,env(safe-area-inset-top))] pb-3">
-        <span className="text-[13px] font-semibold text-bg/70" aria-live="polite">
+      <div className="z-10 flex items-center justify-between px-4 pt-[max(16px,env(safe-area-inset-top))] pb-3">
+        <span className="text-small font-semibold text-bg/70" aria-live="polite">
           {currentIdx + 1} / {group.photos.length}
         </span>
         <div className="flex gap-2">
@@ -151,7 +151,7 @@ export function PhotoFullscreen({ photo: initialPhoto, group, petId, userId, pet
             type="button"
             onClick={() => setShowDeleteModal(true)}
             aria-label="Eliminar foto"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-danger-container text-danger active:scale-95"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-danger-soft text-danger-text active:scale-95"
           >
             <Trash2 size={18} />
           </button>
@@ -169,7 +169,7 @@ export function PhotoFullscreen({ photo: initialPhoto, group, petId, userId, pet
       <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden px-14">
         {src && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={src} alt="" className="max-h-full max-w-full select-none rounded-card object-contain" draggable={false} />
+          <img src={src} alt="" className="max-h-full max-w-full select-none rounded-md object-contain" draggable={false} />
         )}
 
         {group.photos.length > 1 && (
@@ -191,15 +191,15 @@ export function PhotoFullscreen({ photo: initialPhoto, group, petId, userId, pet
       </div>
 
       <div className="px-5 pt-4 pb-[max(28px,env(safe-area-inset-bottom))]">
-        <p className="mb-2.5 text-[13px] capitalize text-bg/70">{formattedDate}</p>
+        <p className="mb-3 text-small capitalize text-bg/70">{formattedDate}</p>
         {dayEvents.length > 0 && (
-          <ul className="flex flex-col gap-1.5">
+          <ul className="flex flex-col gap-2">
             {dayEvents.map((ev) => {
               const Icon = BADGE_ICON[ev.kind];
               return (
-                <li key={ev.kind} className="flex items-center gap-2 rounded-control bg-bg/10 px-3 py-2">
+                <li key={ev.kind} className="flex items-center gap-2 rounded-md bg-bg/10 px-3 py-2">
                   <Icon size={16} className="shrink-0" aria-hidden="true" />
-                  <span className="text-[13px] text-bg/90">{ev.label}</span>
+                  <span className="text-small text-bg/90">{ev.label}</span>
                 </li>
               );
             })}
@@ -207,7 +207,7 @@ export function PhotoFullscreen({ photo: initialPhoto, group, petId, userId, pet
         )}
 
         {group.photos.length > 1 && group.photos.length <= 20 && (
-          <div className="mt-3.5 flex justify-center gap-1.5" role="tablist" aria-label="Fotos del mes">
+          <div className="mt-4 flex justify-center gap-2" role="tablist" aria-label="Fotos del mes">
             {group.photos.map((p, i) => (
               <button
                 key={p.id}
@@ -216,7 +216,7 @@ export function PhotoFullscreen({ photo: initialPhoto, group, petId, userId, pet
                 aria-selected={currentIdx === i}
                 aria-label={`Foto ${i + 1}`}
                 onClick={() => goTo(i)}
-                className={cn("h-1.5 rounded-full transition-all duration-200", currentIdx === i ? "w-[18px] bg-bg" : "w-1.5 bg-bg/30")}
+                className={cn("relative h-2 w-2 rounded-full transition-[opacity,transform] after:absolute after:-inset-4 after:content-[''] duration-[var(--duration-base)]", currentIdx === i ? "scale-125 bg-bg" : "bg-bg/30")}
               />
             ))}
           </div>

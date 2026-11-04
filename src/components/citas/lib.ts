@@ -1,13 +1,32 @@
 import type { Booking, BookingStatus } from "@/types/db";
-import type { ChipTone } from "@/components/ui/Chip";
+import type { ChipTone, Severity } from "@/components/ui/Chip";
 
+/** Estado de la reserva: solicitada (info), confirmada (al día), no asistió (vencido) */
 export const STATUS_TONE: Record<BookingStatus, ChipTone> = {
-  requested: "warn",
-  confirmed: "info",
-  completed: "ok",
+  requested: "info",
+  confirmed: "ok",
+  completed: "neutral",
   cancelled: "neutral",
-  no_show: "neutral",
+  no_show: "overdue",
 };
+
+/** Severidad de la fecha de una cita próxima: 7 días o menos = vence pronto */
+export function bookingSeverity(b: Booking, now = Date.now()): Severity | null {
+  if (!isUpcoming(b, now)) return null;
+  const days = Math.floor((new Date(b.starts_at).getTime() - now) / 86400000);
+  return days <= 7 ? "soon" : "info";
+}
+
+/** "Hoy", "Mañana", "En 3 días" para citas próximas */
+export function bookingRelative(b: Booking, now = new Date()): string {
+  const d = new Date(b.starts_at);
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const day = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const diff = Math.round((day - start) / 86400000);
+  if (diff <= 0) return "Hoy";
+  if (diff === 1) return "Mañana";
+  return `En ${diff} días`;
+}
 
 export function isUpcoming(b: Booking, now = Date.now()): boolean {
   if (b.status === "cancelled" || b.status === "completed" || b.status === "no_show") return false;

@@ -5,6 +5,7 @@ import { Button, Sheet, Textarea, showToast } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
 import { reportSighting } from "@/lib/api/lostPets";
 import { useGeolocation } from "@/hooks/useGeolocation";
+import { LostModeScope } from "@/components/perdida/LostMode";
 
 /**
  * "Vi a esta mascota": inserta en lost_pet_sightings. Si no hay sesión,
@@ -49,14 +50,16 @@ export function SightingForm({ alertId, contactPhone }: { alertId: string; conta
         title="¿Dónde la viste?"
         subtitle="Tu ubicación aproximada ayuda a encontrarla"
         footer={
-          <Button full size="lg" onClick={submit} loading={sending}>
-            Enviar aviso
-          </Button>
+          <LostModeScope>
+            <Button full size="lg" onClick={submit} loading={sending}>
+              Enviar aviso
+            </Button>
+          </LostModeScope>
         }
       >
         <div className="flex flex-col gap-3">
           <Button
-            variant={geo.lat !== null ? "tonal" : "outline"}
+            variant="secondary"
             leading={<MapPin size={18} aria-hidden="true" />}
             onClick={geo.request}
             loading={geo.status === "loading"}

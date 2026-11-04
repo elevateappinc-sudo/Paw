@@ -1,5 +1,14 @@
+import { RouteFallback } from "@/components/ui/Skeleton";
 import { MedicationsSkeleton } from "@/components/medications/MedicationsModule";
 
-export default function Loading() {
+function LoadingContent() {
   return <MedicationsSkeleton />;
+}
+
+export default function Loading() {
+  return (
+    <RouteFallback>
+      <LoadingContent />
+    </RouteFallback>
+  );
 }

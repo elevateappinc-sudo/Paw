@@ -18,16 +18,16 @@ export interface EventCardProps {
 }
 
 function GoingAvatars({ count }: { count: number }) {
-  if (count <= 0) return <span className="text-[13px] text-on-variant">Sé la primera persona en ir</span>;
+  if (count <= 0) return <span className="text-small text-text-secondary">Sé la primera persona en ir</span>;
   const shown = Math.min(count, 3);
   return (
     <span className="inline-flex items-center gap-2">
       <span className="flex -space-x-2" aria-hidden="true">
         {Array.from({ length: shown }).map((_, i) => (
-          <span key={i} className={cn("h-7 w-7 rounded-full border-2 border-surface", i % 3 === 0 ? "bg-primary-container" : i % 3 === 1 ? "bg-info-container" : "bg-warn-container")} />
+          <span key={i} className={cn("h-7 w-7 rounded-full border-2 border-surface", i % 3 === 0 ? "bg-primary-soft" : i % 3 === 1 ? "bg-info-soft" : "bg-warning-soft")} />
         ))}
       </span>
-      <span className="text-[13px] font-bold text-on">{count} van</span>
+      <span className="text-small font-semibold text-text">{count} van</span>
     </span>
   );
 }
@@ -59,29 +59,29 @@ export function EventCard({ event, distanceM, onRsvp, rsvpBusy, eligibleNote, va
 
   if (variant === "large") {
     return (
-      <article className="overflow-hidden rounded-card-lg border border-outline-variant bg-surface shadow-1">
+      <article className="overflow-hidden rounded-md border border-border bg-surface shadow-1">
         <Link href={`/eventos/${event.id}`} className="block">
-          <div className="relative h-[150px] bg-surface-3">
+          <div className="relative h-[150px] bg-border">
             {event.cover_url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={event.cover_url} alt="" className="h-full w-full object-cover" />
             ) : (
-              <div className="h-full w-full bg-gradient-to-br from-primary-container via-surface-2 to-info-container" aria-hidden="true" />
+              <div className="h-full w-full bg-gradient-to-br from-primary-soft via-surface-elevated to-info-soft" aria-hidden="true" />
             )}
-            <div className="absolute left-3 top-3 flex h-[52px] w-[48px] flex-col items-center justify-center rounded-card bg-surface shadow-2">
-              <span className="text-[11px] font-black uppercase text-primary">{dow}</span>
-              <span className="font-display text-[20px] leading-none text-on">{day}</span>
+            <div className="absolute left-3 top-3 flex h-[52px] w-[48px] flex-col items-center justify-center rounded-md bg-surface shadow-2">
+              <span className="text-label font-semibold uppercase text-primary-text">{dow}</span>
+              <span className="font-semibold text-title leading-none text-text">{day}</span>
             </div>
             <div className="absolute right-3 top-3 shadow-2">
               <PriceTag price={event.price} />
             </div>
           </div>
           <div className="p-4 pb-2">
-            <h3 className="font-display text-[20px] leading-tight text-on">{event.title}</h3>
-            <p className="mt-1 text-[13px] text-on-variant">{meta}</p>
+            <h3 className="font-semibold text-title leading-tight text-text">{event.title}</h3>
+            <p className="mt-1 text-small text-text-secondary">{meta}</p>
             {eligibleNote && (
-              <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-ok-container px-2.5 py-1 text-[12px] font-bold text-on-ok-container">
-                <ShieldCheck size={14} className="text-ok" aria-hidden="true" /> {eligibleNote}
+              <p className="mt-2 inline-flex items-center gap-2 rounded-full bg-success-soft px-3 py-1 text-label font-semibold text-success-text">
+                <ShieldCheck size={14} className="text-success-text" aria-hidden="true" /> {eligibleNote}
               </p>
             )}
           </div>
@@ -95,21 +95,21 @@ export function EventCard({ event, distanceM, onRsvp, rsvpBusy, eligibleNote, va
   }
 
   return (
-    <article className="flex gap-3 rounded-card-lg border border-outline-variant bg-surface p-3 shadow-1">
+    <article className="flex gap-3 rounded-md border border-border bg-surface p-3 shadow-1">
       <Link href={`/eventos/${event.id}`} className="flex min-w-0 flex-1 gap-3">
-        <div className="flex h-[60px] w-[52px] shrink-0 flex-col items-center justify-center rounded-card bg-surface-2">
-          <span className="text-[11px] font-black uppercase text-primary">{dow}</span>
-          <span className="font-display text-[20px] leading-none text-on">{day}</span>
+        <div className="flex h-[60px] w-[52px] shrink-0 flex-col items-center justify-center rounded-md bg-surface-elevated">
+          <span className="text-label font-semibold uppercase text-primary-text">{dow}</span>
+          <span className="font-semibold text-title leading-none text-text">{day}</span>
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-[16px] font-bold text-on">{event.title}</h3>
-          <p className="truncate text-[13px] text-on-variant">{meta}</p>
-          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+          <h3 className="truncate text-subtitle font-semibold text-text">{event.title}</h3>
+          <p className="truncate text-small text-text-secondary">{meta}</p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
             <PriceTag price={event.price} />
-            {(event.going_count ?? 0) > 0 && <span className="text-[12px] font-semibold text-on-variant">{event.going_count} van</span>}
+            {(event.going_count ?? 0) > 0 && <span className="text-label font-semibold text-text-secondary">{event.going_count} van</span>}
           </div>
           {eligibleNote && (
-            <p className="mt-1.5 inline-flex items-center gap-1 text-[12px] font-bold text-ok">
+            <p className="mt-2 inline-flex items-center gap-1 text-label font-semibold text-success-text">
               <ShieldCheck size={13} aria-hidden="true" /> {eligibleNote}
             </p>
           )}

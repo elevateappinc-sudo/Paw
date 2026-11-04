@@ -25,10 +25,10 @@ export function OfflineBanner() {
 
   if (!offline) return null;
   return (
-    <div role="status" className="flex items-center gap-2.5 border-b border-outline-variant bg-surface-3 px-4 pt-[max(10px,env(safe-area-inset-top))] pb-2.5 text-[13px] font-semibold text-on">
-      <WifiOff size={16} className="text-on-variant" aria-hidden="true" />
+    <div role="status" className="flex items-center gap-3 border-b border-border bg-border px-4 pt-[max(12px,env(safe-area-inset-top))] pb-3 text-small font-semibold text-text">
+      <WifiOff size={16} className="text-text-secondary" aria-hidden="true" />
       <span className="flex-1">Sin conexión{since ? ` · datos guardados a las ${since}` : ""}</span>
-      <span className="text-[12px] text-on-variant">SOS sigue disponible</span>
+      <span className="text-label text-text-secondary">SOS sigue disponible</span>
     </div>
   );
 }

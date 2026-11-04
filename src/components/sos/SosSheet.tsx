@@ -1,9 +1,8 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion, useReducedMotion } from "motion/react";
-import { AlertTriangle, X, MapPin, Share2, SearchX } from "lucide-react";
-import { Button, Card, Row, showToast } from "@/components/ui";
+import { LocateFixed, MapPin, Share2, SearchX, WifiOff, X } from "lucide-react";
+import { showToast } from "@/components/ui";
 import { useActivePet } from "@/hooks/useActivePet";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { useAuthContext } from "@/contexts/AuthContext";
@@ -11,7 +10,6 @@ import { ensureEmergencyToken } from "@/lib/api/lostPets";
 import { ageLabel, SPECIES_LABEL } from "@/lib/api/pets";
 import { isMissingSchema } from "@/lib/api/schemaErrors";
 import { timeLabel } from "@/lib/relativeTime";
-import { fadeUp, stagger } from "@/lib/motion";
 import type { Business } from "@/types/db";
 import { PetPicker } from "./PetPicker";
 import { EmergencyCallButton } from "./EmergencyCallButton";
@@ -25,7 +23,6 @@ import { buildClinicalSummary, distanceM, loadEmergencies, loadSosPetDetails, re
  */
 export function SosSheet() {
   const router = useRouter();
-  const reduce = useReducedMotion();
   const { user } = useAuthContext();
   const { pet, pets, selectPet } = useActivePet();
   const geo = useGeolocation(true);
@@ -129,87 +126,71 @@ export function SosSheet() {
     setSummarizing(false);
   }, [details]);
 
-  const subtitle = `Funciona sin conexión${dataAt ? ` · datos de ${timeLabel(dataAt)}` : ""}`;
+  const actions = [
+    { label: "Otras", icon: MapPin, onClick: () => router.push("/explorar?cat=urgencias"), aria: "Ver otras urgencias cerca" },
+    { label: "Compartir", icon: Share2, onClick: share, aria: "Compartir la ficha de emergencia", disabled: !pet || sharing },
+    ...(pet ? [{ label: "Perdida", icon: SearchX, onClick: () => router.push(`/perdida/nueva?pet=${pet.id}`), aria: `Reportar a ${pet.name} como perdida` }] : []),
+  ];
 
   return (
-    <div className="flex min-h-dvh flex-col bg-bg">
-      <div className="h-[max(16px,env(safe-area-inset-top))] shrink-0" aria-hidden="true" />
-      <motion.section
-        initial={reduce ? { opacity: 0 } : { y: 40, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="mt-auto flex flex-1 flex-col rounded-t-sheet bg-surface shadow-3"
-        aria-labelledby="sos-title"
-      >
-        <div className="flex justify-center pt-2 pb-1" aria-hidden="true">
-          <div className="h-[5px] w-9 rounded-full bg-outline-variant" />
-        </div>
-        <header className="flex items-start justify-between gap-3 px-5 pb-2">
-          <div className="flex min-w-0 items-start gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-danger-container text-danger">
-              <AlertTriangle size={24} aria-hidden="true" />
-            </span>
-            <div className="min-w-0">
-              <h1 id="sos-title" className="font-display text-[26px] leading-tight text-on">Urgencia</h1>
-              <p className="text-[13px] text-on-variant">{subtitle}</p>
-            </div>
-          </div>
-          <button type="button" onClick={() => router.back()} aria-label="Cerrar" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-2 text-on active:scale-95">
-            <X size={20} />
+    <div className="enter flex min-h-dvh flex-col bg-bg pb-[max(24px,env(safe-area-inset-bottom))]" aria-labelledby="sos-title">
+      {/* Barra superior: cerrar y, si aplica, estado sin conexión */}
+      <div className="flex items-center justify-between px-4 pt-[max(16px,env(safe-area-inset-top))]">
+        <button type="button" onClick={() => router.back()} aria-label="Cerrar" className="pressable flex h-11 w-11 items-center justify-center rounded-full bg-surface-elevated text-text">
+          <X size={20} aria-hidden="true" />
+        </button>
+        {fromCache && dataAt && (
+          <span className="inline-flex items-center gap-1 rounded-full bg-surface-elevated px-3 py-1 text-label text-text-secondary">
+            <WifiOff size={12} aria-hidden="true" /> Guardado {timeLabel(dataAt)}
+          </span>
+        )}
+      </div>
+
+      <h1 id="sos-title" className="mt-2 text-center text-display font-semibold text-text">
+        Urgencia
+      </h1>
+
+      <div className="mt-4">
+        <PetPicker pets={pets} activeId={pet?.id ?? null} onSelect={selectPet} />
+      </div>
+
+      <div className="mt-8 flex flex-col items-center">
+        <EmergencyCallButton business={nearest} distance={nearestDistance} loading={emLoading} fromCache={fromCache} />
+        {geo.status === "idle" && (
+          <button type="button" onClick={geo.request} className="mt-1 inline-flex min-h-11 items-center gap-1 text-label font-semibold text-primary-text">
+            <LocateFixed size={14} aria-hidden="true" /> Usar mi ubicación
           </button>
-        </header>
+        )}
+      </div>
 
-        <motion.div variants={stagger(0.05)} initial="hidden" animate="show" className="flex flex-col gap-4 px-5 pb-[max(24px,env(safe-area-inset-bottom))]">
-          <motion.div variants={fadeUp}>
-            <PetPicker pets={pets} activeId={pet?.id ?? null} onSelect={selectPet} />
-          </motion.div>
+      {/* Acciones secundarias: círculos con una palabra */}
+      <div className="mt-6 flex justify-center gap-8">
+        {actions.map((a) => {
+          const Icon = a.icon;
+          return (
+            <button key={a.label} type="button" onClick={a.onClick} disabled={a.disabled} aria-label={a.aria} className="pressable flex flex-col items-center gap-2 disabled:opacity-50">
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-surface-elevated text-text">
+                <Icon size={22} aria-hidden="true" />
+              </span>
+              <span className="text-label font-semibold text-text-secondary">{a.label}</span>
+            </button>
+          );
+        })}
+      </div>
 
-          <motion.div variants={fadeUp} className="flex flex-col gap-2">
-            <EmergencyCallButton business={nearest} distance={nearestDistance} loading={emLoading} fromCache={fromCache} />
-            {geo.status === "idle" && (
-              <button type="button" onClick={geo.request} className="flex min-h-[44px] items-center justify-center gap-1.5 text-[13px] font-semibold text-primary">
-                <MapPin size={14} aria-hidden="true" /> Usar mi ubicación para la más cercana
-              </button>
-            )}
-            <div className="grid grid-cols-2 gap-2">
-              <Button variant="secondary" leading={<SearchX size={18} aria-hidden="true" />} onClick={() => router.push("/explorar?cat=urgencias")}>
-                Otra urgencia cerca
-              </Button>
-              <Button variant="secondary" leading={<Share2 size={18} aria-hidden="true" />} onClick={share} loading={sharing} disabled={!pet}>
-                Compartir ficha
-              </Button>
-            </div>
-          </motion.div>
-
-          {pet ? (
-            <>
-              <motion.div variants={fadeUp}>
-                <PetEmergencyCard pet={pet} details={details} loading={detailsLoading} onSummary={summary} summaryLoading={summarizing} />
-              </motion.div>
-              <motion.div variants={fadeUp}>
-                <ContactsCard ownerName={details?.ownerName ?? null} contact={details?.pet?.emergency_contact} />
-              </motion.div>
-              <motion.div variants={fadeUp}>
-                <Card padded={false}>
-                  <Row icon={<SearchX size={20} aria-hidden="true" />} iconTone="warn" title={`Reportar a ${pet.name} como perdida`} subtitle="Avisamos a la comunidad Paw cerca de ti" onClick={() => router.push(`/perdida/nueva?pet=${pet.id}`)} />
-                </Card>
-              </motion.div>
-            </>
-          ) : (
-            <motion.div variants={fadeUp}>
-              <Card tone="container">
-                <div className="text-[15px] font-bold text-on">Aún no tienes mascotas en Paw</div>
-                <p className="mt-1 text-[13px] text-on-variant">Agrega una para tener su ficha de emergencia a mano.</p>
-                <Button variant="tonal" className="mt-3" onClick={() => router.push("/mascotas/nueva")}>Agregar mascota</Button>
-              </Card>
-            </motion.div>
-          )}
-
-          <motion.p variants={fadeUp} className="px-1 text-center text-[13px] font-semibold text-on-variant">
-            Si no puede respirar, sangra mucho o convulsiona, llama primero y ve en camino.
-          </motion.p>
-        </motion.div>
-      </motion.section>
+      <div className="mt-8 flex flex-col gap-4 px-4">
+        {pet ? (
+          <>
+            <PetEmergencyCard pet={pet} details={details} loading={detailsLoading} onSummary={summary} summaryLoading={summarizing} />
+            <ContactsCard ownerName={details?.ownerName ?? null} contact={details?.pet?.emergency_contact} />
+          </>
+        ) : (
+          <button type="button" onClick={() => router.push("/mascotas/nueva")} className="pressable flex min-h-16 items-center justify-center gap-2 rounded-lg border border-dashed border-border text-body font-semibold text-primary-text">
+            Agrega una mascota para tener su ficha a mano
+          </button>
+        )}
+        <p className="px-4 text-center text-small text-text-secondary">Si no respira, sangra mucho o convulsiona: llama y ve en camino.</p>
+      </div>
     </div>
   );
 }

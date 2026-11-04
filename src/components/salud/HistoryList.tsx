@@ -34,11 +34,11 @@ export const HISTORY_KIND_TONE: Record<HistoryKind, ChipTone> = {
 };
 
 const dotClass: Record<HistoryKind, string> = {
-  vaccine: "bg-info",
-  deworm: "bg-outline",
+  vaccine: "bg-primary",
+  deworm: "bg-text-secondary",
   medication: "bg-primary",
-  consult: "bg-warn",
-  weight: "bg-ok",
+  consult: "bg-warning",
+  weight: "bg-success",
 };
 
 export function groupByMonth(items: HistoryItem[]): { key: string; label: string; items: HistoryItem[] }[] {
@@ -59,7 +59,7 @@ export function HistoryList({ items, businessNames }: { items: HistoryItem[]; bu
     <motion.div variants={stagger(0.03)} initial="hidden" animate="show" className="flex flex-col gap-5">
       {groups.map((g) => (
         <section key={g.key} aria-label={g.label}>
-          <h3 className="mb-2 px-1 text-[13px] font-bold uppercase tracking-wide text-on-variant">{g.label}</h3>
+          <h3 className="mb-2 px-1 text-small font-semibold uppercase tracking-wide text-text-secondary">{g.label}</h3>
           <Card padded={false} elevation={0} className="overflow-hidden">
             {g.items.map((it, i) => {
               const biz = it.businessId ? businessNames[it.businessId] : undefined;
@@ -67,15 +67,15 @@ export function HistoryList({ items, businessNames }: { items: HistoryItem[]; bu
                 <motion.div key={it.id} variants={fadeUp}>
                   {i > 0 && <Divider />}
                   <div className="flex items-start gap-3 px-4 py-3">
-                    <span className={cn("mt-2 h-2.5 w-2.5 shrink-0 rounded-full", dotClass[it.kind])} aria-hidden="true" />
+                    <span className={cn("mt-2 h-2 w-2 shrink-0 rounded-full", dotClass[it.kind])} aria-hidden="true" />
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                         <Tag tone={HISTORY_KIND_TONE[it.kind]} size="xs">{HISTORY_KIND_LABEL[it.kind]}</Tag>
-                        <span className="text-[12px] font-semibold text-on-variant">{shortDate(it.date)}</span>
+                        <span className="text-label font-semibold text-text-secondary">{shortDate(it.date)}</span>
                       </div>
-                      <div className="mt-0.5 truncate text-[15px] font-bold text-on">{it.title}</div>
-                      {it.subtitle && <div className="truncate text-[13px] text-on-variant">{it.subtitle}</div>}
-                      {biz && <div className="mt-0.5 text-[12px] font-bold text-ok">Registrado por {biz}</div>}
+                      <div className="mt-1 truncate text-body font-semibold text-text">{it.title}</div>
+                      {it.subtitle && <div className="truncate text-small text-text-secondary">{it.subtitle}</div>}
+                      {biz && <div className="mt-1 text-label font-semibold text-success-text">Registrado por {biz}</div>}
                     </div>
                   </div>
                 </motion.div>

@@ -1,42 +1,28 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Monitor, Moon, Sun } from "lucide-react";
-import { SegmentedControl } from "@/components/ui";
+import { Toggle } from "@/components/ui";
 import { applyTheme, readThemePreference, saveThemePreference, type ThemePreference } from "./theme";
 
-const OPTIONS: { value: ThemePreference; label: React.ReactNode }[] = [
-  {
-    value: "system",
-    label: (
-      <span className="inline-flex items-center gap-1.5">
-        <Monitor size={14} aria-hidden="true" /> Sistema
-      </span>
-    ),
-  },
-  {
-    value: "light",
-    label: (
-      <span className="inline-flex items-center gap-1.5">
-        <Sun size={14} aria-hidden="true" /> Claro
-      </span>
-    ),
-  },
-  {
-    value: "dark",
-    label: (
-      <span className="inline-flex items-center gap-1.5">
-        <Moon size={14} aria-hidden="true" /> Oscuro
-      </span>
-    ),
-  },
-];
+const DARK_QUERY = "(prefers-color-scheme: dark)";
 
-/** Selector de tema: Sistema / Claro / Oscuro. Persiste en localStorage `paw.theme`. */
+/**
+ * Tema de la app con dos interruptores:
+ * - "Modo oscuro": activa oscuro o claro (y deja de seguir al sistema).
+ * - "Usar el tema del sistema": sigue la preferencia del teléfono; mientras
+ *   está activo, "Modo oscuro" muestra lo que dicta el sistema.
+ * Persiste en localStorage `paw.theme` (sin valor = sistema).
+ */
 export function ThemeSelector() {
   const [pref, setPref] = useState<ThemePreference>("system");
+  const [systemDark, setSystemDark] = useState(false);
 
   useEffect(() => {
     setPref(readThemePreference());
+    const mq = window.matchMedia(DARK_QUERY);
+    setSystemDark(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setSystemDark(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
   }, []);
 
   function change(next: ThemePreference) {
@@ -45,5 +31,22 @@ export function ThemeSelector() {
     saveThemePreference(next);
   }
 
-  return <SegmentedControl<ThemePreference> ariaLabel="Tema de la app" options={OPTIONS} value={pref} onChange={change} />;
+  const dark = pref === "system" ? systemDark : pref === "dark";
+
+  return (
+    <div className="flex flex-col divide-y divide-border">
+      <Toggle
+        label="Modo oscuro"
+        description={dark ? "Fondo oscuro, ideal de noche" : "Fondo claro"}
+        checked={dark}
+        onChange={(on) => change(on ? "dark" : "light")}
+      />
+      <Toggle
+        label="Usar el tema del sistema"
+        description="Cambia solo según la configuración de tu teléfono"
+        checked={pref === "system"}
+        onChange={(on) => change(on ? "system" : dark ? "dark" : "light")}
+      />
+    </div>
+  );
 }

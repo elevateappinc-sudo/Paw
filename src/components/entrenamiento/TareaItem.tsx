@@ -27,9 +27,9 @@ export function TareaItem({ tarea, claseId }: TareaItemProps) {
   }
 
   return (
-    <div className="flex min-h-[52px] items-center gap-2 py-1 pr-3 pl-1">
+    <div className="flex min-h-13 items-center gap-2 py-1 pr-3 pl-1">
       <AnimatedCheck state={cfg.check} onClick={cycleStatus} label={`${tarea.descripcion}: ${cfg.label}. Cambiar estado`} />
-      <span className={cn("flex-1 text-[14px]", tarea.estado === "completado" ? "text-on-variant line-through" : "text-on")}>{tarea.descripcion}</span>
+      <span className={cn("flex-1 text-body", tarea.estado === "completado" ? "text-text-secondary line-through" : "text-text")}>{tarea.descripcion}</span>
       <Tag size="xs" tone={cfg.tone}>
         {cfg.label}
       </Tag>

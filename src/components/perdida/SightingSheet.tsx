@@ -6,6 +6,7 @@ import { reportSighting } from "@/lib/api/lostPets";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { isMissingSchema } from "@/lib/api/schemaErrors";
+import { LostModeScope } from "./LostMode";
 
 export function SightingSheet({ alertId, petName, onClose, onDone }: { alertId: string | null; petName: string; onClose: () => void; onDone?: () => void }) {
   const { user } = useAuthContext();
@@ -39,13 +40,15 @@ export function SightingSheet({ alertId, petName, onClose, onDone }: { alertId: 
       title={`¿Dónde viste a ${petName}?`}
       subtitle="Tu ubicación aproximada y un mensaje ayudan a encontrarla"
       footer={
-        <Button full size="lg" onClick={submit} loading={sending}>
-          Enviar aviso
-        </Button>
+        <LostModeScope>
+          <Button full size="lg" onClick={submit} loading={sending}>
+            Enviar aviso
+          </Button>
+        </LostModeScope>
       }
     >
       <div className="flex flex-col gap-3">
-        <Button variant={geo.lat !== null ? "tonal" : "outline"} leading={<MapPin size={18} aria-hidden="true" />} onClick={geo.request} loading={geo.status === "loading"}>
+        <Button variant="secondary" leading={<MapPin size={18} aria-hidden="true" />} onClick={geo.request} loading={geo.status === "loading"}>
           {geo.lat !== null ? "Ubicación lista" : geo.status === "denied" ? "Ubicación no permitida" : "Usar mi ubicación"}
         </Button>
         <Textarea label="Mensaje" placeholder="Ej.: iba hacia el parque, parecía asustada" value={message} onChange={(e) => setMessage(e.target.value)} />

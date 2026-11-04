@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { Download, Plus } from "lucide-react";
-import { PageHeader, Chip, ChipRow, Button, EmptyState, SectionTitle, Card } from "@/components/ui";
+import { PageHeader, Chip, ChipRow, Button, EmptyState, SectionTitle, Card, PullToRefresh } from "@/components/ui";
 import { showToast } from "@/components/ui/Toast";
 import { useActivePet } from "@/hooks/useActivePet";
 import { useAuthContext } from "@/contexts/AuthContext";
@@ -207,7 +207,7 @@ export function SaludView() {
 
   if (!pet) {
     return (
-      <div className="pb-8">
+      <div className="pb-6">
         <PageHeader title="Salud" />
         <EmptyState title="Añade una mascota" description="Para llevar su salud al día necesitas registrarla primero." action={<Button full onClick={() => router.push("/mascotas/nueva")}>Añadir mascota</Button>} />
       </div>
@@ -217,7 +217,8 @@ export function SaludView() {
   if (loading) return <SaludSkeleton />;
 
   return (
-    <div className="pb-8">
+    <PullToRefresh onRefresh={() => (pet ? load(pet.id, true) : undefined)}>
+    <div className="pb-20">
       <PageHeader
         eyebrow={pet.name}
         title="Salud"
@@ -236,7 +237,7 @@ export function SaludView() {
         </ChipRow>
 
         {error ? (
-          <EmptyState tone="danger" title="No pudimos cargar" description={error} action={<Button full onClick={() => void load(pet.id)}>Reintentar</Button>} />
+          <EmptyState title="No pudimos cargar" description={error} action={<Button full onClick={() => void load(pet.id)}>Reintentar</Button>} />
         ) : (
           <>
             <section aria-label="Próximos" className="mb-6">
@@ -246,7 +247,7 @@ export function SaludView() {
               <SectionTitle className="mb-3">Próximos</SectionTitle>
               {upcoming.length === 0 ? (
                 <Card tone="container" elevation={0}>
-                  <p className="text-[14px] text-on-variant">
+                  <p className="text-body text-text-secondary">
                     {data.cycles.length === 0 ? "Sin ciclos programados. Usa el botón + para añadir vacunas o antiparasitarios." : "Nada pendiente con este filtro."}
                   </p>
                 </Card>
@@ -267,7 +268,7 @@ export function SaludView() {
                   tone="neutral"
                   title="Todavía no hay registros"
                   description={filter === "all" ? `Cuando registres vacunas, consultas o pesos de ${pet.name}, aparecerán aquí.` : "No hay registros de este tipo."}
-                  action={filter === "all" ? <Button variant="tonal" full onClick={() => { setNewInitial(null); setShowNew(true); }}>Añadir el primero</Button> : undefined}
+                  action={filter === "all" ? <Button variant="secondary" full onClick={() => { setNewInitial(null); setShowNew(true); }}>Añadir el primero</Button> : undefined}
                 />
               ) : (
                 <HistoryList items={filteredHistory} businessNames={businessNames} />
@@ -278,14 +279,14 @@ export function SaludView() {
       </div>
 
       {/* FAB */}
-      <div className="pointer-events-none fixed inset-x-0 bottom-[calc(110px+env(safe-area-inset-bottom))] z-40 mx-auto flex w-full max-w-[640px] justify-end px-4">
+      <div className="pointer-events-none fixed inset-x-0 bottom-[var(--content-bottom-padding)] z-40 mx-auto flex w-full max-w-[640px] justify-end px-4">
         <button
           type="button"
           onClick={() => { setNewInitial(null); setShowNew(true); }}
           aria-label="Nuevo registro"
-          className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary text-on-primary shadow-3 transition-transform active:scale-95"
+          className="pressable pointer-events-auto flex h-13 w-13 items-center justify-center rounded-full bg-primary text-on-primary shadow-2"
         >
-          <Plus size={26} />
+          <Plus size={24} aria-hidden="true" />
         </button>
       </div>
 
@@ -306,5 +307,6 @@ export function SaludView() {
       )}
       <ExportSheet open={showExport} onClose={() => setShowExport(false)} summary={summary} petName={pet.name} />
     </div>
+    </PullToRefresh>
   );
 }

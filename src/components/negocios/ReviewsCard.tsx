@@ -10,9 +10,9 @@ import { friendlyError, relativeDays } from "@/components/explorar/lib";
 
 function Stars({ value, size = 14 }: { value: number; size?: number }) {
   return (
-    <span className="inline-flex items-center gap-0.5" aria-label={`${value} de 5 estrellas`}>
+    <span className="inline-flex items-center gap-1" aria-label={`${value} de 5 estrellas`}>
       {[1, 2, 3, 4, 5].map((i) => (
-        <Star key={i} size={size} className={i <= value ? "fill-[var(--wa)] text-[var(--wa)]" : "text-outline-variant"} aria-hidden="true" />
+        <Star key={i} size={size} className={i <= value ? "fill-warning text-warning" : "text-border"} aria-hidden="true" />
       ))}
     </span>
   );
@@ -67,39 +67,39 @@ export function ReviewsCard({ businessId, businessName, reviews, onReviewSaved, 
         title="Reseñas"
         subtitle={reviews.length ? `${reviews.length} ${reviews.length === 1 ? "opinión" : "opiniones"}` : undefined}
         action={
-          <button type="button" onClick={() => setOpen(true)} className="min-h-[44px] px-1">
+          <button type="button" onClick={() => setOpen(true)} className="min-h-11 px-1">
             Escribir una
           </button>
         }
       />
       {error ? (
-        <p className="text-[14px] text-on-variant">{error}</p>
+        <p className="text-body text-text-secondary">{error}</p>
       ) : reviews.length === 0 ? (
-        <p className="text-[14px] text-on-variant">Todavía nadie opinó sobre {businessName}. Sé la primera persona.</p>
+        <p className="text-body text-text-secondary">Todavía nadie opinó sobre {businessName}. Sé la primera persona.</p>
       ) : (
-        <ul className="flex flex-col divide-y divide-outline-variant">
+        <ul className="flex flex-col divide-y divide-border">
           {reviews.map((r) => {
             const name = r.users?.display_name?.trim() || "Alguien de Paw";
             const petMeta = r.pets ? `con ${r.pets.name}${r.pets.breed ? `, ${r.pets.breed}` : ""} · ` : "";
             return (
               <li key={r.id} className="flex gap-3 py-3 first:pt-0 last:pb-0">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-container font-display text-[16px] text-on-primary-container" aria-hidden="true">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-soft font-semibold text-subtitle text-primary-text" aria-hidden="true">
                   {name.charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-2">
-                    <span className="truncate text-[15px] font-bold text-on">{name}</span>
+                    <span className="truncate text-body font-semibold text-text">{name}</span>
                     <Stars value={r.rating} />
                   </div>
-                  <p className="text-[12px] text-on-variant">
+                  <p className="text-label text-text-secondary">
                     {petMeta}
                     {relativeDays(r.created_at)}
                   </p>
-                  {r.body && <p className="mt-1.5 text-[14px] leading-relaxed text-on">{r.body}</p>}
+                  {r.body && <p className="mt-2 text-body leading-relaxed text-text">{r.body}</p>}
                   {r.reply && (
-                    <div className="mt-2 rounded-control bg-surface-2 px-3 py-2">
-                      <p className="text-[11px] font-bold text-on-variant">Respuesta de {businessName}</p>
-                      <p className="mt-0.5 text-[13px] leading-relaxed text-on">{r.reply}</p>
+                    <div className="mt-2 rounded-md bg-surface-elevated px-3 py-2">
+                      <p className="text-label font-semibold text-text-secondary">Respuesta de {businessName}</p>
+                      <p className="mt-1 text-small leading-relaxed text-text">{r.reply}</p>
                     </div>
                   )}
                 </div>
@@ -122,7 +122,7 @@ export function ReviewsCard({ businessId, businessName, reviews, onReviewSaved, 
       >
         <div className="flex flex-col gap-4">
           <div>
-            <p className="mb-2 text-[13px] font-semibold text-on-variant">¿Cómo te fue?</p>
+            <p className="mb-2 text-small font-semibold text-text-secondary">¿Cómo te fue?</p>
             <div className="flex gap-1" role="radiogroup" aria-label="Estrellas">
               {[1, 2, 3, 4, 5].map((i) => (
                 <button
@@ -134,7 +134,7 @@ export function ReviewsCard({ businessId, businessName, reviews, onReviewSaved, 
                   onClick={() => setRating(i)}
                   className="flex h-12 w-12 items-center justify-center rounded-full active:scale-95"
                 >
-                  <Star size={30} className={cn("transition-colors", i <= rating ? "fill-[var(--wa)] text-[var(--wa)]" : "text-outline-variant")} />
+                  <Star size={30} className={cn("transition-colors", i <= rating ? "fill-warning text-warning" : "text-border")} />
                 </button>
               ))}
             </div>

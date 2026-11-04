@@ -10,13 +10,13 @@ export function PerfilTab({ business, userId, plan, onSaved, onChangePlan }: { b
     <div className="flex flex-col gap-4">
       <Card tone="info" elevation={0}>
         <div className="flex items-start gap-3">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-surface text-info"><BellRing size={22} aria-hidden="true" /></span>
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-sm bg-surface text-info-text"><BellRing size={22} aria-hidden="true" /></span>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <div className="font-display text-[17px] leading-tight">Recordatorios a clientes</div>
+              <div className="font-semibold text-subtitle leading-tight">Recordatorios a clientes</div>
               <Tag tone="info" size="xs">Plan Pro</Tag>
             </div>
-            <p className="mt-1 text-[13px]">
+            <p className="mt-1 text-small">
               Paw avisa a los dueños cuando a su mascota le toca el baño, la vacuna o la desparasitación, y les ofrece tu agenda para reservar en un toque.
             </p>
             {plan === "free" && (
@@ -24,7 +24,7 @@ export function PerfilTab({ business, userId, plan, onSaved, onChangePlan }: { b
                 Ver planes
               </Button>
             )}
-            {plan !== "free" && <p className="mt-2 text-[13px] font-bold">Activo en tu plan</p>}
+            {plan !== "free" && <p className="mt-2 text-small font-semibold">Activo en tu plan</p>}
           </div>
         </div>
       </Card>

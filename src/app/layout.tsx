@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Figtree } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ToastProvider } from "@/components/ui/ToastProvider";
@@ -7,10 +7,11 @@ import { PetsLoader } from "@/components/auth/PetsLoader";
 import { AppShell } from "@/components/layout/AppShell";
 import { ThemeInit } from "@/components/settings/ThemeInit";
 
-const figtree = Figtree({
+// Familia de --font-sans (src/styles/tokens.css). Solo dos pesos: 400 y 600.
+const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  weight: ["500", "600", "700", "800", "900"],
-  variable: "--font-figtree",
+  weight: ["400", "600"],
+  variable: "--font-jakarta",
   display: "swap",
 });
 
@@ -23,9 +24,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  // La meta theme-color no acepta variables CSS: replica --color-bg de tokens.css
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FAF6F1" },
-    { media: "(prefers-color-scheme: dark)", color: "#15100D" },
+    { media: "(prefers-color-scheme: light)", color: "#F6F5FC" },
+    { media: "(prefers-color-scheme: dark)", color: "#0A0914" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -34,7 +36,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={figtree.variable} suppressHydrationWarning>
+    <html lang="es" className={jakarta.variable} suppressHydrationWarning>
       <body>
         <AuthProvider>
           <ToastProvider>

@@ -7,12 +7,12 @@ export function LocationPromptCard({ onRequest, onManual, loading }: { onRequest
   return (
     <Card elevation={3} className="pointer-events-auto">
       <div className="flex items-start gap-3">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-primary-container text-on-primary-container">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-sm bg-primary-soft text-primary-text">
           <Navigation size={22} />
         </div>
         <div className="min-w-0">
-          <h2 className="font-display text-[18px] leading-tight text-on">Para ordenar por distancia necesitamos tu ubicación</h2>
-          <p className="mt-1 text-[14px] leading-relaxed text-on-variant">Solo la usamos mientras exploras. No la compartimos con nadie.</p>
+          <h2 className="font-semibold text-subtitle leading-tight text-text">Para ordenar por distancia necesitamos tu ubicación</h2>
+          <p className="mt-1 text-body leading-relaxed text-text-secondary">Solo la usamos mientras exploras. No la compartimos con nadie.</p>
         </div>
       </div>
       <div className="mt-4 flex flex-col gap-2">
@@ -37,13 +37,13 @@ export function LocationDeniedCard({ reason, onContinue, onRetry }: { reason: "d
   return (
     <Card tone="warn" elevation={0}>
       <div className="flex items-start gap-3">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-surface text-warn">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-sm bg-surface text-warning-text">
           <MapPin size={22} />
         </div>
         <div className="min-w-0">
-          <h3 className="font-display text-[17px] leading-tight">{title}</h3>
-          <p className="mt-1 text-[14px] leading-relaxed">{body}</p>
-          {reason === "denied" && <p className="mt-2 text-[13px] font-bold">Activar en Ajustes → Privacidad → Ubicación → Paw</p>}
+          <h3 className="font-semibold text-subtitle leading-tight">{title}</h3>
+          <p className="mt-1 text-body leading-relaxed">{body}</p>
+          {reason === "denied" && <p className="mt-2 text-small font-semibold">Activar en Ajustes → Privacidad → Ubicación → Paw</p>}
         </div>
       </div>
       <div className="mt-3 flex gap-2">

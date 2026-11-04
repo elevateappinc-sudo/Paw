@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { GastosModule } from "@/components/gastos/GastosModule";
 import { GastosSkeleton } from "@/components/gastos/GastosSkeleton";
+import { RouteFallback } from "@/components/ui/Skeleton";
 
 export default function GastosPage() {
   const { user, loading } = useAuthContext();
@@ -13,7 +14,7 @@ export default function GastosPage() {
     if (!loading && !user) router.replace("/login");
   }, [user, loading, router]);
 
-  if (loading || !user) return <GastosSkeleton />;
+  if (loading || !user) return <RouteFallback><GastosSkeleton /></RouteFallback>;
   return (
     <Suspense fallback={<GastosSkeleton />}>
       <GastosModule />

@@ -18,27 +18,27 @@ export function HoursCard({ hours, emergency }: { hours: BusinessHours | null; e
         title="Horario"
         subtitle={emergency ? "Urgencias 24 h, todos los días" : openNow ? `Abierto ahora${closes ? ` · ${closes}` : ""}` : closes ? `Cerrado · ${closes}` : "Cerrado hoy"}
       />
-      <div className="grid grid-cols-7 gap-1.5" aria-hidden="true">
+      <div className="grid grid-cols-7 gap-2" aria-hidden="true">
         {DAYS.map((d) => {
           const has = emergency || !!hours?.[d]?.length;
           const isToday = d === today;
-          const tone = isToday ? (openNow ? "bg-ok" : "bg-warn") : has ? "bg-surface-3" : "bg-surface-2";
+          const tone = isToday ? (openNow ? "bg-success" : "bg-warning") : has ? "bg-border" : "bg-surface-elevated";
           return (
             <div key={d} className="flex flex-col items-center gap-1">
               <div className={cn("h-2 w-full rounded-full", tone)} />
-              <span className={cn("text-[11px] font-bold", isToday ? "text-on" : "text-on-variant")}>{DAY_LABEL[d]}</span>
+              <span className={cn("text-label font-semibold", isToday ? "text-text" : "text-text-secondary")}>{DAY_LABEL[d]}</span>
             </div>
           );
         })}
       </div>
-      <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[13px]">
+      <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-small">
         {DAYS.map((d) => {
           const slots = hours?.[d];
           const isToday = d === today;
           return (
             <div key={d} className="contents">
-              <dt className={cn("font-bold", isToday ? "text-on" : "text-on-variant")}>{DAY_LABEL[d]}</dt>
-              <dd className={cn(isToday ? "text-on" : "text-on-variant")}>
+              <dt className={cn("font-semibold", isToday ? "text-text" : "text-text-secondary")}>{DAY_LABEL[d]}</dt>
+              <dd className={cn(isToday ? "text-text" : "text-text-secondary")}>
                 {emergency ? "24 h" : slots && slots.length ? slots.map(([a, b]) => `${a}–${b}`).join(", ") : "Cerrado"}
               </dd>
             </div>

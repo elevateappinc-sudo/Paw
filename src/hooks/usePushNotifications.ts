@@ -26,17 +26,15 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 }
 
 export function usePushNotifications(): UsePushNotificationsReturn {
-  const [isSupported] = useState<boolean>(
-    typeof window !== "undefined" &&
-      "Notification" in window &&
-      "serviceWorker" in navigator &&
-      "PushManager" in window
-  );
+  // Se detecta después de montar: en el servidor no hay window, y si el
+  // primer render difiere del HTML del servidor la hidratación falla.
+  const [isSupported, setIsSupported] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
 
-  const [isIOS] = useState<boolean>(
-    typeof window !== "undefined" &&
-      /iPad|iPhone|iPod/.test(navigator.userAgent)
-  );
+  useEffect(() => {
+    setIsSupported("Notification" in window && "serviceWorker" in navigator && "PushManager" in window);
+    setIsIOS(/iPad|iPhone|iPod/.test(navigator.userAgent));
+  }, []);
 
   const [permission, setPermission] = useState<NotificationPermission>("default");
   const [isSubscribed, setIsSubscribed] = useState(false);

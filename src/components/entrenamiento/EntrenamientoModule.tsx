@@ -2,7 +2,8 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, useReducedMotion } from "motion/react";
-import { Plus, Dumbbell } from "lucide-react";
+import { Plus } from "lucide-react";
+import { PetTraining } from "@/components/icons/pet";
 import { useStore } from "@/store";
 import { useActivePet } from "@/hooks/useActivePet";
 import { formatDate } from "@/lib/utils";
@@ -60,7 +61,7 @@ export function EntrenamientoModule() {
   if (loadingTraining && petClases.length === 0 && !error) return <EntrenamientoSkeleton />;
 
   return (
-    <motion.div className="flex flex-col gap-4 pb-6" variants={reduce ? undefined : stagger()} initial={reduce ? false : "hidden"} animate="show">
+    <motion.div className="enter-list flex flex-col gap-4 pb-6" variants={reduce ? undefined : stagger()} animate="show">
       <PageHeader
         title="Entrenamiento"
         eyebrow={pet?.name ?? "Mascota"}
@@ -68,7 +69,7 @@ export function EntrenamientoModule() {
         backHref="/actividad"
         actions={
           sorted.length > 0 ? (
-            <Button size="icon" variant="tonal" onClick={() => setShowForm(true)} aria-label="Nueva clase">
+            <Button size="icon" variant="secondary" onClick={() => setShowForm(true)} aria-label="Nueva clase">
               <Plus size={20} />
             </Button>
           ) : undefined
@@ -78,8 +79,7 @@ export function EntrenamientoModule() {
       {error && petClases.length === 0 ? (
         <div className="px-4">
           <EmptyState
-            tone="danger"
-            icon={<Dumbbell size={24} />}
+            icon={<PetTraining size={24} />}
             title="No pudimos cargar las clases"
             description="Revisa tu conexión e inténtalo otra vez."
             action={<Button full onClick={() => void fetchData()}>Reintentar</Button>}
@@ -90,7 +90,7 @@ export function EntrenamientoModule() {
           <Card>
             <EmptyState
               compact
-              icon={<Dumbbell size={24} />}
+              icon={<PetTraining size={24} />}
               title="Sin clases aún"
               description={`Registra la primera clase de ${pet?.name ?? "tu mascota"} y lleva el seguimiento de sus tareas.`}
               action={
@@ -127,7 +127,7 @@ export function EntrenamientoModule() {
                           {t.estado === "en_progreso" ? "En progreso" : "Pendiente"}
                         </Tag>
                       }
-                      className="min-h-[56px]"
+                      className="min-h-14"
                     />
                   </div>
                 ))}

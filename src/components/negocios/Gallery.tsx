@@ -28,7 +28,7 @@ export function Gallery({ photos, name, saved, onToggleSaved, savedBusy }: Galle
   };
 
   return (
-    <div className="relative h-[280px] w-full overflow-hidden bg-surface-3">
+    <div className="relative h-[280px] w-full overflow-hidden bg-border">
       {photos.length > 0 ? (
         <div ref={scroller} onScroll={onScroll} className="no-scrollbar flex h-full w-full snap-x snap-mandatory overflow-x-auto" aria-roledescription="carrusel" aria-label={`Fotos de ${name}`}>
           {photos.map((src, i) => (
@@ -39,7 +39,7 @@ export function Gallery({ photos, name, saved, onToggleSaved, savedBusy }: Galle
           ))}
         </div>
       ) : (
-        <div className="h-full w-full bg-gradient-to-br from-surface-2 via-surface-3 to-primary-container" aria-hidden="true" />
+        <div className="h-full w-full bg-gradient-to-br from-surface-elevated via-border to-primary-soft" aria-hidden="true" />
       )}
 
       <div className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between px-4 pt-[max(12px,env(safe-area-inset-top))]">
@@ -47,7 +47,7 @@ export function Gallery({ photos, name, saved, onToggleSaved, savedBusy }: Galle
           type="button"
           onClick={() => router.back()}
           aria-label="Volver"
-          className="glass pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-outline-variant text-on shadow-1 active:scale-95"
+          className="glass pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-border text-text shadow-1 active:scale-95"
         >
           <ChevronLeft size={22} />
         </button>
@@ -58,7 +58,7 @@ export function Gallery({ photos, name, saved, onToggleSaved, savedBusy }: Galle
             disabled={savedBusy}
             aria-pressed={saved}
             aria-label={saved ? "Quitar de guardados" : "Guardar"}
-            className={cn("glass flex h-11 w-11 items-center justify-center rounded-full border border-outline-variant shadow-1 active:scale-95", saved ? "text-primary" : "text-on")}
+            className={cn("glass flex h-11 w-11 items-center justify-center rounded-full border border-border shadow-1 active:scale-95", saved ? "text-primary-text" : "text-text")}
           >
             <Bookmark size={20} className={saved ? "fill-current" : undefined} />
           </button>
@@ -67,7 +67,7 @@ export function Gallery({ photos, name, saved, onToggleSaved, savedBusy }: Galle
       </div>
 
       {photos.length > 0 && (
-        <span className="glass absolute bottom-3 right-4 rounded-full border border-outline-variant px-2.5 py-1 text-[12px] font-bold text-on" aria-live="polite">
+        <span className="glass absolute bottom-3 right-4 rounded-full border border-border px-3 py-1 text-label font-semibold text-text" aria-live="polite">
           {index + 1} de {total}
         </span>
       )}

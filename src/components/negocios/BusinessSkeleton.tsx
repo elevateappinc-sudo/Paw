@@ -13,9 +13,9 @@ export function BusinessSkeleton() {
           <Skeleton className="h-11 rounded-full" />
           <Skeleton className="h-11 rounded-full" />
         </div>
-        <Skeleton className="mt-2 h-[180px] w-full rounded-card-lg" />
-        <Skeleton className="h-[140px] w-full rounded-card-lg" />
-        <Skeleton className="h-[200px] w-full rounded-card-lg" />
+        <Skeleton className="mt-2 h-[180px] w-full rounded-md" />
+        <Skeleton className="h-[140px] w-full rounded-md" />
+        <Skeleton className="h-[200px] w-full rounded-md" />
       </div>
     </div>
   );

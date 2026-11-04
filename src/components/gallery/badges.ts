@@ -1,4 +1,5 @@
-import { Cake, Pill, Stethoscope, Syringe, type LucideIcon } from "lucide-react";
+import { Cake, type LucideIcon } from "lucide-react";
+import { PetHealth, PetMedication, PetVaccine } from "@/components/icons/pet";
 
 /** Tipo de contexto de una foto (vacuna, visita, medicamento, cumpleaños). */
 export type BadgeKind = "vacuna" | "vet" | "medicamento" | "cumple";
@@ -9,9 +10,9 @@ export interface ContextualBadge {
 }
 
 export const BADGE_ICON: Record<BadgeKind, LucideIcon> = {
-  vacuna: Syringe,
-  vet: Stethoscope,
-  medicamento: Pill,
+  vacuna: PetVaccine,
+  vet: PetHealth,
+  medicamento: PetMedication,
   cumple: Cake,
 };
 

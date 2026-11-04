@@ -96,7 +96,7 @@ export function ExportSheet({ open, onClose, summary, petName }: { open: boolean
         </div>
       }
     >
-      <pre className="whitespace-pre-wrap rounded-card bg-surface-2 p-4 font-sans text-[14px] leading-relaxed text-on">{summary}</pre>
+      <pre className="whitespace-pre-wrap rounded-md bg-surface-elevated p-4 font-sans text-body leading-relaxed text-text">{summary}</pre>
     </Sheet>
   );
 }

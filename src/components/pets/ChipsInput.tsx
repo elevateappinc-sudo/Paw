@@ -20,24 +20,24 @@ export function ChipsInput({ label, value, onChange, placeholder, tone = "neutra
     setDraft("");
   }
 
-  const chipClass = tone === "warn" ? "bg-warn-container text-on-warn-container" : "bg-surface-2 text-on";
+  const chipClass = tone === "warn" ? "bg-warning-soft text-warning-text" : "bg-surface-elevated text-text";
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-[13px] font-semibold text-on-variant">{label}</label>
+    <div className="flex flex-col gap-2">
+      <label htmlFor={id} className="text-small font-semibold text-text-secondary">{label}</label>
       {value.length > 0 && (
-        <ul className="flex flex-wrap gap-1.5">
+        <ul className="flex flex-wrap gap-2">
           {value.map((v) => (
-            <li key={v} className={`inline-flex min-h-[36px] items-center gap-1 rounded-full pl-3 pr-1 text-[13px] font-bold ${chipClass}`}>
+            <li key={v} className={`inline-flex min-h-9 items-center gap-1 rounded-full pl-3 pr-1 text-label font-semibold ${chipClass}`}>
               {v}
-              <button type="button" onClick={() => onChange(value.filter((x) => x !== v))} aria-label={`Quitar ${v}`} className="flex h-7 w-7 items-center justify-center rounded-full active:opacity-70">
+              <button type="button" onClick={() => onChange(value.filter((x) => x !== v))} aria-label={`Quitar ${v}`} className="relative flex h-7 w-7 items-center justify-center rounded-full after:absolute after:-inset-2 after:content-[''] active:opacity-70">
                 <X size={14} aria-hidden="true" />
               </button>
             </li>
           ))}
         </ul>
       )}
-      <div className="flex min-h-[50px] items-center gap-2 rounded-control border border-outline-variant bg-surface pl-4 pr-1 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+      <div className="flex min-h-12 items-center gap-2 rounded-md border border-border bg-surface pl-4 pr-1 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
         <input
           id={id}
           value={draft}
@@ -49,9 +49,9 @@ export function ChipsInput({ label, value, onChange, placeholder, tone = "neutra
             }
           }}
           placeholder={placeholder}
-          className="min-w-0 flex-1 bg-transparent text-[16px] text-on outline-none placeholder:text-outline"
+          className="min-w-0 flex-1 bg-transparent text-body text-text outline-none placeholder:text-text-secondary"
         />
-        <button type="button" onClick={add} aria-label="Añadir" className="flex h-11 w-11 items-center justify-center rounded-full text-primary active:scale-95">
+        <button type="button" onClick={add} aria-label="Añadir" className="pressable flex h-11 w-11 items-center justify-center rounded-full text-primary-text">
           <Plus size={20} aria-hidden="true" />
         </button>
       </div>

@@ -12,9 +12,9 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     const textareaId = id ?? (label ? label.toLowerCase().replace(/\s+/g, "-") : undefined);
 
     const baseClasses =
-      "w-full rounded-xl px-4 py-3 bg-surface text-white outline-none transition-colors border resize-y";
+      "w-full rounded-md px-4 py-3 bg-surface text-text outline-none transition-colors border resize-y";
     const stateClasses = error
-      ? "border-red-500"
+      ? "border-overdue"
       : "border-border focus:border-accent";
     const disabledClasses = props.disabled ? "opacity-50 cursor-not-allowed" : "";
 
@@ -23,7 +23,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         {label && (
           <label
             htmlFor={textareaId}
-            className="text-sm font-medium text-text-secondary"
+            className="text-body font-semibold text-text-secondary"
           >
             {label}
           </label>
@@ -35,9 +35,9 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           className={`${baseClasses} ${stateClasses} ${disabledClasses} ${className}`}
           {...props}
         />
-        {error && <p className="text-xs text-red-500">{error}</p>}
+        {error && <p className="text-label text-overdue-text">{error}</p>}
         {!error && helperText && (
-          <p className="text-xs text-text-secondary">{helperText}</p>
+          <p className="text-label text-text-secondary">{helperText}</p>
         )}
       </div>
     );

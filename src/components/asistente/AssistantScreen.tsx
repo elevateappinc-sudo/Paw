@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "motion/react";
 import { Sparkles, X, SendHorizontal, Trash2 } from "lucide-react";
-import { Chip, ChipRow, EmptyState, Skeleton, showToast } from "@/components/ui";
+import { Chip, ChipRow, EmptyState, PawDotsLoader, Skeleton, showToast } from "@/components/ui";
 import { useActivePet } from "@/hooks/useActivePet";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { isMissingSchema } from "@/lib/api/schemaErrors";
@@ -139,23 +139,23 @@ export function AssistantScreen() {
 
   return (
     <div className="flex h-dvh flex-col bg-bg">
-      <header className="flex items-start justify-between gap-3 px-4 pt-[max(14px,env(safe-area-inset-top))] pb-2">
+      <header className="flex items-start justify-between gap-3 px-4 pt-[max(16px,env(safe-area-inset-top))] pb-2">
         <div className="flex min-w-0 items-center gap-3">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-primary text-on-primary shadow-1 bg-gradient-to-br from-primary to-primary-container">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-sm bg-primary-soft text-primary-text">
             <Sparkles size={22} aria-hidden="true" />
           </span>
           <div className="min-w-0">
-            <h1 className="truncate font-display text-[22px] leading-tight text-on">Asistente{pet ? ` de ${pet.name}` : ""}</h1>
-            <p className="text-[13px] text-on-variant">Conoce su historial, ciclos y alergias</p>
+            <h1 className="truncate font-semibold text-display leading-tight text-text">Asistente{pet ? ` de ${pet.name}` : ""}</h1>
+            <p className="text-small text-text-secondary">Conoce su historial, ciclos y alergias</p>
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-1">
           {messages.length > 0 && (
-            <button type="button" onClick={clear} aria-label="Borrar conversación" className="flex h-11 w-11 items-center justify-center rounded-full text-on-variant active:scale-95">
+            <button type="button" onClick={clear} aria-label="Borrar conversación" className="flex h-11 w-11 items-center justify-center rounded-full text-text-secondary active:scale-95">
               <Trash2 size={18} />
             </button>
           )}
-          <button type="button" onClick={() => router.back()} aria-label="Cerrar" className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-2 text-on active:scale-95">
+          <button type="button" onClick={() => router.back()} aria-label="Cerrar" className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-elevated text-text active:scale-95">
             <X size={20} />
           </button>
         </div>
@@ -169,16 +169,16 @@ export function AssistantScreen() {
 
       <div ref={listRef} className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
         {!pet ? (
-          <EmptyState title="Agrega una mascota" description="El asistente responde con el historial de tu mascota." tone="neutral" />
+          <EmptyState title="Agrega una mascota" description="El asistente responde con el historial de tu mascota." />
         ) : loading ? (
           <div className="flex flex-col gap-3">
-            <Skeleton className="h-14 w-3/4 rounded-card-lg" />
-            <Skeleton className="ml-auto h-10 w-1/2 rounded-card-lg" />
-            <Skeleton className="h-20 w-4/5 rounded-card-lg" />
+            <Skeleton className="h-14 w-3/4 rounded-md" />
+            <Skeleton className="ml-auto h-10 w-1/2 rounded-md" />
+            <Skeleton className="h-20 w-4/5 rounded-md" />
           </div>
         ) : messages.length === 0 && !sending ? (
           <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-            <p className="max-w-[300px] text-[15px] text-on-variant">Pregúntame por el peso, las vacunas, la comida o cualquier duda sobre {pet.name}. No sustituyo al veterinario.</p>
+            <p className="max-w-[300px] text-body text-text-secondary">Pregúntame por el peso, las vacunas, la comida o cualquier duda sobre {pet.name}. No sustituyo al veterinario.</p>
           </div>
         ) : (
           <div className="flex flex-col gap-3">
@@ -192,18 +192,16 @@ export function AssistantScreen() {
               </motion.div>
             ))}
             {sending && (
-              <div className="flex items-center gap-1.5 rounded-card-lg border border-outline-variant bg-surface px-4 py-3 text-[13px] text-on-variant" aria-live="polite">
-                <span className="h-2 w-2 animate-bounce rounded-full bg-on-variant" />
-                <span className="h-2 w-2 animate-bounce rounded-full bg-on-variant [animation-delay:120ms]" />
-                <span className="h-2 w-2 animate-bounce rounded-full bg-on-variant [animation-delay:240ms]" />
-                <span className="ml-1">Pensando…</span>
+              <div className="flex items-center gap-2 self-start rounded-md border border-border bg-surface px-4 py-3 text-small text-text-secondary">
+                <PawDotsLoader size={18} label="Pensando" />
+                <span aria-hidden="true">Pensando…</span>
               </div>
             )}
           </div>
         )}
       </div>
 
-      <div className="border-t border-outline-variant bg-surface px-4 pt-2 pb-[max(12px,env(safe-area-inset-bottom))]">
+      <div className="border-t border-border bg-surface px-4 pt-2 pb-[max(12px,env(safe-area-inset-bottom))]">
         {pet && messages.length === 0 && !loading && (
           <ChipRow className="mb-2">
             {SUGGESTIONS.map((s) => (
@@ -234,13 +232,13 @@ export function AssistantScreen() {
             rows={1}
             placeholder={pet ? `Pregunta sobre ${pet.name}…` : "Agrega una mascota para empezar"}
             disabled={!pet || sending}
-            className="max-h-[120px] min-h-[44px] flex-1 resize-none rounded-[22px] border border-outline-variant bg-bg px-4 py-2.5 text-[16px] text-on outline-none placeholder:text-outline focus:border-primary"
+            className="max-h-[120px] min-h-11 flex-1 resize-none rounded-xl border border-border bg-bg px-4 py-3 text-subtitle text-text outline-none placeholder:text-text-secondary focus:border-primary"
           />
           <button
             type="submit"
             aria-label="Enviar"
             disabled={!pet || sending || !input.trim()}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary transition-opacity active:scale-95 disabled:opacity-40"
+            className="pressable flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary transition-opacity disabled:opacity-40"
           >
             <SendHorizontal size={18} aria-hidden="true" />
           </button>

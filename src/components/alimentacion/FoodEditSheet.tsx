@@ -106,7 +106,7 @@ export function FoodEditSheet({ open, onClose, food, suggestedGrams, onSave }: {
         <Input label="Marca" placeholder="Ej. Royal Canin, Hill's" value={brand} onChange={(e) => setBrand(e.target.value)} />
         <Input label="Producto" placeholder="Ej. Adult Medium, Indoor" value={product} onChange={(e) => setProduct(e.target.value)} />
         <div className="grid grid-cols-2 gap-2">
-          <Input label="Bolsa" type="number" inputMode="decimal" min={0} step={0.5} placeholder="0" value={bagKg} onChange={(e) => setBagKg(e.target.value)} trailing={<span className="text-[13px]">kg</span>} />
+          <Input label="Bolsa" type="number" inputMode="decimal" min={0} step={0.5} placeholder="0" value={bagKg} onChange={(e) => setBagKg(e.target.value)} trailing={<span className="text-small">kg</span>} />
           <Input label="Abierta el" type="date" max={todayStr()} value={openedAt} onChange={(e) => setOpenedAt(e.target.value)} />
         </div>
         <Input
@@ -118,31 +118,31 @@ export function FoodEditSheet({ open, onClose, food, suggestedGrams, onSave }: {
           placeholder={suggestedGrams ? String(suggestedGrams) : "0"}
           value={grams}
           onChange={(e) => setGrams(e.target.value)}
-          trailing={<span className="text-[13px]">g</span>}
+          trailing={<span className="text-small">g</span>}
           hint={suggestedGrams ? `Sugerido según peso y etapa: ${suggestedGrams} g` : "Mira la etiqueta del alimento o pregunta a tu veterinario"}
         />
 
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <span className="text-[13px] font-semibold text-on-variant">Comidas del día</span>
-            <button type="button" onClick={distribute} className="text-[13px] font-bold text-primary">Repartir gramos</button>
+            <span className="text-small font-semibold text-text-secondary">Comidas del día</span>
+            <button type="button" onClick={distribute} className="text-small font-semibold text-primary-text">Repartir gramos</button>
           </div>
           {meals.map((m, i) => (
             <div key={i} className="flex items-end gap-2">
               <Input aria-label={`Hora de la comida ${i + 1}`} type="time" value={m.time} onChange={(e) => updateMeal(i, { time: e.target.value })} className="flex-1" />
-              <Input aria-label={`Gramos de la comida ${i + 1}`} type="number" inputMode="numeric" min={0} step={5} value={String(m.grams || "")} placeholder="0" onChange={(e) => updateMeal(i, { grams: Number(e.target.value) })} trailing={<span className="text-[13px]">g</span>} className="flex-1" />
+              <Input aria-label={`Gramos de la comida ${i + 1}`} type="number" inputMode="numeric" min={0} step={5} value={String(m.grams || "")} placeholder="0" onChange={(e) => updateMeal(i, { grams: Number(e.target.value) })} trailing={<span className="text-small">g</span>} className="flex-1" />
               <Button variant="secondary" size="icon" aria-label="Quitar comida" onClick={() => setMeals((ms) => ms.filter((_, idx) => idx !== i))} disabled={meals.length <= 1}>
                 <Trash2 size={18} />
               </Button>
             </div>
           ))}
-          <Button variant="tonal" size="sm" leading={<Plus size={16} />} onClick={() => setMeals((ms) => [...ms, { time: "12:00", grams: 0 }])} className="self-start">
+          <Button variant="secondary" size="sm" leading={<Plus size={16} />} onClick={() => setMeals((ms) => [...ms, { time: "12:00", grams: 0 }])} className="self-start">
             Añadir comida
           </Button>
         </div>
 
         <Input label="Snacks por día" type="number" inputMode="numeric" min={0} step={1} placeholder="0" value={snacks} onChange={(e) => setSnacks(e.target.value)} hint="Máximo el 10 % de las calorías del día" />
-        {error && <p role="alert" className="text-[13px] font-semibold text-danger">{error}</p>}
+        {error && <p role="alert" className="text-small font-semibold text-overdue-text">{error}</p>}
       </div>
     </Sheet>
   );

@@ -11,13 +11,13 @@ import { usePetPhotos } from "@/hooks/usePetPhotos";
 import { uploadPetPhoto } from "@/lib/storage/uploadPhoto";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
-import { Skeleton, showToast } from "@/components/ui";
+import { PawDotsLoader, Skeleton, showToast } from "@/components/ui";
 
 const MAX_PHOTOS = 20;
 
 function BrokenTile() {
   return (
-    <div className="flex aspect-square items-center justify-center rounded-card bg-danger-container text-danger" role="img" aria-label="Foto no disponible">
+    <div className="flex aspect-square items-center justify-center rounded-md bg-surface-elevated text-text-secondary" role="img" aria-label="Foto no disponible">
       <ImageOff size={22} />
     </div>
   );
@@ -84,11 +84,11 @@ export function PetPhotos({ petId, legacyPhotos = [], canEdit }: PetPhotosProps)
   return (
     <>
       <div className="grid grid-cols-3 gap-1">
-        {loading && Array.from({ length: 3 }).map((_, i) => <Skeleton key={`skel-${i}`} className="aspect-square rounded-card" />)}
+        {loading && Array.from({ length: 3 }).map((_, i) => <Skeleton key={`skel-${i}`} className="aspect-square rounded-md" />)}
 
         {!loading &&
           displayPhotos.map((photo, i) => (
-            <div key={photo.id} className="relative aspect-square overflow-hidden rounded-card bg-surface-2">
+            <div key={photo.id} className="relative aspect-square overflow-hidden rounded-md bg-surface-elevated">
               {photo.migrationFailed || !photo.signedUrl ? (
                 <BrokenTile />
               ) : (
@@ -110,7 +110,7 @@ export function PetPhotos({ petId, legacyPhotos = [], canEdit }: PetPhotosProps)
                   type="button"
                   onClick={() => void handleDelete(photo.id, photo.storagePath)}
                   aria-label={`Eliminar foto ${i + 1}`}
-                  className="absolute top-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-on/70 text-bg active:scale-95"
+                  className="absolute top-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-text/70 text-bg after:absolute after:-inset-2 after:content-[''] active:scale-95"
                 >
                   <X size={14} />
                 </button>
@@ -124,16 +124,16 @@ export function PetPhotos({ petId, legacyPhotos = [], canEdit }: PetPhotosProps)
             onClick={() => inputRef.current?.click()}
             disabled={uploading}
             aria-busy={uploading || undefined}
-            className="flex aspect-square flex-col items-center justify-center gap-1.5 rounded-card border-2 border-dashed border-outline-variant bg-surface-2 text-primary disabled:opacity-50"
+            className="flex aspect-square flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-border bg-surface-elevated text-primary-text disabled:opacity-50"
           >
-            {uploading ? <span className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" aria-hidden="true" /> : <ImagePlus size={22} aria-hidden="true" />}
-            <span className="text-[11px] font-bold text-on-variant">{uploading ? "Subiendo" : "Agregar"}</span>
+            {uploading ? <PawDotsLoader size={20} label="Subiendo fotos" /> : <ImagePlus size={22} aria-hidden="true" />}
+            <span className="text-label font-semibold text-text-secondary">{uploading ? "Subiendo" : "Agregar"}</span>
           </button>
         )}
       </div>
 
       {uploadError && (
-        <p className="mt-2 text-[13px] font-semibold text-danger" role="alert">
+        <p className="mt-2 text-small font-semibold text-overdue-text" role="alert">
           {uploadError}
         </p>
       )}
@@ -143,17 +143,17 @@ export function PetPhotos({ petId, legacyPhotos = [], canEdit }: PetPhotosProps)
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={uploading}
-          className="flex w-full flex-col items-center gap-2.5 rounded-card-lg border-2 border-dashed border-outline-variant bg-surface-2 px-5 py-8 disabled:opacity-50"
+          className="flex w-full flex-col items-center gap-3 rounded-md border-2 border-dashed border-border bg-surface-elevated px-6 py-8 disabled:opacity-50"
         >
-          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-primary-container text-on-primary-container">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-primary-soft text-primary-text">
             <Camera size={24} aria-hidden="true" />
           </span>
-          <span className="text-[16px] font-bold text-on">{uploading ? "Subiendo fotos" : "Agregar fotos"}</span>
-          <span className="text-[13px] text-on-variant">Toca para elegir desde tu galería</span>
+          <span className="text-subtitle font-semibold text-text">{uploading ? "Subiendo fotos" : "Agregar fotos"}</span>
+          <span className="text-small text-text-secondary">Toca para elegir desde tu galería</span>
         </button>
       )}
 
-      {!loading && displayPhotos.length === 0 && !canEdit && <p className="py-8 text-center text-[14px] text-on-variant">Sin fotos aún</p>}
+      {!loading && displayPhotos.length === 0 && !canEdit && <p className="py-8 text-center text-body text-text-secondary">Sin fotos aún</p>}
 
       <input
         ref={inputRef}
@@ -170,14 +170,14 @@ export function PetPhotos({ petId, legacyPhotos = [], canEdit }: PetPhotosProps)
       />
 
       {viewer !== null && current && (
-        <div role="dialog" aria-modal="true" aria-label={`Foto ${viewer + 1} de ${displayPhotos.length}`} className="fixed inset-0 z-[55] flex flex-col items-center justify-center bg-on text-bg" onClick={() => setViewer(null)}>
-          <div className="absolute inset-x-0 top-0 flex items-center justify-between px-4 pt-[max(14px,env(safe-area-inset-top))] pb-3" onClick={(e) => e.stopPropagation()}>
-            <span className="text-[13px] font-semibold text-bg/70">
+        <div role="dialog" aria-modal="true" aria-label={`Foto ${viewer + 1} de ${displayPhotos.length}`} className="fixed inset-0 z-[55] flex flex-col items-center justify-center bg-text text-bg" onClick={() => setViewer(null)}>
+          <div className="absolute inset-x-0 top-0 flex items-center justify-between px-4 pt-[max(16px,env(safe-area-inset-top))] pb-3" onClick={(e) => e.stopPropagation()}>
+            <span className="text-small font-semibold text-bg/70">
               {viewer + 1} / {displayPhotos.length}
             </span>
             <div className="flex gap-2">
               {canEdit && hasSupabasePhotos && (
-                <button type="button" onClick={() => void handleDelete(current.id, current.storagePath)} aria-label="Eliminar foto" className="flex h-11 w-11 items-center justify-center rounded-full bg-danger-container text-danger active:scale-95">
+                <button type="button" onClick={() => void handleDelete(current.id, current.storagePath)} aria-label="Eliminar foto" className="flex h-11 w-11 items-center justify-center rounded-full bg-danger-soft text-danger-text active:scale-95">
                   <Trash2 size={18} />
                 </button>
               )}
@@ -191,11 +191,11 @@ export function PetPhotos({ petId, legacyPhotos = [], canEdit }: PetPhotosProps)
             {current.migrationFailed || !current.signedUrl ? (
               <div className="flex flex-col items-center gap-3 text-bg/70">
                 <ImageOff size={48} aria-hidden="true" />
-                <p className="text-[14px]">No se pudo cargar la foto</p>
+                <p className="text-body">No se pudo cargar la foto</p>
               </div>
             ) : (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={current.signedUrl} alt="" className="max-h-[80dvh] max-w-full rounded-card object-contain" draggable={false} />
+              <img src={current.signedUrl} alt="" className="max-h-[80dvh] max-w-full rounded-md object-contain" draggable={false} />
             )}
           </div>
 
@@ -227,7 +227,7 @@ export function PetPhotos({ petId, legacyPhotos = [], canEdit }: PetPhotosProps)
           )}
 
           {displayPhotos.length > 1 && displayPhotos.length <= 12 && (
-            <div className="absolute bottom-[max(24px,env(safe-area-inset-bottom))] flex gap-1.5" role="tablist" aria-label="Fotos">
+            <div className="absolute bottom-[max(24px,env(safe-area-inset-bottom))] flex gap-2" role="tablist" aria-label="Fotos">
               {displayPhotos.map((p, i) => (
                 <button
                   key={p.id}
@@ -239,7 +239,7 @@ export function PetPhotos({ petId, legacyPhotos = [], canEdit }: PetPhotosProps)
                     e.stopPropagation();
                     setViewer(i);
                   }}
-                  className={cn("h-[7px] rounded-full transition-all duration-200", viewer === i ? "w-[18px] bg-bg" : "w-[7px] bg-bg/30")}
+                  className={cn("relative h-2 rounded-full transition-opacity duration-200 after:absolute after:-inset-x-1 after:-inset-y-4 after:content-['']", viewer === i ? "w-4 bg-bg" : "w-2 bg-bg/30")}
                 />
               ))}
             </div>
