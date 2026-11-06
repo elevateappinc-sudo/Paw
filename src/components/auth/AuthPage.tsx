@@ -1,17 +1,25 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "motion/react";
 import { Eye, EyeOff, Mail } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { fadeUp, stagger } from "@/lib/motion";
-import { Button, Card, Input, SegmentedControl, SpotsLoader } from "@/components/ui";
+import { Button, Card, Input, SegmentedControl, SpotsLoader, showToast } from "@/components/ui";
 import { GoogleLogo } from "@/components/settings/GoogleLogo";
 
 type Tab = "login" | "register";
 
 export function AuthPage() {
+  // Tras eliminar la cuenta, Ajustes redirige aquí con ?cuenta=eliminada
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("cuenta") === "eliminada") {
+      showToast("Tu cuenta y toda su información fueron eliminadas", undefined, "success");
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  }, []);
+
   const { signIn, signUp, signInWithGoogle } = useAuth();
   const router = useRouter();
   const reduce = useReducedMotion();
