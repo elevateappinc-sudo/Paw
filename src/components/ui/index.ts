@@ -19,5 +19,6 @@ export { PageHeader } from "./PageHeader";
 export { Modal } from "./Modal";
 export { Toast, showToast } from "./Toast";
 export { ToastProvider } from "./ToastProvider";
-export { DatePicker } from "./DatePicker";
+export { Calendar, DateField, TimeField, OptionSelect, formatShortDate } from "./Pickers";
+export { Popover } from "./Popover";
 export { EditableDropdown } from "./EditableDropdown";

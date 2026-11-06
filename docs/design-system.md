@@ -1,57 +1,61 @@
-# Design system · Lavanda refinado
+# Design system · Azul sereno
 
 Guía de producto, interfaz y desarrollo de Paw. Toda pantalla, componente o cambio de UI sigue este documento.
 
 **Fuente de verdad de los valores:** `src/styles/tokens.css`. Este documento explica cómo y cuándo usarlos. Los pares de texto/fondo están validados con WCAG AA (4.5:1 en texto normal) en claro y oscuro; si se cambia un color, se vuelve a validar.
 
-**Objetivo:** conservar la personalidad lavanda/rosa de Paw y elevar su claridad, consistencia, accesibilidad y preparación para producción.
+**Objetivo:** una interfaz casi monocromática en azul marino y celeste, limpia y tranquila, con tarjetas blancas sobre un fondo gris azulado; el color fuerte se reserva para lo urgente. Reemplaza a "Lavanda refinado" (nov 2026).
 
 ## 1. Principios de diseño
 
 - **Minimalismo útil.** Una acción dominante por vista; texto breve y jerarquía clara. No esconder información necesaria para decidir.
 - **Identidad animal.** Íconos, ilustraciones, avatares y loaders de mascotas. La iconografía genérica se reserva para navegación y utilidades.
-- **Personalidad tranquila.** Lavanda como base, rosa como acento; superficies suaves, radios generosos y movimiento discreto.
+- **Personalidad tranquila y monocromática.** Azul marino para la acción, celeste como acento y tintes azules para superficies destacadas; radios generosos y movimiento discreto. Un solo matiz de marca por pantalla.
 - **Emergencia inequívoca.** El rojo se reserva para SOS, mascota perdida, urgencias y acciones destructivas confirmadas.
 - **Datos sin duplicación.** Cada dato tiene una ubicación principal. Los resúmenes enlazan al detalle en lugar de repetirlo.
 - **Accesible por defecto.** Contraste, foco, objetivos táctiles, etiquetas y movimiento reducido desde el inicio.
-- **Claro y oscuro equivalentes.** Misma jerarquía y legibilidad; el oscuro usa capas, no sombras.
+- **Claro y oscuro equivalentes.** Misma jerarquía y legibilidad; en claro las tarjetas llevan sombra suave, en oscuro se separan por capas.
 - **Tokens como fuente de verdad.** Los componentes consumen tokens semánticos; nunca hexadecimales en JSX/TSX.
 
 ## 2. Color y temas
 
 | Rol | Token | Claro | Oscuro | Uso |
 | --- | --- | --- | --- | --- |
-| Fondo | `--color-bg` | #F7F6FC | #0D0C1B | Lienzo principal |
-| Superficie | `--color-surface` | #FFFFFF | #17162B | Tarjetas, filas, menús |
-| Superficie elevada | `--color-surface-elevated` | #F0EFFA | #211F3A | Sheets, popovers, campos |
-| Borde | `--color-border` | #E3E1F2 | #302E4A | Divisores y contornos |
-| Texto | `--color-text` | #19182B | #F4F2FF | Texto principal |
-| Texto secundario | `--color-text-secondary` | #575971 | #B0AEC9 | Metadatos (ajustado de #5E6078 para cumplir AA sobre pastel lila) |
-| Primario | `--color-primary` / `--color-on-primary` | #625FE8 / #FFF | #A5A2FF / #0D0C1B | CTA, FAB, selección y foco |
-| Primario suave | `--color-primary-soft` | #E9E8FF | #29264D | Fondos de ícono, selección tenue, botón secondary |
-| Texto primario | `--color-primary-text` | #514CCB | #C0BDFF | Texto e íconos sobre fondos suaves |
-| Acento | `--color-accent` | #F28CCB | #F5A2D7 | Filtros seleccionados, anillos, detalles |
-| Acento suave | `--color-accent-soft` | #FCE8F4 | #43243A | Estados vacíos, fondos decorativos |
-| Pastel lila / menta / cielo / durazno | `--color-pastel-*` | #DDD8FC / #D6F1E2 / #D8EAFE / #FFE4D5 | #302C59 / #1D3A30 / #1D344B / #472F2B | Superficies; nunca texto pequeño |
-| Peligro | `--color-danger` | #D93645 | #FF7584 | SOS, mascota perdida, destructivo |
+| Fondo | `--color-bg` | #F2F5FA | #0B0C0F | Lienzo principal (gris azulado) |
+| Superficie | `--color-surface` | #FFFFFF | #16171B | Tarjetas, filas, menús |
+| Superficie elevada | `--color-surface-elevated` | #EBF0F8 | #1E2025 | Sheets, popovers, campos |
+| Borde | `--color-border` | #E1E7F0 | #2A2C32 | Divisores y contornos |
+| Texto | `--color-text` | #0E1A33 | #F5F6F8 | Texto principal |
+| Texto secundario | `--color-text-secondary` | #55627C | #A7ABB5 | Metadatos |
+| Primario | `--color-primary` / `--color-on-primary` | #1B3266 / #FFF | #8DB4FF / #0B0C0F | CTA, FAB, pestaña activa, selección y foco |
+| Primario suave | `--color-primary-soft` | #E5EEFB | #24262C | Fondos de ícono, contadores, chips, botón secondary |
+| Texto primario | `--color-primary-text` | #2455B5 | #F0F2F6 | Íconos, enlaces, nombre en el saludo, raza, fechas |
+| Acento | `--color-accent` | #2B74C4 | #B9C9E4 | Puntos indicadores, filtros seleccionados |
+| Acento suave | `--color-accent-soft` | #E1EFFC | #202329 | Estados vacíos, fondos decorativos |
+| Tintes (`pastel-lilac` / `mint` / `sky` / `peach`) | `--color-pastel-*` | #E4EBF8 / #E1EFF5 / #DDEBFB / #E8EDF5 | #1C1E23 / #1B1E21 / #1C1F24 / #1D1E22 | Variaciones de azul para superficies; nunca texto pequeño. Los nombres se conservan por compatibilidad |
+| Tarjeta destacada | `--hero-from` / `--hero-to` / `--hero-glow` (clase `.hero-surface`) | #EEF5FE → #DCE9FB | #24262C → #17181C | Solo la tarjeta de la mascota activa |
+| Peligro | `--color-danger` | #D93645 | #FF7584 | Punto del SOS, llamada de urgencia, mascota perdida, destructivo |
 | Éxito | `--color-success` | #217A55 | #71D5A7 | Completado, sin pendientes |
 | Advertencia | `--color-warning` | #956000 | #F2C66D | Vence pronto |
-| Información | `--color-info` | #3564B8 | #8CB6FF | Datos neutrales y avisos |
+| Información | `--color-info` | #2455B5 | #C9D3E4 | Datos neutrales y avisos |
 
 ### 2.1 Reglas de aplicación
 
-- CTA primario con texto blanco solo si cumple AA para su tamaño y peso (#625FE8 + blanco = 4.86:1). Si no, `--color-primary-text` sobre fondo suave.
-- El rosa no se usa para párrafos ni como sustituto del primario: identifica, no dirige.
+- CTA primario: azul marino con texto blanco (#1B3266 + blanco ≈ 12:1).
+- **Monocromático:** íconos, fondos de ícono, servicios, tintes y anillos usan solo la familia azul. Lo pendiente o próximo va en `primary-text`; únicamente lo **vencido** (`overdue`) y lo urgente (`danger`) cambian de color. El verde (`success`) solo confirma una acción completada o "todo al día".
+- El celeste de acento identifica (puntos, filtro activo); no dirige ni se usa para párrafos.
 - Los estados combinan siempre color + ícono + texto.
-- En oscuro no hay sombras: los niveles se separan con `bg` → `surface` → `surface-elevated`.
-- Colores de mascota (personalización): lavanda, rosa, menta, cielo, durazno y ciruela (`--color-pet-*`), mezclados al 18–22 % con la superficie. Siempre con un indicador adicional (nombre o borde).
+- **Oscuro neutro:** grafito casi sin matiz y el blanco como color de acción (FAB, pestaña activa, anillo, íconos); el azul queda solo como un leve tinte en el acento. Nunca superficies azul marino.
+- **Tarjetas invertidas (`.invert-dark`):** las que en claro son celestes (tarjeta de la mascota activa, tarjetas de "Para hoy", mosaicos de "Servicios y cuidados", mosaicos Sexo/Edad/Peso, portadas de "Cerca de ti", botón tonal "Reservar refuerzo") pasan a blancas con texto casi negro en oscuro. La clase redefine los tokens solo dentro del elemento (definida en `tokens.css`), así el texto sigue siendo texto real y nítido; en claro no cambia nada.
+- En claro las tarjetas blancas llevan `shadow-1`; en oscuro no hay sombras de tarjeta y los niveles se separan con `bg` → `surface` → `surface-elevated`.
+- Colores de mascota (`--color-pet-*`): solo para datos personalizados (mapa, gráficos); la mascota se distingue por su foto, no por un fondo de color.
 
 ### 2.2 Severidad y estados
 
 | Estado | Tokens | Ícono | Regla |
 | --- | --- | --- | --- |
 | Vencido | `--color-overdue-soft` / `-text` | alert-circle | Fecha pasada; priorizar |
-| Vence pronto | `--color-warning-soft` / `-text` | clock | 7 días o menos |
+| Vence pronto | `--color-primary-soft` / `--color-primary-text` | clock | 7 días o menos (sin color de alerta) |
 | Al día | `--color-success-soft` / `-text` | check-circle | Sin pendientes |
 | Informativo | `--color-info-soft` / `-text` | info | Dato neutral |
 | Destructivo | `--color-danger-soft` / `-text` | alert-triangle | Confirmar antes de eliminar o cerrar |
@@ -70,7 +74,7 @@ Plus Jakarta Sans, Regular (400) y Semibold (600). La jerarquía se construye co
 | `--text-label` | `text-label` | 11 px / 600 | 1.3 | Etiquetas cortas no esenciales; nunca información crítica |
 | `--text-input` | `text-input` | 16 px / 400 | 1.4 | Campos de entrada (evita zoom en iOS) |
 
-- Sentence case en etiquetas y botones ("Añadir mascota"); solo "SOS" va en mayúsculas.
+- Sentence case en etiquetas y botones ("Añadir mascota"). Mayúsculas solo en "SOS" y en la etiqueta superior `.eyebrow` (11 px, 600, espaciado 0.08 em, texto secundario), p. ej. "MASCOTA ACTIVA", el día y mes del mosaico de fecha.
 - No truncar edad, dosis, alergias ni información médica: permitir wrap.
 - Nada funcional por debajo de 12 px (estados, fechas, errores, pistas, enlaces).
 - Números tabulares (`tabular-nums`; automático en `dd`, `td`, `time`) para peso, fechas, gasto y progreso.
@@ -90,10 +94,11 @@ Múltiplos de 4 px; las excepciones (20 px) van por token y documentadas.
 
 ## 5. Elevación, bordes y superficies
 
-- Tarjetas estándar: borde de 1 px, sin sombra (`Card` tiene `elevation = 0` por defecto).
-- Sombras lavanda sutiles solo en elementos flotantes: menú, sheet, popover, FAB, toasts y controles sobre mapa o foto. Máximo tres niveles. El menú y el FAB usan `--shadow-nav` (sombra + brillo superior `--nav-highlight`).
-- En oscuro, sin sombras.
-- Tarjetas pastel admiten una tarjeta interior translúcida (`--color-pastel-glass`), con contraste propio.
+- Tarjetas estándar: blancas, borde de 1 px y sombra suave `shadow-1` (`Card` tono surface). Filas de tarea, mosaicos de servicio, evento y botones de flecha siguen la misma regla.
+- Elementos flotantes (menú, FAB, sheet, popover, toasts): `--shadow-nav` / `shadow-2` / `shadow-3`, sombras azuladas. Máximo tres niveles.
+- Tarjeta destacada: `.hero-surface` (degradado celeste, borde de luz y resplandor); una sola por pantalla.
+- En oscuro, sin sombras de tarjeta; el menú conserva una sombra oscura para flotar.
+- La tarjeta destacada admite chips translúcidos (`--color-pastel-glass`), con contraste propio.
 - No mezclar borde fuerte, sombra, color saturado y gran radio en el mismo componente.
 
 ## 6. Componentes base (`src/components/ui`)
@@ -102,17 +107,19 @@ Múltiplos de 4 px; las excepciones (20 px) van por token y documentadas.
 | --- | --- | --- |
 | `Button` | primary, secondary (relleno suave), outline (borde), ghost, destructive; S 36, M 44, L 52 | Un CTA primario por vista. Press `scale(0.98)` en 120 ms. Loading conserva ancho y bloquea doble envío |
 | `IconButton` | 44 × 44, ícono 20–24 px | `label` obligatorio (nombre accesible) |
-| `Chip` (filtro) | 36 px; activo rosa + check | Los filtros no son estados |
+| `Chip` (filtro) | 36 px; activo celeste + check | Los filtros no son estados |
 | `StatusChip` / `Tag` | soft + text + ícono, 12 px | Solo informa |
-| `TabBar` | 4 destinos, 72 px + safe area; vidrio con `--shadow-nav` + `--nav-highlight` (sin sombra en oscuro) | Activo: píldora primaria deslizante, ícono relleno y etiqueta semibold; inactivo: trazo y regular. Rebote breve al activar (sin él con movimiento reducido) |
-| FAB | 52 px circular | Una acción contextual; nunca tapa contenido |
-| `SOSButton` | Píldora roja de alto contraste | Solo en contexto de emergencia (Inicio, Salud, mascota perdida, error). Las acciones que llaman o comparten datos se confirman antes |
+| `TabBar` | Barra blanca sólida, 72 px + safe area, radio 24, `--shadow-nav`; 4 destinos con el "+" al centro | Activo: bloque azul marino (radio 16) que se desliza, con ícono y etiqueta blancos; inactivo: trazo y texto secundario. Rebote breve al activar (sin él con movimiento reducido) |
+| FAB central | 64 px circular, azul marino, elevado sobre la barra con anillo de 4 px del color de fondo | "Registrar" (o "Añadir mascota" si no hay); siempre en el centro del menú |
+| `SOSButton` | Píldora invertida (fondo `text`, texto `bg`) con punto `danger` que late, mayúsculas | Solo en contexto de emergencia (Salud, mascota perdida, error). Las acciones que llaman o comparten datos se confirman antes |
+| Encabezado de sección | Título 20 px + contador opcional (píldora `primary-soft`) + botón de flecha blanco de 44 px | Flecha en vez de "Ver todo" |
+| Selectores (`DateField`, `TimeField`, `OptionSelect`, `Calendar`, `Popover`) | Campo igual a `Input` (50 px; `compact` 44 px sobre `bg`) que abre un `Popover`: superficie, borde, radio 24, `shadow-3`, por encima de los sheets | Nunca controles nativos (`<select>`, `type="date"`/`"time"`): `Input type="date|time"` y `Select` ya usan estos. Calendario lunes a domingo (L M X J V S D), día elegido en círculo primario, hoy en `primary-text` con punto, días fuera de rango atenuados; el título "Noviembre 2026" abre años y meses; pie con "Borrar" y "Hoy". Opciones con check en la elegida. Teclado: flechas, Enter y Escape |
 | `Sheet` | Superficie elevada, radio superior 24 px, manija 32 × 4 | Cierre por botón y gesto |
 | `SegmentedControl` | ≥ 40 px | Salud, Rutina, Historial |
 | `EmptyState` | Ícono animal + título + una línea + CTA | Una acción que resuelva |
-| Tarjeta de mascota | Foto/avatar, nombre, raza/edad, próximo cuidado y progreso | Color solo como matiz; máximo dos métricas secundarias |
+| Tarjeta de mascota (Inicio) | `.hero-surface`: foto cuadrada 76 px con borde blanco, nombre + chip de sexo, raza en azul, edad, anillo "x/y al día" (cifra 14 px, total y "al día" 11 px regular); franja inferior con vacunas y peso | Encima, `.eyebrow` "Mascota activa" con avatares apilados para cambiar de mascota y "+" |
 | `PetTag` (ficha médica) | Filas etiqueta-valor | Solo datos existentes; alergias y condiciones primero |
-| Fila de tarea | Ícono 32–40 px, título, fecha, completar | Urgente primero; animación breve con alternativa accesible |
+| Fila de tarea | Tarjeta blanca independiente (radio 24, `shadow-1`), ícono 48 px en cuadro `primary-soft` con borde, título, línea "• detalle · fecha" y check circular fino | Nunca como tabla con divisores. Urgente primero; animación breve con alternativa accesible |
 | Skeleton | Geometría real; avatar con silueta animal | No mostrar si la espera es < 300 ms |
 | Toast | Mensaje corto + acción opcional | Nunca para información crítica |
 
@@ -137,13 +144,13 @@ Avatares: primero la foto del usuario; si no hay, retrato realista por especie y
 
 Loaders (`src/components/ui/Loaders.tsx`): `PawLoader` (espera sin forma), `PawDotsLoader` (dentro de botón), `PetSilhouetteLoader` (primera carga larga), `SpotsLoader` (bienvenida, decorativo), `TailRefresh` (pull-to-refresh), `LostPetRadar` (solo mascota perdida, con texto de estado).
 
-Solo `transform` y `opacity`. Skeleton con un barrido sincronizado y fundido cruzado al contenido. Con `prefers-reduced-motion`: sin barrido, giro 3D ni rebote. El carrusel 3D del Inicio rota como máximo 32°.
+Solo `transform` y `opacity`. Skeleton con un barrido sincronizado y fundido cruzado al contenido. Con `prefers-reduced-motion`: sin barrido, giro 3D ni rebote.
 
 ## 9. Patrones de pantalla
 
 | Pantalla | Estructura | Reglas |
 | --- | --- | --- |
-| Inicio | Saludo, carrusel de mascotas, para hoy, servicios, recomendado, cerca de ti, evento | Una CTA primaria; los módulos vacíos se ocultan |
+| Inicio | Cabecera mínima sobre el fondo: ícono de la app (`AppMark`, huella en cuadro primario + "Paw") a la izquierda y foto de perfil a la derecha; sin saludo, franja ni SOS · mascota activa · para hoy · servicios y cuidados · cerca de ti (la recomendada primero, con marca) · próximo evento | Una CTA primaria; los módulos vacíos se ocultan; nada se repite entre módulos |
 | Mascotas | Selector, foto, nombre y raza, mosaicos sexo/edad/peso, personas con acceso, Salud / Rutina / Historial | Datos básicos con una sola ubicación |
 | Salud | Historial médico, ficha médica, gráfico de peso con resumen textual | Ordenar por urgencia; fecha, unidad y contexto |
 | Rutina | Cuadrícula de alimentación, higiene, itinerario, entrenamiento | Iconografía propia |
@@ -185,7 +192,8 @@ Estados obligatorios: cargando (skeleton), vacío con acción, error con "Reinte
 - [ ] ¿Se entiende en segundos, sin texto redundante?
 - [ ] ¿Íconos, avatares y loaders de mascotas?
 - [ ] ¿Contraste AA y estados con texto/ícono además de color?
-- [ ] ¿El oscuro conserva jerarquía sin sombras?
+- [ ] ¿El oscuro conserva jerarquía sin sombras de tarjeta?
+- [ ] ¿La pantalla usa un solo matiz de marca (azul) y el color fuerte solo para lo vencido o urgente?
 - [ ] ¿Objetivos táctiles y foco visibles?
 - [ ] ¿Loading, vacío, error, offline y éxito?
 - [ ] ¿Respeta movimiento reducido?

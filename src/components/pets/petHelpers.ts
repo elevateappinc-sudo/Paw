@@ -43,6 +43,7 @@ export function rowToPet(row: PetRow): Pet {
     breed: row.breed ?? undefined,
     birthDate: row.birth_date ?? undefined,
     weight: row.weight ?? undefined,
+    sex: row.sex,
     emoji: row.emoji ?? "",
     color: row.color ?? "",
     photos: [],

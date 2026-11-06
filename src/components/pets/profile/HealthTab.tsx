@@ -15,8 +15,8 @@ const KINDS: CareCycleKind[] = ["vaccine", "deworm_internal", "deworm_external",
 /** Fondo del ícono según el estado (escala de severidad) */
 const ICON_BOX = {
   overdue: "bg-overdue-soft text-overdue-text",
-  soon: "bg-warning-soft text-warning-text",
-  ok: "bg-pastel-mint text-success-text",
+  soon: "bg-primary-soft text-primary-text",
+  ok: "bg-primary-soft text-primary-text",
   info: "bg-pastel-lilac text-primary-text",
 } as const;
 
@@ -73,7 +73,7 @@ export function HealthTab({ petId, petName, cycles, onRefresh }: { petId: string
                 Al día <ShieldCheck size={14} aria-hidden="true" />
               </span>
             ) : pending.length > 0 ? (
-              <span className="inline-flex shrink-0 items-center rounded-full bg-warning-soft px-3 py-1 text-small font-semibold text-warning-text">
+              <span className="inline-flex shrink-0 items-center rounded-full bg-primary-soft px-3 py-1 text-small font-semibold text-primary-text">
                 {pending.length} {pending.length === 1 ? "pendiente" : "pendientes"}
               </span>
             ) : null
@@ -103,7 +103,7 @@ export function HealthTab({ petId, petName, cycles, onRefresh }: { petId: string
             </p>
             <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-elevated" role="progressbar" aria-valuenow={upToDate.length} aria-valuemin={0} aria-valuemax={total} aria-label="Cuidados de salud al día">
               <div
-                className={cn("h-full rounded-full transition-transform duration-[var(--duration-slow)] ease-[var(--ease-standard)]", allGood ? "bg-success" : "bg-warning")}
+                className={cn("h-full rounded-full transition-transform duration-[var(--duration-slow)] ease-[var(--ease-standard)]", allGood ? "bg-success" : "bg-primary")}
                 style={{ transform: `scaleX(${upToDate.length / total})`, transformOrigin: "left" }}
               />
             </div>
@@ -124,7 +124,7 @@ export function HealthTab({ petId, petName, cycles, onRefresh }: { petId: string
                         </span>
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-body font-semibold text-text">{c.name}</span>
-                          <span className={cn("block text-small", sev === "overdue" ? "text-overdue-text" : "text-warning-text")}>{dueLabel(c.next_due_at)}</span>
+                          <span className={cn("block text-small", sev === "overdue" ? "text-overdue-text" : "text-primary-text")}>{dueLabel(c.next_due_at)}</span>
                         </span>
                         <button
                           type="button"
@@ -134,7 +134,7 @@ export function HealthTab({ petId, petName, cycles, onRefresh }: { petId: string
                           aria-busy={busy || undefined}
                           className="pressable flex h-11 w-11 shrink-0 items-center justify-center rounded-full disabled:cursor-default"
                         >
-                          <span className={cn("h-7 w-7 rounded-full border-2 transition-colors duration-[var(--duration-fast)]", busy ? "border-success bg-success" : "border-border bg-surface")} />
+                          <span className={cn("h-7 w-7 rounded-full border-2 transition-colors duration-[var(--duration-fast)]", busy ? "border-success bg-success" : "border-text-secondary bg-surface")} />
                         </button>
                       </li>
                     );
@@ -192,7 +192,7 @@ export function HealthTab({ petId, petName, cycles, onRefresh }: { petId: string
         <Link href={`/salud?pet=${petId}`} className="pressable flex min-h-12 items-center justify-center gap-2 rounded-full border border-border bg-surface text-body font-semibold text-text">
           <History size={18} aria-hidden="true" /> Línea de tiempo
         </Link>
-        <Link href="/explorar?cat=veterinaria" className="pressable flex min-h-12 items-center justify-center gap-2 rounded-full bg-pastel-lilac text-body font-semibold text-text">
+        <Link href="/explorar?cat=veterinaria" className="invert-dark pressable flex min-h-12 items-center justify-center gap-2 rounded-full bg-pastel-lilac text-body font-semibold text-text">
           Reservar refuerzo
         </Link>
       </div>

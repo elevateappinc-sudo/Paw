@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 type Elevation = 0 | 1 | 2 | 3;
 
-/** Las tarjetas priorizan borde de 1 px; la sombra queda para elementos flotantes */
+/** Tarjetas blancas con borde de 1 px y sombra suave (shadow-1, nula en oscuro) */
 const elevationClass: Record<Elevation, string> = {
   0: "",
   1: "shadow-1",
@@ -20,7 +20,7 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const toneClass = {
-  surface: "bg-surface border border-border",
+  surface: "bg-surface border border-border shadow-1",
   container: "bg-surface-elevated border border-transparent",
   primary: "bg-primary-soft border border-transparent text-primary-text",
   warn: "bg-warning-soft border border-transparent text-warning-text",

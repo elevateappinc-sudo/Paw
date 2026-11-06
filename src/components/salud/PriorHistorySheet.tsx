@@ -1,10 +1,10 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
-import { Sheet, Button, Tag, Toggle } from "@/components/ui";
+import { Sheet, Button, Toggle, DateField, OptionSelect } from "@/components/ui";
+import { CARE_KIND_ICON } from "@/components/pets/petHelpers";
 import { completeCareCycle, updateCareCycle, createCareCycle, intervalToDays, intervalLabel } from "@/lib/api/careCycles";
 import type { CareCycle, CareCycleKind, IntervalUnit } from "@/types/db";
-import { CARE_KIND_LABEL } from "@/types/db";
 import { todayStr, addDays, errorMessage } from "./shared";
 import { showToast } from "@/components/ui/Toast";
 import { useStore } from "@/store";
@@ -17,6 +17,7 @@ export function cyclesWithoutHistory(cycles: CareCycle[] | null | undefined): Ca
 }
 
 const UNIT_LABEL: Record<IntervalUnit, string> = { days: "días", weeks: "semanas", months: "meses" };
+const UNIT_OPTIONS = (["days", "weeks", "months"] as IntervalUnit[]).map((u) => ({ value: u, label: UNIT_LABEL[u] }));
 const KIND_OPTIONS: { value: CareCycleKind; label: string }[] = [
   { value: "other", label: "Seguimiento (dermatitis, vista, control especial)" },
   { value: "vaccine", label: "Vacuna" },
@@ -51,8 +52,7 @@ function entryFrom(c: CareCycle): Entry {
   return { active: c.active, value: c.interval_value ?? c.interval_days, unit: c.interval_value ? c.interval_unit : "days", date: "", product: "" };
 }
 
-const inputCls = "min-h-11 rounded-md border border-border bg-surface px-3 text-body text-text outline-none placeholder:text-text-secondary focus:border-primary";
-const selectCls = "min-h-11 rounded-md border border-border bg-surface px-2 text-body text-text outline-none focus:border-primary";
+const inputCls = "min-h-11 w-full min-w-0 rounded-md border border-border bg-bg px-3 text-body text-text outline-none placeholder:text-text-secondary focus:border-primary";
 
 /**
  * Configurador del plan de cuidados de la mascota:
@@ -159,54 +159,50 @@ export function PriorHistorySheet({
       open={open}
       onClose={onClose}
       title={`Plan de ${petName}`}
-      subtitle="Ajusta cada cuánto toca, qué quieres seguir y cuándo fue la última vez. Lo que no sepas, déjalo vacío."
+      subtitle="Lo que no sepas, déjalo vacío."
       footer={
-        <div className="flex flex-col gap-2">
-          <Button full size="lg" onClick={() => void save()} loading={saving}>
-            {total > 0 ? `Guardar ${total} ${total === 1 ? "cambio" : "cambios"}` : "Sin cambios"}
-          </Button>
-          <p className="text-center text-small text-text-secondary">Las próximas fechas se recalculan solas a partir de lo que registres.</p>
-        </div>
+        <Button full size="lg" onClick={() => void save()} loading={saving}>
+          {total > 0 ? `Guardar ${total} ${total === 1 ? "cambio" : "cambios"}` : "Listo"}
+        </Button>
       }
     >
-      <ul className="flex flex-col divide-y divide-border">
+      <ul className="flex flex-col gap-4 pt-2">
         {list.map((c) => {
           const e = entries[c.id] ?? entryFrom(c);
           const days = intervalToDays(e.value, e.unit);
           const next = e.date ? addDays(e.date, days) : c.last_done_at ? addDays(c.last_done_at, days) : null;
-          const nextLabel = next ? (next < today ? "ya vencido, toca ahora" : `próxima ${next}`) : null;
+          const overdue = !!next && next < today;
+          const Icon = CARE_KIND_ICON[c.kind];
           return (
-            <li key={c.id} className={`flex flex-col gap-2 py-3 ${e.active ? "" : "opacity-60"}`}>
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
+            <li key={c.id} className="rounded-xl border border-border bg-surface p-4 shadow-1">
+              {/* Encabezado: ícono, nombre, frecuencia y el interruptor de seguimiento */}
+              <div className={`flex items-center gap-3 transition-opacity duration-[var(--duration-base)] ${e.active ? "" : "opacity-60"}`}>
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary-text">
+                  <Icon size={20} aria-hidden="true" />
+                </span>
+                <div className="min-w-0 flex-1">
                   <div className="truncate text-body font-semibold text-text">{c.name}</div>
-                  <div className="text-small text-text-secondary">
-                    {CARE_KIND_LABEL[c.kind]} · {intervalLabel({ interval_days: days, interval_value: e.value, interval_unit: e.unit })}
-                    {nextLabel ? ` · ${nextLabel}` : ""}
+                  <div className={`truncate text-small ${overdue ? "text-overdue-text" : "text-text-secondary"}`}>
+                    {e.active ? (overdue ? "Toca ahora" : intervalLabel({ interval_days: days, interval_value: e.value, interval_unit: e.unit })) : "Sin seguimiento"}
                   </div>
                 </div>
-                {c.last_done_at || e.date ? <Tag tone="ok" size="xs">Con fecha</Tag> : <Tag tone="neutral" size="xs">Sin registro</Tag>}
+                <Toggle hideLabel checked={e.active} onChange={(v) => update(c.id, { active: v })} label={`Dar seguimiento a ${c.name}`} />
               </div>
-              <Toggle checked={e.active} onChange={(v) => update(c.id, { active: v })} label="Dar seguimiento" description={e.active ? "Recibirás recordatorios" : "No aparecerá en el plan"} />
               {e.active && (
-                <div className="grid grid-cols-[1fr_1fr] gap-2">
-                  <label className="flex flex-col gap-1 text-label font-semibold text-text-secondary">
+                <div className="mt-4 grid grid-cols-2 gap-3 border-t border-border pt-4">
+                  <label className="flex flex-col gap-2 text-small text-text-secondary">
                     Cada
-                    <span className="grid grid-cols-[64px_1fr] gap-1">
+                    <span className="grid grid-cols-[56px_1fr] gap-2">
                       <input type="number" min={1} max={365} value={e.value} onChange={(ev) => update(c.id, { value: Math.max(1, Number(ev.target.value) || 1) })} className={inputCls} aria-label={`Frecuencia de ${c.name}`} />
-                      <select value={e.unit} onChange={(ev) => update(c.id, { unit: ev.target.value as IntervalUnit })} className={selectCls} aria-label={`Unidad de ${c.name}`}>
-                        {(["days", "weeks", "months"] as IntervalUnit[]).map((u) => (
-                          <option key={u} value={u}>{UNIT_LABEL[u]}</option>
-                        ))}
-                      </select>
+                      <OptionSelect compact required value={e.unit} onChange={(v) => update(c.id, { unit: v as IntervalUnit })} options={UNIT_OPTIONS} aria-label={`Unidad de ${c.name}`} />
                     </span>
                   </label>
-                  <label className="flex flex-col gap-1 text-label font-semibold text-text-secondary">
+                  <label className="flex flex-col gap-2 text-small text-text-secondary">
                     Última vez
-                    <input type="date" max={today} value={e.date} onChange={(ev) => update(c.id, { date: ev.target.value })} className={inputCls} aria-label={`Última fecha de ${c.name}`} />
+                    <DateField compact max={today} value={e.date} onChange={(v) => update(c.id, { date: v })} placeholder="Sin fecha" aria-label={`Última fecha de ${c.name}`} />
                   </label>
                   {(c.kind === "vaccine" || c.kind === "deworm_internal" || c.kind === "deworm_external") && e.date && (
-                    <label className="col-span-2 flex flex-col gap-1 text-label font-semibold text-text-secondary">
+                    <label className="col-span-2 flex flex-col gap-2 text-small text-text-secondary">
                       Producto (opcional)
                       <input type="text" value={e.product} onChange={(ev) => update(c.id, { product: ev.target.value })} placeholder={c.kind === "vaccine" ? "Marca o lote" : "Ej. Bravecto, NexGard"} className={inputCls} aria-label={`Producto de ${c.name}`} />
                     </label>
@@ -218,44 +214,36 @@ export function PriorHistorySheet({
         })}
 
         {added.map((n) => (
-          <li key={n.key} className="flex flex-col gap-2 py-3">
+          <li key={n.key} className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 shadow-1">
             <div className="flex items-center justify-between gap-2">
               <input type="text" value={n.name} onChange={(ev) => updateNew(n.key, { name: ev.target.value })} placeholder="Nombre, ej. Control de dermatitis" className={`${inputCls} flex-1`} aria-label="Nombre del cuidado" />
               <button type="button" onClick={() => setAdded((a) => a.filter((x) => x.key !== n.key))} aria-label="Quitar" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-elevated text-text-secondary">
-                <Trash2 size={18} />
+                <Trash2 size={18} aria-hidden="true" />
               </button>
             </div>
-            <div className="grid grid-cols-[1fr_1fr] gap-2">
-              <label className="col-span-2 flex flex-col gap-1 text-label font-semibold text-text-secondary">
+            <div className="grid grid-cols-2 gap-3">
+              <label className="col-span-2 flex flex-col gap-2 text-small text-text-secondary">
                 Tipo
-                <select value={n.kind} onChange={(ev) => updateNew(n.key, { kind: ev.target.value as CareCycleKind })} className={selectCls}>
-                  {KIND_OPTIONS.map((k) => (
-                    <option key={k.value} value={k.value}>{k.label}</option>
-                  ))}
-                </select>
+                <OptionSelect compact required value={n.kind} onChange={(v) => updateNew(n.key, { kind: v as CareCycleKind })} options={KIND_OPTIONS} aria-label="Tipo de cuidado" />
               </label>
-              <label className="flex flex-col gap-1 text-label font-semibold text-text-secondary">
+              <label className="flex flex-col gap-2 text-small text-text-secondary">
                 Cada
-                <span className="grid grid-cols-[64px_1fr] gap-1">
+                <span className="grid grid-cols-[56px_1fr] gap-2">
                   <input type="number" min={1} max={365} value={n.value} onChange={(ev) => updateNew(n.key, { value: Math.max(1, Number(ev.target.value) || 1) })} className={inputCls} aria-label="Frecuencia" />
-                  <select value={n.unit} onChange={(ev) => updateNew(n.key, { unit: ev.target.value as IntervalUnit })} className={selectCls} aria-label="Unidad">
-                    {(["days", "weeks", "months"] as IntervalUnit[]).map((u) => (
-                      <option key={u} value={u}>{UNIT_LABEL[u]}</option>
-                    ))}
-                  </select>
+                  <OptionSelect compact required value={n.unit} onChange={(v) => updateNew(n.key, { unit: v as IntervalUnit })} options={UNIT_OPTIONS} aria-label="Unidad" />
                 </span>
               </label>
-              <label className="flex flex-col gap-1 text-label font-semibold text-text-secondary">
+              <label className="flex flex-col gap-2 text-small text-text-secondary">
                 Última vez (opcional)
-                <input type="date" max={today} value={n.date} onChange={(ev) => updateNew(n.key, { date: ev.target.value })} className={inputCls} />
+                <DateField compact max={today} value={n.date} onChange={(v) => updateNew(n.key, { date: v })} placeholder="Sin fecha" aria-label="Última vez" />
               </label>
             </div>
           </li>
         ))}
       </ul>
 
-      <button type="button" onClick={addRow} className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-dashed border-text-secondary text-body font-semibold text-primary-text">
-        <Plus size={18} /> Añadir otro cuidado o seguimiento
+      <button type="button" onClick={addRow} className="pressable mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border text-body font-semibold text-primary-text">
+        <Plus size={18} aria-hidden="true" /> Añadir cuidado
       </button>
     </Sheet>
   );

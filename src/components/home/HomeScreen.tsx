@@ -10,8 +10,7 @@ import { fetchUpcomingEvents } from "@/lib/api/events";
 import { WeightSheet } from "@/components/pets/profile/WeightSheet";
 import type { PetEvent } from "@/types/db";
 import { HomeHeader } from "./HomeHeader";
-import { PetHeroCarousel, PetHeroSkeleton } from "./PetHeroCarousel";
-import { RecommendedVetCard, pickRecommended } from "./RecommendedVetCard";
+import { PetHero, PetHeroSkeleton } from "./PetHero";
 import { TodayCard } from "./TodayCard";
 import { CategoryGrid } from "./CategoryGrid";
 import { NearbyCarousel, type NearbyCard } from "./NearbyCarousel";
@@ -37,6 +36,8 @@ export function HomeScreen({ userId, userName, userAvatarUrl }: { userId: string
   const [petsSettled, setPetsSettled] = useState(false);
   const [petsKey, setPetsKey] = useState(0);
   const [weighing, setWeighing] = useState(false);
+  // Sube al completar un cuidado en "Para hoy" para que el anillo de la mascota avance
+  const [careKey, setCareKey] = useState(0);
 
   const registrarOpen = params.get("registrar") === "1";
   const closeRegistrar = useCallback(() => router.replace(pathname || "/home"), [router, pathname]);
@@ -143,7 +144,7 @@ export function HomeScreen({ userId, userName, userAvatarUrl }: { userId: string
         await fetchPets();
       }}>
     <div>
-      <HomeHeader userName={userName} userAvatarUrl={userAvatarUrl} petName={activePet?.name ?? null} />
+      <HomeHeader userName={userName} userAvatarUrl={userAvatarUrl} />
       <motion.div className="enter-list flex flex-col gap-6 pt-2" variants={container} animate="show">
         {petsFailed ? (
           <motion.div variants={item} className="px-4">
@@ -152,10 +153,10 @@ export function HomeScreen({ userId, userName, userAvatarUrl }: { userId: string
         ) : (
           <>
             <motion.div variants={item}>
-              {petsLoading ? <PetHeroSkeleton /> : <PetHeroCarousel pets={pets} activeId={activePet?.id ?? null} onSelect={selectPet} />}
+              {petsLoading || !activePet ? <PetHeroSkeleton /> : <PetHero pets={pets} active={activePet} onSelect={selectPet} refreshKey={careKey} />}
             </motion.div>
             <motion.div variants={item}>
-              <TodayCard pet={activePet} />
+              <TodayCard pet={activePet} onCompleted={() => setCareKey((k) => k + 1)} />
             </motion.div>
           </>
         )}
@@ -163,10 +164,7 @@ export function HomeScreen({ userId, userName, userAvatarUrl }: { userId: string
           <CategoryGrid />
         </motion.div>
         <motion.div variants={item}>
-          <RecommendedVetCard items={nearby} petName={activePet?.name ?? null} />
-        </motion.div>
-        <motion.div variants={item}>
-          <NearbyCarousel items={nearby && nearby.filter((b) => b.id !== pickRecommended(nearby)?.id)} error={nearbyError} onRetry={retryNearby} />
+          <NearbyCarousel items={nearby} error={nearbyError} onRetry={retryNearby} />
         </motion.div>
         <motion.div variants={item}>
           <NextEventRow event={event} loading={eventLoading} error={eventError} onRetry={retryEvent} />

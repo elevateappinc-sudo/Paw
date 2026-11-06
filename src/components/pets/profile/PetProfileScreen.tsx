@@ -210,7 +210,7 @@ export function PetProfileScreen({ petId, userId }: { petId: string; userId: str
       {/* Sexo, edad y peso en mosaicos pastel */}
       <dl className="mt-4 grid grid-cols-3 gap-3 px-4">
         {stats.map((st) => (
-          <div key={st.label} className={`rounded-lg px-3 py-3 ${st.bg}`}>
+          <div key={st.label} className={`invert-dark rounded-lg px-3 py-3 ${st.bg}`}>
             <dt className="text-small text-text-secondary">{st.label}</dt>
             <dd className="mt-1 text-body font-semibold text-text">{st.value}</dd>
           </div>

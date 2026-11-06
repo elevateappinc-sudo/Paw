@@ -1,6 +1,8 @@
 "use client";
+import { useState } from "react";
 import Link from "next/link";
-import { MapPinned } from "lucide-react";
+import { MapPinned, PawPrint, type LucideIcon } from "lucide-react";
+import { PetDaycare, PetEmergency, PetGrooming, PetHealth, PetMedication, PetShop, PetTraining, PetWalk } from "@/components/icons/pet";
 import { EmptyState, Skeleton, PhotoBadge, Rating, buttonVariants, SkeletonSwap } from "@/components/ui";
 import { HomeSectionHeader } from "./HomeSectionHeader";
 import { HomeSectionError } from "./HomeSectionError";
@@ -22,8 +24,35 @@ export interface NearbyCard {
   promo_text: string | null;
 }
 
-export function NearbyCarousel({ items, error, onRetry }: { items: NearbyCard[] | null; error?: boolean; onRetry?: () => void }) {
-  const loading = items === null && !error;
+/** Veterinaria a recomendar: la primera abierta, si no la primera veterinaria, si no el primer lugar */
+export function pickRecommended(items: NearbyCard[] | null): NearbyCard | null {
+  return items?.find((b) => b.type === "veterinaria" && b.is_open) ?? items?.find((b) => b.type === "veterinaria") ?? items?.[0] ?? null;
+}
+
+/** Portada de respaldo por categoría: pastel + ícono, nunca un recuadro vacío */
+const COVER: Record<BusinessCategory, { bg: string; icon: LucideIcon }> = {
+  veterinaria: { bg: "bg-pastel-lilac", icon: PetHealth },
+  urgencias: { bg: "bg-pastel-peach", icon: PetEmergency },
+  farmacia: { bg: "bg-pastel-lilac", icon: PetMedication },
+  peluqueria: { bg: "bg-pastel-sky", icon: PetGrooming },
+  tienda: { bg: "bg-pastel-peach", icon: PetShop },
+  entrenador: { bg: "bg-pastel-mint", icon: PetTraining },
+  paseador: { bg: "bg-pastel-mint", icon: PetWalk },
+  guarderia: { bg: "bg-pastel-sky", icon: PetDaycare },
+  pet_friendly: { bg: "bg-pastel-mint", icon: PawPrint },
+  funeraria: { bg: "bg-pastel-lilac", icon: PawPrint },
+  otro: { bg: "bg-pastel-lilac", icon: PawPrint },
+};
+
+/**
+ * Cerca de ti: carrusel de lugares. La veterinaria recomendada va primero con
+ * su marca "Recomendado"; no tiene sección propia para no pesar más que los
+ * cuidados de la mascota.
+ */
+export function NearbyCarousel({ items: raw, error, onRetry }: { items: NearbyCard[] | null; error?: boolean; onRetry?: () => void }) {
+  const loading = raw === null && !error;
+  const reco = pickRecommended(raw);
+  const items = raw && reco ? [reco, ...raw.filter((b) => b.id !== reco.id)] : raw;
   // Inicio oculta los módulos vacíos (la búsqueda amplia vive en Explorar)
   if (!error && items !== null && items.length === 0) return null;
   return (
@@ -67,7 +96,7 @@ export function NearbyCarousel({ items, error, onRetry }: { items: NearbyCard[] 
         <ul className="no-scrollbar fade-edge enter-soft-list mt-1 flex gap-3 overflow-x-auto px-4 pb-1">
           {items.map((b) => (
             <li key={b.id} className="shrink-0">
-              <BizCard b={b} />
+              <BizCard b={b} recommended={b.id === reco?.id} />
             </li>
           ))}
         </ul>
@@ -78,18 +107,27 @@ export function NearbyCarousel({ items, error, onRetry }: { items: NearbyCard[] 
 }
 
 /** Tarjeta mínima: foto con calificación, nombre y un solo dato (distancia o categoría) */
-function BizCard({ b }: { b: NearbyCard }) {
+function BizCard({ b, recommended }: { b: NearbyCard; recommended: boolean }) {
+  const [broken, setBroken] = useState(false);
   const meta = b.distance_m !== null ? distanceLabel(b.distance_m) : BUSINESS_CATEGORY_LABEL[b.type] ?? "Negocio";
+  const cover = COVER[b.type] ?? COVER.otro;
+  const Icon = cover.icon;
   return (
     <Link href={`/negocios/${b.id}`} className="pressable block w-40">
-      <div className="relative h-28 w-full overflow-hidden rounded-lg bg-surface-elevated">
-        {b.cover_url && (
+      <div className={`invert-dark relative flex h-28 w-full items-center justify-center overflow-hidden rounded-lg ${cover.bg}`}>
+        <Icon size={32} className="text-primary-text" aria-hidden="true" />
+        {b.cover_url && !broken && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={b.cover_url} alt="" className="h-full w-full object-cover" loading="lazy" onError={(e) => (e.currentTarget.style.visibility = "hidden")} />
+          <img src={b.cover_url} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" onError={() => setBroken(true)} />
         )}
         {b.rating_count > 0 && (
           <PhotoBadge className="left-2 top-2">
             <Rating value={b.rating_avg} />
+          </PhotoBadge>
+        )}
+        {recommended && (
+          <PhotoBadge tone="primary" className="bottom-2 left-2">
+            Recomendado
           </PhotoBadge>
         )}
       </div>

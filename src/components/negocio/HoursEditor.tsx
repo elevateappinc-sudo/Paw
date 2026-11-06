@@ -1,4 +1,5 @@
 "use client";
+import { TimeField } from "@/components/ui";
 import type { BusinessHours } from "@/types/db";
 import { DAY_FULL, DAY_KEYS, type DayKey } from "./negocioData";
 import { cn } from "@/lib/utils";
@@ -32,9 +33,9 @@ export function HoursEditor({ value, onChange, disabled }: { value: BusinessHour
             </label>
             {open ? (
               <div className="flex flex-1 items-center justify-end gap-2 text-body text-text">
-                <input type="time" value={slot[0]} disabled={disabled} aria-label={`${DAY_FULL[key]} abre`} onChange={(e) => setDay(key, [e.target.value, slot[1]])} className="min-h-11 rounded-sm border border-border bg-surface-elevated px-2 text-text" />
+                <TimeField compact className="w-28" value={slot[0]} disabled={disabled} aria-label={`${DAY_FULL[key]} abre`} onChange={(v) => setDay(key, [v, slot[1]])} />
                 <span className="text-text-secondary">a</span>
-                <input type="time" value={slot[1]} disabled={disabled} aria-label={`${DAY_FULL[key]} cierra`} onChange={(e) => setDay(key, [slot[0], e.target.value])} className="min-h-11 rounded-sm border border-border bg-surface-elevated px-2 text-text" />
+                <TimeField compact className="w-28" value={slot[1]} disabled={disabled} aria-label={`${DAY_FULL[key]} cierra`} onChange={(v) => setDay(key, [slot[0], v])} />
               </div>
             ) : (
               <span className="flex-1 text-right text-small font-semibold text-text-secondary">Cerrado</span>

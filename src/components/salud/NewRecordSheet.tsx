@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import { PetDeworm, PetHealth, PetMedication, PetVaccine, PetWeight } from "@/components/icons/pet";
-import { Sheet, Button, Input, Textarea, Select, Chip, SegmentedControl, Row, Divider } from "@/components/ui";
+import { Sheet, Button, Input, Textarea, Select, Chip, SegmentedControl, Row, Divider, OptionSelect } from "@/components/ui";
 import { createCareCycle, completeCareCycle, intervalToDays } from "@/lib/api/careCycles";
 import { addWeightLog } from "@/lib/api/pets";
 import { AddMedicationForm } from "@/components/medications/AddMedicationForm";
@@ -10,6 +10,12 @@ import type { CareCycleKind, IntervalUnit } from "@/types/db";
 import type { VisitType } from "@/types";
 import { createClinicalRecord } from "./api";
 import { addDays, errorMessage, longDate, todayStr } from "./shared";
+
+const UNIT_OPTIONS: { value: IntervalUnit; label: string }[] = [
+  { value: "days", label: "días" },
+  { value: "weeks", label: "semanas" },
+  { value: "months", label: "meses" },
+];
 
 export type NewRecordOption = "vaccine" | "deworm" | "medication" | "consult" | "weight";
 
@@ -135,11 +141,7 @@ function CycleForm({ kindGroup, petId, userId, onDone }: { kindGroup: "vaccine" 
         </div>
         <div className="grid grid-cols-[1fr_1fr] gap-2">
           <Input type="number" inputMode="numeric" min={1} value={String(intervalValue)} onChange={(e) => setIntervalValue(Number(e.target.value))} aria-label="Frecuencia" />
-          <select value={unit} onChange={(e) => setUnit(e.target.value as IntervalUnit)} aria-label="Unidad" className="min-h-11 rounded-md border border-border bg-surface px-2 text-body text-text outline-none focus:border-primary">
-            <option value="days">días</option>
-            <option value="weeks">semanas</option>
-            <option value="months">meses</option>
-          </select>
+          <OptionSelect compact required value={unit} onChange={(v) => setUnit(v as IntervalUnit)} options={UNIT_OPTIONS} aria-label="Unidad" />
         </div>
       </div>
       <Input label="Última aplicación" type="date" max={todayStr()} value={lastDate} onChange={(e) => setLastDate(e.target.value)} />
