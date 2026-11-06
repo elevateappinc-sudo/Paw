@@ -120,7 +120,7 @@ export function ItemForm({ open, onClose, editItem }: { open: boolean; onClose: 
               );
             })}
           </div>
-          {dias.length === 0 && <p className="mt-2 text-label font-semibold text-overdue-text">Elige al menos un día.</p>}
+          {dias.length === 0 && <p className="mt-2 text-small font-semibold text-overdue-text">Elige al menos un día.</p>}
         </fieldset>
 
         <Textarea label="Notas (opcional)" rows={2} value={notas} onChange={(e) => setNotas(e.target.value)} placeholder="Marca, lugar, recordatorios" />

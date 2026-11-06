@@ -48,7 +48,7 @@ export function PetEmergencyCard({ pet, details, loading, onSummary, summaryLoad
         <h2 id="sos-ficha" className="text-subtitle font-semibold text-text">
           Ficha médica
         </h2>
-        {weight ? <span className="text-small text-text-secondary">{weight} kg</span> : null}
+        {weight ? <span className="text-small tabular-nums text-text-secondary">{Number(weight).toLocaleString("es-CO", { maximumFractionDigits: 1 })} kg</span> : null}
       </div>
 
       {loading && !details ? (
@@ -72,7 +72,7 @@ export function PetEmergencyCard({ pet, details, loading, onSummary, summaryLoad
                   <Icon size={18} aria-hidden="true" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-label text-text-secondary">{f.label}</span>
+                  <span className="block text-small text-text-secondary">{f.label}</span>
                   <span className={cn("block text-body font-semibold", f.important ? "text-warning-text" : "text-text")}>{f.value}</span>
                 </span>
               </li>

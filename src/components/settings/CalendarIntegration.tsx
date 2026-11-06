@@ -158,7 +158,7 @@ export function CalendarIntegration() {
             })}
           </fieldset>
           <Divider className="mx-0" />
-          <p className="flex items-center gap-2 px-4 py-3 text-label text-text-secondary">
+          <p className="flex items-center gap-2 px-4 py-3 text-small text-text-secondary">
             <RefreshCw size={14} aria-hidden="true" />
             Última actualización:{" "}
             {integration.updated_at

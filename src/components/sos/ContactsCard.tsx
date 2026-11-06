@@ -16,7 +16,7 @@ function ContactRow({ name, role, phone }: { name: string; role: string; phone?:
       </span>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-body font-semibold text-text">{name}</span>
-        <span className="block text-label text-text-secondary">{role}</span>
+        <span className="block text-small text-text-secondary">{role}</span>
       </span>
       {phone && (
         <a

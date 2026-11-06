@@ -37,7 +37,7 @@ function Unavailable({ icon, description }: { icon: React.ReactNode; description
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <p className="mt-2 text-body text-text">
-      <span className="mr-1 text-label font-semibold uppercase tracking-wider text-text-secondary">{label}</span>
+      <span className="mr-1 text-label font-semibold text-text-secondary">{label}</span>
       {value}
     </p>
   );

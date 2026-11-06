@@ -30,7 +30,7 @@ export function EmptyState({ title, description, action, secondary, icon, classN
       <h3 className="text-subtitle font-semibold text-text">{title}</h3>
       {description && <p className="max-w-[320px] text-body text-text-secondary">{description}</p>}
       {action && <div className="mt-2 w-full max-w-[320px]">{action}</div>}
-      {secondary && <div className="text-label font-semibold text-primary-text">{secondary}</div>}
+      {secondary && <div className="text-small font-semibold text-primary-text">{secondary}</div>}
     </div>
   );
 }

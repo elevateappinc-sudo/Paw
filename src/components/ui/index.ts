@@ -1,4 +1,5 @@
 export { Button, buttonVariants } from "./Button";
+export { IconButton } from "./IconButton";
 export { Card, CardHeader, SectionTitle, InfoCell, Row, Divider } from "./Card";
 export { Sheet } from "./Sheet";
 export { Skeleton, SkeletonRow, SkeletonBiz, SkeletonPets, SkeletonPetAvatar, SkeletonPetCard, RouteFallback } from "./Skeleton";
@@ -18,5 +19,6 @@ export { PageHeader } from "./PageHeader";
 export { Modal } from "./Modal";
 export { Toast, showToast } from "./Toast";
 export { ToastProvider } from "./ToastProvider";
-export { DatePicker } from "./DatePicker";
+export { Calendar, DateField, TimeField, OptionSelect, formatShortDate } from "./Pickers";
+export { Popover } from "./Popover";
 export { EditableDropdown } from "./EditableDropdown";

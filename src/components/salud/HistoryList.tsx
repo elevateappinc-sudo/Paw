@@ -59,7 +59,7 @@ export function HistoryList({ items, businessNames }: { items: HistoryItem[]; bu
     <motion.div variants={stagger(0.03)} initial="hidden" animate="show" className="flex flex-col gap-5">
       {groups.map((g) => (
         <section key={g.key} aria-label={g.label}>
-          <h3 className="mb-2 px-1 text-small font-semibold uppercase tracking-wide text-text-secondary">{g.label}</h3>
+          <h3 className="mb-2 px-1 text-small font-semibold text-text-secondary">{g.label}</h3>
           <Card padded={false} elevation={0} className="overflow-hidden">
             {g.items.map((it, i) => {
               const biz = it.businessId ? businessNames[it.businessId] : undefined;
@@ -71,11 +71,11 @@ export function HistoryList({ items, businessNames }: { items: HistoryItem[]; bu
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                         <Tag tone={HISTORY_KIND_TONE[it.kind]} size="xs">{HISTORY_KIND_LABEL[it.kind]}</Tag>
-                        <span className="text-label font-semibold text-text-secondary">{shortDate(it.date)}</span>
+                        <span className="text-small font-semibold text-text-secondary">{shortDate(it.date)}</span>
                       </div>
                       <div className="mt-1 truncate text-body font-semibold text-text">{it.title}</div>
                       {it.subtitle && <div className="truncate text-small text-text-secondary">{it.subtitle}</div>}
-                      {biz && <div className="mt-1 text-label font-semibold text-success-text">Registrado por {biz}</div>}
+                      {biz && <div className="mt-1 text-small font-semibold text-success-text">Registrado por {biz}</div>}
                     </div>
                   </div>
                 </motion.div>

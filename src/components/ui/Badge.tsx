@@ -8,7 +8,7 @@ export function PhotoBadge({ children, className, tone = "surface" }: { children
     primary: "bg-primary text-on-primary",
     ok: "bg-success-soft text-success-text",
   }[tone];
-  return <span className={cn("absolute inline-flex items-center gap-1 rounded-full px-2 py-1 text-label font-semibold", t, className)}>{children}</span>;
+  return <span className={cn("absolute inline-flex items-center gap-1 rounded-full px-2 py-1 text-small font-semibold", t, className)}>{children}</span>;
 }
 
 export function Rating({ value, count, className }: { value: number; count?: number; className?: string }) {
@@ -23,7 +23,7 @@ export function Rating({ value, count, className }: { value: number; count?: num
 
 export function Verified({ className, label = "Verificado" }: { className?: string; label?: string }) {
   return (
-    <span className={cn("inline-flex items-center gap-1 rounded-full bg-info-soft px-2 py-1 text-label font-semibold text-info-text", className)}>
+    <span className={cn("inline-flex items-center gap-1 rounded-full bg-info-soft px-2 py-1 text-small font-semibold text-info-text", className)}>
       <BadgeCheck size={14} className="text-info-text" aria-hidden="true" />
       {label}
     </span>
@@ -44,5 +44,5 @@ export function Badge({ variant = "neutral", className, children }: { variant?: 
     info: "bg-info-soft text-info-text",
     neutral: "bg-surface-elevated text-text-secondary",
   }[variant];
-  return <span className={cn("inline-flex items-center rounded-full px-3 py-1 text-label font-semibold", tone, className)}>{children}</span>;
+  return <span className={cn("inline-flex items-center rounded-full px-3 py-1 text-small font-semibold", tone, className)}>{children}</span>;
 }

@@ -29,7 +29,7 @@ export function SegmentedControl<T extends string>({ options, value, onChange, c
             onClick={() => onChange(o.value)}
             className={cn(
               "relative flex-1 rounded-full font-semibold text-text transition-colors",
-              size === "sm" ? "min-h-9 px-2 text-label" : "min-h-11 px-3 text-label",
+              size === "sm" ? "min-h-9 px-2 text-small" : "min-h-11 px-3 text-small",
               !active && "text-text-secondary"
             )}
           >

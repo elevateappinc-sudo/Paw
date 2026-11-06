@@ -212,7 +212,7 @@ export function AlimentacionView() {
               ) : (
                 <p className="text-body text-text-secondary">Sin snacks configurados. Añádelos al editar la alimentación.</p>
               )}
-              <p className="mt-2 text-label text-text-secondary">Máximo 10 % de las calorías del día.</p>
+              <p className="mt-2 text-small text-text-secondary">Máximo 10 % de las calorías del día.</p>
             </Card>
           </motion.div>
 

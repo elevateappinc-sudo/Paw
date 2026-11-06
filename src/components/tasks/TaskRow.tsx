@@ -30,7 +30,7 @@ export function TaskDue({ severity, children, className }: { severity: Severity;
   const s = SEVERITY[severity];
   const Icon = s.icon;
   return (
-    <span className={cn("inline-flex items-center gap-1 text-label font-semibold", s.text, className)}>
+    <span className={cn("inline-flex items-center gap-1 text-small font-semibold", s.text, className)}>
       <Icon size={14} aria-hidden="true" />
       {children}
     </span>

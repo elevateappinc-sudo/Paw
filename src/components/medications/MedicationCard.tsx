@@ -131,7 +131,7 @@ export function MedicationCard({ medication, logs, onUpdate }: Props) {
           <p className="mt-1 text-small text-text-secondary">
             {medication.dose_amount} {medication.dose_unit} · {frequencyLabel(medication.frequency_value, medication.frequency_unit)}
           </p>
-          {medication.vet_name && <p className="text-label text-text-secondary">Vet: {medication.vet_name}</p>}
+          {medication.vet_name && <p className="text-small text-text-secondary">Vet: {medication.vet_name}</p>}
         </div>
       </div>
 

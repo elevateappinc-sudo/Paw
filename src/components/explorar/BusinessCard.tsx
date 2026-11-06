@@ -28,7 +28,7 @@ export const BusinessCard = forwardRef<HTMLDivElement, BusinessCardProps>(functi
   const photo = biz.cover_url ?? biz.logo_url;
 
   return (
-    <div ref={ref} className={cn("rounded-md border bg-surface", selected ? "border-primary shadow-2" : "border-border shadow-1")}>
+    <div ref={ref} className={cn("rounded-md border bg-surface", selected ? "border-primary" : "border-border")}>
       <Link
         href={`/negocios/${biz.id}`}
         onClick={() => onFocus?.(biz)}
@@ -38,7 +38,7 @@ export const BusinessCard = forwardRef<HTMLDivElement, BusinessCardProps>(functi
         <div className="relative h-22 w-26 shrink-0 overflow-hidden rounded-lg bg-surface-elevated">
           {photo && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={photo} alt="" className="h-full w-full object-cover" loading="lazy" />
+            <img src={photo} alt="" className="h-full w-full object-cover" loading="lazy" onError={(e) => (e.currentTarget.style.visibility = "hidden")} />
           )}
         </div>
         <div className="flex min-w-0 flex-1 flex-col gap-1">

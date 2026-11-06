@@ -26,7 +26,7 @@ export function ToxicSheet({ open, onClose, speciesLabel, foods, allergies }: {
         </ul>
         {allergies.length > 0 && (
           <div>
-            <h4 className="mb-2 text-small font-semibold uppercase tracking-wide text-text-secondary">Alergias registradas</h4>
+            <h4 className="mb-2 text-small font-semibold text-text-secondary">Alergias registradas</h4>
             <div className="flex flex-wrap gap-2">
               {allergies.map((a) => <Tag key={a} tone="warn">{a}</Tag>)}
             </div>
