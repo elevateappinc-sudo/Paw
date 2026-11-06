@@ -193,7 +193,7 @@ export function AuthPage() {
           <a href="/demo" className="inline-flex min-h-11 items-center justify-center rounded-full px-4 text-body font-semibold text-primary-text">
             Ver la demo con datos de ejemplo
           </a>
-          <span className="text-label text-text-secondary">Sin cuenta. Mascotas, negocios y citas ficticios.</span>
+          <span className="text-small text-text-secondary">Sin cuenta. Mascotas, negocios y citas ficticios.</span>
         </motion.div>
       </motion.div>
     </main>

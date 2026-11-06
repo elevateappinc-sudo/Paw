@@ -3,13 +3,12 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { Bell, ChevronLeft, Info, PartyPopper } from "lucide-react";
-import { ProgressBar, Input, SegmentedControl, Toggle, Button, Card, SEVERITY, buttonVariants, showToast } from "@/components/ui";
-import { SOSButton } from "@/components/layout/SOSButton";
+import { Bell, ChevronLeft, ChevronRight, Info, PartyPopper, PawPrint } from "lucide-react";
+import { ProgressBar, Input, SegmentedControl, Toggle, Button, Card, buttonVariants, showToast } from "@/components/ui";
 import { ChipsInput } from "@/components/pets/ChipsInput";
 import { uploadPetProfilePhoto } from "@/components/pets/petPhoto";
 import { PhotoDropCircle } from "@/components/pets/PhotoDropCircle";
-import { CARE_KIND_ICON, cycleSeverity } from "@/components/pets/petHelpers";
+import { CARE_KIND_ICON } from "@/components/pets/petHelpers";
 import { createPet, lifeStage, updatePetProfile } from "@/lib/api/pets";
 import { fetchCareCycles, regenerateCycles, daysUntil, dueLabel } from "@/lib/api/careCycles";
 import { cn } from "@/lib/utils";
@@ -36,6 +35,12 @@ interface Form {
   microchip: string;
   allergies: string[];
 }
+
+/** Grupos de la lista del plan según los días que faltan */
+const WEEK_GROUPS: { label: string; match: (days: number) => boolean }[] = [
+  { label: "Esta semana", match: (d) => d <= 7 },
+  { label: "Próximas semanas", match: (d) => d > 7 },
+];
 
 const INITIAL: Form = { name: "", species: "perro", sex: "unknown", birth_date: "", weight: "", breed: "", neutered: false, hasChip: false, microchip: "", allergies: [] };
 
@@ -160,12 +165,18 @@ export function NewPetFlow({ userId, mode = "new" }: { userId: string; mode?: "n
 
   async function finish() {
     setFinishing(true);
+    let enabled = false;
     try {
-      if (push.isSupported && push.permission !== "denied") await push.requestPermission();
+      // Nunca bloquear la entrada al Inicio: si el navegador tarda o falla, se sigue sin push
+      if (push.isSupported && push.permission !== "denied") {
+        enabled = await Promise.race([push.requestPermission(), new Promise<boolean>((r) => setTimeout(() => r(false), 15000))]);
+      }
     } catch {
       /* sin push */
     } finally {
       setFinishing(false);
+      // Solo avisar si dio permiso pero la suscripción falló (no si eligió "No permitir")
+      if (!enabled && push.isSupported && typeof Notification !== "undefined" && Notification.permission === "granted") showToast("No pudimos activar los recordatorios; puedes hacerlo en Ajustes", undefined, "error");
       router.push("/home");
     }
   }
@@ -183,7 +194,7 @@ export function NewPetFlow({ userId, mode = "new" }: { userId: string; mode?: "n
   }
 
   const title = step === 3 ? "Tu plan está listo" : "Cuéntanos de tu mascota";
-  const subtitle = step === 3 ? `Así cuidaremos a ${created?.name ?? "tu mascota"} las próximas semanas` : "Con especie, nacimiento y peso armamos su plan de vacunas y cuidados";
+  const subtitle = step === 3 ? "Te avisaremos antes de cada cuidado" : "Con especie, nacimiento y peso armamos su plan de vacunas y cuidados";
   const firstWeeks = plan ? plan.filter((c) => daysUntil(c.next_due_at) <= 28) : [];
   const rest = plan ? plan.length - firstWeeks.length : 0;
 
@@ -202,7 +213,7 @@ export function NewPetFlow({ userId, mode = "new" }: { userId: string; mode?: "n
               <ChevronLeft size={22} aria-hidden="true" />
             </button>
           )}
-          <div className="text-small text-text-secondary">Paso {step} de 3</div>
+          <div className="eyebrow">Paso {step} de 3</div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {step !== 3 && (
@@ -210,14 +221,11 @@ export function NewPetFlow({ userId, mode = "new" }: { userId: string; mode?: "n
               Después
             </Button>
           )}
-          <SOSButton />
         </div>
       </header>
-      {step !== 3 && (
-        <div className="px-4">
-          <ProgressBar value={step / 3} />
-        </div>
-      )}
+      <div className="px-4">
+        <ProgressBar value={step / 3} />
+      </div>
       <div className="px-4 pt-4">
         <h1 className="font-semibold text-display leading-[1.1] text-text">{title}</h1>
         <p className="mt-2 text-body text-text-secondary">{subtitle}</p>
@@ -301,63 +309,117 @@ export function NewPetFlow({ userId, mode = "new" }: { userId: string; mode?: "n
 
           {step === 3 && (
             <>
+              {/* Resumen del plan: tarjeta destacada (blanca en oscuro) */}
+              <section className="hero-surface invert-dark rounded-xl p-4" aria-label="Resumen del plan">
+                <div className="flex items-center gap-4">
+                  <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border-2 border-surface bg-primary-soft text-primary-text">
+                    {preview ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={preview} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <PawPrint size={28} aria-hidden="true" />
+                    )}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="eyebrow">Plan de cuidados</p>
+                    <p className="truncate text-title font-semibold text-text">{created?.name ?? "Tu mascota"}</p>
+                  </div>
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-pastel-glass text-primary-text">
+                    <PartyPopper size={20} aria-hidden="true" />
+                  </span>
+                </div>
+                <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-pastel-glass pt-3">
+                  <div>
+                    <dt className="text-small text-text-secondary">Próximas 4 semanas</dt>
+                    <dd className="text-title font-semibold text-text">{plan === null ? "…" : firstWeeks.length}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-small text-text-secondary">Resto del año</dt>
+                    <dd className="text-title font-semibold text-text">{plan === null ? "…" : rest}</dd>
+                  </div>
+                </dl>
+              </section>
+
+              {/* Historial previo: tarjeta propia con una sola acción */}
               {plan && plan.length > 0 && (
                 <button
                   type="button"
                   onClick={() => setPriorOpen(true)}
-                  className="pressable flex min-h-16 w-full items-center gap-3 rounded-md bg-primary-soft px-4 py-3 text-left text-primary-text"
+                  className="pressable invert-dark flex w-full items-center gap-3 rounded-xl border border-border bg-surface p-3 text-left shadow-1"
                 >
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-sm bg-surface text-primary-text">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-border bg-primary-soft text-primary-text">
                     <ClipboardList size={22} aria-hidden="true" />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-body font-semibold">{priorCount > 0 ? "¿Ya le han puesto vacunas o antiparasitarios?" : "Ajustar el plan"}</span>
-                    <span className="block text-small">Registra las últimas fechas, cambia la frecuencia o quita lo que no quieras seguir.</span>
+                    <span className="block text-body font-semibold text-text">{priorCount > 0 ? "¿Ya tiene vacunas?" : "Ajustar el plan"}</span>
+                    <span className="block text-small text-text-secondary">Registra fechas previas o cambia frecuencias</span>
                   </span>
-                  <span className="shrink-0 text-small font-semibold">Registrar</span>
+                  <ChevronRight size={18} className="shrink-0 text-text-secondary" aria-hidden="true" />
                 </button>
               )}
-              <Card padded={false}>
-                <div className="flex items-center gap-3 border-b border-border px-4 py-3">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-sm bg-primary-soft text-primary-text">
-                    <PartyPopper size={22} aria-hidden="true" />
-                  </span>
-                  <div>
-                    <div className="text-subtitle font-semibold text-text">Primeras 4 semanas</div>
-                    <div className="text-small text-text-secondary">{plan === null ? "Preparando el plan…" : `${firstWeeks.length} ${firstWeeks.length === 1 ? "cuidado" : "cuidados"} programados`}</div>
-                  </div>
-                </div>
+
+              {/* Cuidados de las primeras semanas: tarjetas separadas agrupadas por semana */}
+              <section aria-labelledby="plan-first">
+                <h2 id="plan-first" className="flex items-center gap-2 text-title font-semibold text-text">
+                  Primeras 4 semanas
+                  {plan !== null && (
+                    <span className="rounded-full bg-primary-soft px-2 text-small font-semibold tabular-nums text-primary-text">{firstWeeks.length}</span>
+                  )}
+                </h2>
                 {plan === null ? (
-                  <div className="flex flex-col gap-2 p-4">
+                  <div className="mt-3 flex flex-col gap-2" aria-hidden="true">
                     {[0, 1, 2].map((i) => (
-                      <div key={i} className="skeleton h-12 w-full" aria-hidden="true" />
+                      <div key={i} className="flex items-center gap-3 rounded-xl border border-border bg-surface p-3">
+                        <div className="skeleton h-12 w-12 shrink-0 rounded-lg" />
+                        <div className="flex flex-1 flex-col gap-2">
+                          <div className="skeleton h-4 w-32" />
+                          <div className="skeleton h-3 w-16" />
+                        </div>
+                      </div>
                     ))}
                   </div>
                 ) : firstWeeks.length === 0 ? (
-                  <p className="px-4 py-4 text-body text-text-secondary">
+                  <p className="mt-3 rounded-xl border border-border bg-surface p-4 text-body text-text-secondary">
                     {plan.length === 0 ? "El plan se generará en cuanto esté disponible. Puedes añadir cuidados desde Salud." : "Nada urgente en las próximas 4 semanas."}
                   </p>
                 ) : (
-                  <ul className="enter-soft-list">
-                    {firstWeeks.map((c) => {
-                      const Icon = CARE_KIND_ICON[c.kind];
-                      const sev = cycleSeverity(c);
-                      return (
-                        <li key={c.id} className="flex min-h-16 items-center gap-3 border-t border-border px-4 py-2 first:border-t-0">
-                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-primary-soft text-primary-text">
-                            <Icon size={16} aria-hidden="true" />
-                          </span>
-                          <span className="min-w-0 flex-1">
-                            <span className="block break-words text-subtitle font-semibold text-text">{c.name}</span>
-                            <span className={cn("block text-small font-semibold", SEVERITY[sev].text)}>{dueLabel(c.next_due_at)}</span>
-                          </span>
-                        </li>
-                      );
-                    })}
-                  </ul>
+                  WEEK_GROUPS.map((g) => {
+                    const items = firstWeeks.filter((c) => g.match(daysUntil(c.next_due_at)));
+                    if (items.length === 0) return null;
+                    return (
+                      <div key={g.label} className="mt-3">
+                        <h3 className="eyebrow mb-2">{g.label}</h3>
+                        <ul className="enter-soft-list flex flex-col gap-2">
+                          {items.map((c) => {
+                            const Icon = CARE_KIND_ICON[c.kind];
+                            const overdue = daysUntil(c.next_due_at) < 0;
+                            return (
+                              <li key={c.id} className="invert-dark flex items-center gap-3 rounded-xl border border-border bg-surface p-3 shadow-1">
+                                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-border bg-primary-soft text-primary-text">
+                                  <Icon size={22} aria-hidden="true" />
+                                </span>
+                                <span className="min-w-0 flex-1">
+                                  <span className="block break-words text-body font-semibold text-text">{c.name}</span>
+                                  <span className={cn("flex items-center gap-1.5 text-small font-semibold", overdue ? "text-overdue-text" : "text-primary-text")}>
+                                    <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", overdue ? "bg-current" : "bg-accent")} aria-hidden="true" />
+                                    {dueLabel(c.next_due_at)}
+                                  </span>
+                                </span>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    );
+                  })
                 )}
-                {rest > 0 && <p className="border-t border-border px-4 py-3 text-small text-text-secondary">y {rest} {rest === 1 ? "ciclo más" : "ciclos más"} a lo largo del año</p>}
-              </Card>
+                {rest > 0 && (
+                  <p className="mt-3 text-center text-small text-text-secondary">
+                    y {rest} {rest === 1 ? "cuidado más" : "cuidados más"} a lo largo del año
+                  </p>
+                )}
+              </section>
+
               <div className="mt-auto flex flex-col gap-2 pt-4">
                 <Button full size="lg" onClick={() => void finish()} loading={finishing} leading={<Bell size={18} aria-hidden="true" />}>
                   Activar recordatorios y empezar

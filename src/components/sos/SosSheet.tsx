@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LocateFixed, MapPin, Share2, SearchX, WifiOff, X } from "lucide-react";
-import { showToast } from "@/components/ui";
+import { Button, Sheet, showToast } from "@/components/ui";
 import { useActivePet } from "@/hooks/useActivePet";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { useAuthContext } from "@/contexts/AuthContext";
@@ -35,6 +35,7 @@ export function SosSheet() {
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [summarizing, setSummarizing] = useState(false);
+  const [confirmShare, setConfirmShare] = useState(false);
   const toasted = useRef(false);
 
   // Urgencias: red → caché
@@ -128,7 +129,7 @@ export function SosSheet() {
 
   const actions = [
     { label: "Otras", icon: MapPin, onClick: () => router.push("/explorar?cat=urgencias"), aria: "Ver otras urgencias cerca" },
-    { label: "Compartir", icon: Share2, onClick: share, aria: "Compartir la ficha de emergencia", disabled: !pet || sharing },
+    { label: "Compartir", icon: Share2, onClick: () => setConfirmShare(true), aria: "Compartir la ficha de emergencia", disabled: !pet || sharing },
     ...(pet ? [{ label: "Perdida", icon: SearchX, onClick: () => router.push(`/perdida/nueva?pet=${pet.id}`), aria: `Reportar a ${pet.name} como perdida` }] : []),
   ];
 
@@ -140,7 +141,7 @@ export function SosSheet() {
           <X size={20} aria-hidden="true" />
         </button>
         {fromCache && dataAt && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-surface-elevated px-3 py-1 text-label text-text-secondary">
+          <span className="inline-flex items-center gap-1 rounded-full bg-surface-elevated px-3 py-1 text-small text-text-secondary">
             <WifiOff size={12} aria-hidden="true" /> Guardado {timeLabel(dataAt)}
           </span>
         )}
@@ -191,6 +192,28 @@ export function SosSheet() {
         )}
         <p className="px-4 text-center text-small text-text-secondary">Si no respira, sangra mucho o convulsiona: llama y ve en camino.</p>
       </div>
+
+      {/* Compartir crea un enlace público: se confirma antes, diciendo qué se comparte */}
+      <Sheet open={confirmShare} onClose={() => setConfirmShare(false)} title={pet ? `Compartir la ficha de ${pet.name}` : "Compartir ficha"}>
+        <p className="text-body text-text-secondary">Crearemos un enlace público con su ficha médica y tus contactos de emergencia. Cualquiera que tenga el enlace podrá verla.</p>
+        <div className="mt-4 flex flex-col gap-2">
+          <Button
+            size="lg"
+            full
+            loading={sharing}
+            loadingLabel="Creando enlace"
+            onClick={async () => {
+              await share();
+              setConfirmShare(false);
+            }}
+          >
+            Crear y compartir enlace
+          </Button>
+          <Button variant="outline" size="lg" full onClick={() => setConfirmShare(false)}>
+            Cancelar
+          </Button>
+        </div>
+      </Sheet>
     </div>
   );
 }

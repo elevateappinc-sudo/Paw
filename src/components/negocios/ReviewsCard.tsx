@@ -91,7 +91,7 @@ export function ReviewsCard({ businessId, businessName, reviews, onReviewSaved, 
                     <span className="truncate text-body font-semibold text-text">{name}</span>
                     <Stars value={r.rating} />
                   </div>
-                  <p className="text-label text-text-secondary">
+                  <p className="text-small text-text-secondary">
                     {petMeta}
                     {relativeDays(r.created_at)}
                   </p>

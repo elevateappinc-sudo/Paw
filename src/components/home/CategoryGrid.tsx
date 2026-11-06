@@ -2,6 +2,7 @@
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { CalendarDays } from "lucide-react";
+import { HomeSectionHeader } from "./HomeSectionHeader";
 import { PetDaycare, PetGrooming, PetHealth, PetShop, PetTraining, PetWalk } from "@/components/icons/pet";
 
 interface Category {
@@ -21,20 +22,21 @@ const CATEGORIES: Category[] = [
   { label: "Eventos", href: "/eventos", icon: CalendarDays },
 ];
 
-/** Servicios: una fila de íconos circulares con etiqueta de una palabra */
+/** Servicios: título + fila de íconos en mosaicos blancos con etiqueta de una palabra */
 export function CategoryGrid() {
   return (
-    <nav aria-label="Servicios">
-      <ul className="no-scrollbar fade-edge flex gap-4 overflow-x-auto px-4">
+    <nav aria-labelledby="home-services">
+      <HomeSectionHeader id="home-services" title="Servicios y cuidados" href="/explorar" linkLabel="Ver todos los servicios" />
+      <ul className="no-scrollbar fade-edge mt-1 flex gap-3 overflow-x-auto px-4 pb-2 pt-1">
         {CATEGORIES.map((c) => {
           const Icon = c.icon;
           return (
             <li key={c.label} className="shrink-0">
-              <Link href={c.href} className="pressable flex w-14 flex-col items-center gap-2">
-                <span className="flex h-14 w-14 items-center justify-center rounded-full bg-primary-soft text-primary-text">
+              <Link href={c.href} className="pressable flex w-16 flex-col items-center gap-2">
+                <span className="invert-dark flex h-14 w-14 items-center justify-center rounded-lg border border-border bg-surface text-primary-text shadow-1">
                   <Icon size={24} aria-hidden="true" />
                 </span>
-                <span className="text-label font-semibold text-text-secondary">{c.label}</span>
+                <span className="text-label font-semibold text-text">{c.label}</span>
               </Link>
             </li>
           );

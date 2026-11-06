@@ -13,13 +13,13 @@ export function BookingRow({ booking }: { booking: Booking }) {
   return (
     <Link
       href={`/citas/${booking.id}`}
-      className="pressable flex min-h-19 items-center gap-3 rounded-md border border-border bg-surface px-3 py-3 shadow-1"
+      className="pressable flex min-h-19 items-center gap-3 rounded-md border border-border bg-surface px-3 py-3"
       aria-label={`${bookingTitle(booking)}, ${bookingWhen(booking)}, ${STATUS_LABEL[booking.status]}`}
     >
       <div className="h-14 w-14 shrink-0 overflow-hidden rounded-sm bg-border">
         {photo ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={photo} alt="" className="h-full w-full object-cover" loading="lazy" />
+          <img src={photo} alt="" className="h-full w-full object-cover" loading="lazy" onError={(e) => (e.currentTarget.style.visibility = "hidden")} />
         ) : (
           <div className="h-full w-full bg-gradient-to-br from-surface-elevated to-border" aria-hidden="true" />
         )}

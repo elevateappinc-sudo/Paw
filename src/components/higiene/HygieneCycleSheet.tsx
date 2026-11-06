@@ -1,13 +1,19 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Check, Pencil, PawPrint } from "lucide-react";
-import { Sheet, Button, Input, InfoCell, Divider } from "@/components/ui";
+import { Sheet, Button, Input, InfoCell, Divider, OptionSelect } from "@/components/ui";
 import { intervalLabel, intervalToDays, updateCareCycle } from "@/lib/api/careCycles";
 import type { CareCycle, CareCycleLog, IntervalUnit } from "@/types/db";
 import { formatCurrency } from "@/lib/utils";
 import { addDays, errorMessage, longDate, shortDate } from "@/components/salud/shared";
 import { HYGIENE_ICON, hygieneStatus } from "./hygiene";
 import { TaskDue } from "@/components/tasks/TaskRow";
+
+const UNIT_OPTIONS: { value: IntervalUnit; label: string }[] = [
+  { value: "days", label: "días" },
+  { value: "weeks", label: "semanas" },
+  { value: "months", label: "meses" },
+];
 
 export function HygieneCycleSheet({ cycle, logs, businessNames, onClose, onMarkDone, onUpdated }: {
   cycle: CareCycle | null;
@@ -90,11 +96,7 @@ export function HygieneCycleSheet({ cycle, logs, businessNames, onClose, onMarkD
               <Input label="Se repite cada" type="number" inputMode="numeric" min={1} value={interval} onChange={(e) => setIntervalDays(e.target.value)} autoFocus />
               <label className="flex flex-col gap-1 text-label font-semibold text-text-secondary">
                 Unidad
-                <select value={unit} onChange={(e) => setUnit(e.target.value as IntervalUnit)} className="min-h-11 rounded-md border border-border bg-surface px-2 text-body text-text outline-none focus:border-primary">
-                  <option value="days">días</option>
-                  <option value="weeks">semanas</option>
-                  <option value="months">meses</option>
-                </select>
+                <OptionSelect compact required value={unit} onChange={(v) => setUnit(v as IntervalUnit)} options={UNIT_OPTIONS} aria-label="Unidad" />
               </label>
             </div>
             {error && <p role="alert" className="text-small font-semibold text-overdue-text">{error}</p>}
@@ -105,7 +107,7 @@ export function HygieneCycleSheet({ cycle, logs, businessNames, onClose, onMarkD
         {cycle.notes && <p className="text-body leading-relaxed text-text-secondary">{cycle.notes}</p>}
 
         <div>
-          <h4 className="mb-2 text-small font-semibold uppercase tracking-wide text-text-secondary">Últimas veces</h4>
+          <h4 className="mb-2 text-small font-semibold text-text-secondary">Últimas veces</h4>
           {recent.length === 0 ? (
             <p className="text-body text-text-secondary">Todavía no lo has registrado.</p>
           ) : (

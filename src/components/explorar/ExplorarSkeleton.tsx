@@ -1,5 +1,4 @@
 import { Skeleton } from "@/components/ui";
-import { SOSButton } from "@/components/layout/SOSButton";
 
 /** Fila skeleton con la geometría de BusinessCard (foto 104×88 + nombre, metadatos, reseñas y chips). */
 export function SkeletonBizRow() {
@@ -26,7 +25,6 @@ export function ExplorarSkeleton() {
       <div className="absolute inset-x-0 top-0 z-10 flex flex-col gap-3 bg-bg pb-3 pt-[max(16px,env(safe-area-inset-top))]">
         <div className="flex items-center justify-between gap-3 px-4">
           <h1 className="text-display font-semibold text-text">Explorar</h1>
-          <SOSButton />
         </div>
         <div className="px-4">
           <Skeleton className="h-12 w-full rounded-full" />

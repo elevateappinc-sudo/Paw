@@ -133,7 +133,7 @@ export function HigieneView() {
           {banner && (
             <Card tone={banner.tone} elevation={0} className="flex items-center gap-3">
               <div className="min-w-0 flex-1">
-                <div className="text-label font-semibold uppercase tracking-wide opacity-80">Tocan juntos</div>
+                <div className="text-label font-semibold opacity-80">Tocan juntos</div>
                 <div className="text-body font-semibold leading-snug">{banner.text}</div>
               </div>
               <Button size="sm" variant={banner.tone === "warn" ? "primary" : "secondary"} leading={<CalendarDays size={16} />} onClick={() => router.push("/explorar?cat=peluqueria")}>

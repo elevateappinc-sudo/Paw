@@ -22,13 +22,13 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
         <div key={p.name} className="mb-1 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full" style={{ background: p.fill }} aria-hidden="true" />
-            <span className="text-label text-text-secondary">{p.name}</span>
+            <span className="text-small text-text-secondary">{p.name}</span>
           </div>
           <span className="text-label font-semibold text-text">{formatCurrency(p.value)}</span>
         </div>
       ))}
       <div className="mt-2 flex justify-between border-t border-border pt-2">
-        <span className="text-label text-text-secondary">Total</span>
+        <span className="text-small text-text-secondary">Total</span>
         <span className="text-label font-semibold text-text">{formatCurrency(total)}</span>
       </div>
     </div>
@@ -57,7 +57,7 @@ export function GastosChart({ onMonthClick, selectedMonth }: GastosChartProps) {
     return (
       <div className="flex h-40 flex-col items-center justify-center gap-1 rounded-md bg-surface-elevated">
         <p className="text-body font-semibold text-text-secondary">Sin datos todavía</p>
-        <p className="text-label text-text-secondary">Agrega gastos para ver el gráfico</p>
+        <p className="text-small text-text-secondary">Agrega gastos para ver el gráfico</p>
       </div>
     );
   }
@@ -97,7 +97,7 @@ export function GastosChart({ onMonthClick, selectedMonth }: GastosChartProps) {
           ))}
         </BarChart>
       </ResponsiveContainer>
-      <p className="mt-1 text-center text-label text-text-secondary">Toca un mes para ver el detalle</p>
+      <p className="mt-1 text-center text-small text-text-secondary">Toca un mes para ver el detalle</p>
     </div>
   );
 }

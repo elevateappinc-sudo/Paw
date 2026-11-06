@@ -1,6 +1,7 @@
 "use client";
 import React, { forwardRef, useId } from "react";
 import { cn } from "@/lib/utils";
+import { DateField, OptionSelect, TimeField } from "./Pickers";
 
 interface FieldProps {
   label?: string;
@@ -12,9 +13,46 @@ interface FieldProps {
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement>, FieldProps {}
 
+/** Evento mínimo para los campos propios: los llamadores solo leen target.value */
+function changeEvent(value: string) {
+  return { target: { value }, currentTarget: { value } } as unknown as React.ChangeEvent<HTMLInputElement>;
+}
+
 export const Input = forwardRef<HTMLInputElement, InputProps>(({ label, hint, error, trailing, leading, className, id, ...props }, ref) => {
   const autoId = useId();
   const inputId = id ?? autoId;
+  // Fecha y hora usan los selectores del design system, no los nativos
+  if (props.type === "date" || props.type === "time") {
+    const Field = props.type === "date" ? DateField : TimeField;
+    const describedBy = error ? `${inputId}-err` : hint ? `${inputId}-hint` : undefined;
+    return (
+      <div className={cn("flex flex-col gap-2", className)}>
+        {label && (
+          <label htmlFor={inputId} className="text-small font-semibold text-text-secondary">
+            {label}
+          </label>
+        )}
+        <Field
+          id={inputId}
+          value={String(props.value ?? "")}
+          onChange={(v: string) => props.onChange?.(changeEvent(v))}
+          min={typeof props.min === "string" ? props.min : undefined}
+          max={typeof props.max === "string" ? props.max : undefined}
+          disabled={props.disabled}
+          required={props.required}
+          invalid={!!error}
+          aria-label={props["aria-label"]}
+          aria-describedby={describedBy}
+          placeholder={props.placeholder}
+        />
+        {error ? (
+          <p id={`${inputId}-err`} className="text-small font-semibold text-overdue-text">{error}</p>
+        ) : hint ? (
+          <p id={`${inputId}-hint`} className="text-small text-text-secondary">{hint}</p>
+        ) : null}
+      </div>
+    );
+  }
   return (
     <div className={cn("flex flex-col gap-2", className)}>
       {label && (
@@ -40,9 +78,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({ label, hint, er
         {trailing && <span className="shrink-0 text-text-secondary">{trailing}</span>}
       </div>
       {error ? (
-        <p id={`${inputId}-err`} className="text-label font-semibold text-overdue-text">{error}</p>
+        <p id={`${inputId}-err`} className="text-small font-semibold text-overdue-text">{error}</p>
       ) : hint ? (
-        <p id={`${inputId}-hint`} className="text-label text-text-secondary">{hint}</p>
+        <p id={`${inputId}-hint`} className="text-small text-text-secondary">{hint}</p>
       ) : null}
     </div>
   );
@@ -67,49 +105,54 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({ label,
         )}
         {...props}
       />
-      {error ? <p className="text-label font-semibold text-overdue-text">{error}</p> : hint ? <p className="text-label text-text-secondary">{hint}</p> : null}
+      {error ? <p className="text-small font-semibold text-overdue-text">{error}</p> : hint ? <p className="text-small text-text-secondary">{hint}</p> : null}
     </div>
   );
 });
 Textarea.displayName = "Textarea";
 
-export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement>, FieldProps {
+export interface SelectProps extends Omit<FieldProps, "trailing" | "leading"> {
   options: { value: string; label: string }[];
   placeholder?: string;
+  value: string;
+  onChange: (e: { target: { value: string } }) => void;
+  disabled?: boolean;
+  required?: boolean;
+  id?: string;
+  className?: string;
+  "aria-label"?: string;
 }
 
-export const Select = forwardRef<HTMLSelectElement, SelectProps>(({ label, hint, error, options, placeholder, className, id, ...props }, ref) => {
+/** Lista de opciones del design system (Popover), con la misma firma de onChange que un select */
+export function Select({ label, hint, error, options, placeholder, className, id, value, onChange, disabled, required, ...aria }: SelectProps) {
   const autoId = useId();
   const inputId = id ?? autoId;
   return (
     <div className={cn("flex flex-col gap-2", className)}>
       {label && <label htmlFor={inputId} className="text-small font-semibold text-text-secondary">{label}</label>}
-      <select
-        ref={ref}
+      <OptionSelect
         id={inputId}
-        className={cn(
-          "min-h-[50px] w-full appearance-none rounded-md border bg-surface px-4 text-subtitle text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary/20",
-          error ? "border-overdue" : "border-border"
-        )}
-        {...props}
-      >
-        {placeholder && <option value="">{placeholder}</option>}
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>{o.label}</option>
-        ))}
-      </select>
-      {error ? <p className="text-label font-semibold text-overdue-text">{error}</p> : hint ? <p className="text-label text-text-secondary">{hint}</p> : null}
+        value={value}
+        onChange={(v) => onChange({ target: { value: v } })}
+        options={options}
+        placeholder={placeholder}
+        disabled={disabled}
+        required={required}
+        invalid={!!error}
+        aria-label={aria["aria-label"] ?? label}
+      />
+      {error ? <p className="text-small font-semibold text-overdue-text">{error}</p> : hint ? <p className="text-small text-text-secondary">{hint}</p> : null}
     </div>
   );
-});
-Select.displayName = "Select";
+}
 
-export function Toggle({ checked, onChange, label, id, description }: { checked: boolean; onChange: (v: boolean) => void; label: string; id?: string; description?: string }) {
+/** `hideLabel`: solo el interruptor (la etiqueta queda para lectores de pantalla) */
+export function Toggle({ checked, onChange, label, id, description, hideLabel }: { checked: boolean; onChange: (v: boolean) => void; label: string; id?: string; description?: string; hideLabel?: boolean }) {
   const autoId = useId();
   const inputId = id ?? autoId;
   return (
-    <label htmlFor={inputId} className="flex min-h-12 cursor-pointer items-center justify-between gap-3">
-      <span>
+    <label htmlFor={inputId} className={hideLabel ? "flex min-h-11 shrink-0 cursor-pointer items-center" : "flex min-h-12 cursor-pointer items-center justify-between gap-3"}>
+      <span className={hideLabel ? "sr-only" : undefined}>
         <span className="block text-body text-text">{label}</span>
         {description && <span className="block text-small text-text-secondary">{description}</span>}
       </span>

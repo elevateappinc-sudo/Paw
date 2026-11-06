@@ -1,42 +1,45 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { ChevronRight } from "lucide-react";
 import { Skeleton, SkeletonSwap, severityFromDays, showToast, type Severity } from "@/components/ui";
 import { completeCareCycle, daysUntil, fetchCareCycles } from "@/lib/api/careCycles";
 import { CARE_KIND_ICON, isMissingRelation } from "@/components/pets/petHelpers";
+import { CARE_KIND_LABEL } from "@/types/db";
 import { DURATION, EASE_PLAYFUL, EASE_STANDARD } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import type { Pet } from "@/types";
 import type { CareCycle } from "@/types/db";
 import { HomeSectionError } from "./HomeSectionError";
+import { HomeSectionHeader } from "./HomeSectionHeader";
 
 type LoadError = "missing" | "failed" | null;
 
-/** Colores de cada nivel de la escala de severidad para la tarjeta de cuidado */
-const TONE: Record<Severity, { box: string; text: string }> = {
-  overdue: { box: "bg-overdue-soft text-overdue-text", text: "text-overdue-text" },
-  soon: { box: "bg-warning-soft text-warning-text", text: "text-warning-text" },
-  ok: { box: "bg-success-soft text-success-text", text: "text-success-text" },
-  info: { box: "bg-primary-soft text-primary-text", text: "text-primary-text" },
+/** Color de la línea de fecha: azul de marca; solo lo vencido cambia de color */
+const TONE: Record<Severity, { text: string }> = {
+  overdue: { text: "text-overdue-text" },
+  soon: { text: "text-primary-text" },
+  ok: { text: "text-primary-text" },
+  info: { text: "text-primary-text" },
 };
 
-/** Fecha corta para la tarjeta: "Vencido", "Hoy", "Mañana", "3 días" */
+/** Fecha corta para la tarjeta: "Vencido", "Hoy", "Mañana", "En 3 días" */
 function shortDue(days: number): string {
   if (days < 0) return "Vencido";
   if (days === 0) return "Hoy";
   if (days === 1) return "Mañana";
-  return `${days} días`;
+  return `En ${days} días`;
 }
 
+/** Filas visibles; el resto se ve con la flecha */
+const MAX_ROWS = 4;
+
 /**
- * "Para hoy": tarjetas cuadradas deslizables con lo pendiente (vencido y
- * próximos 7 días). Sin pendientes, la sección no se muestra.
- * Marcar el check completa el cuidado: el check se dibuja, la tarjeta se
- * va y el anillo avanza.
+ * "Para hoy": lista compacta con lo pendiente (vencido y próximos 7 días).
+ * Sin pendientes, la sección no se muestra. Marcar el check completa el
+ * cuidado: el check se dibuja, la fila se va y el anillo de la tarjeta de la
+ * mascota avanza (onCompleted).
  */
-export function TodayCard({ pet }: { pet: Pet | null }) {
+export function TodayCard({ pet, onCompleted }: { pet: Pet | null; onCompleted?: () => void }) {
   const [cycles, setCycles] = useState<CareCycle[] | null>(null);
   const [error, setError] = useState<LoadError>(null);
   const [done, setDone] = useState<Record<string, boolean>>({});
@@ -70,6 +73,7 @@ export function TodayCard({ pet }: { pet: Pet | null }) {
     setDone((d) => ({ ...d, [c.id]: true }));
     try {
       await completeCareCycle(c.id);
+      onCompleted?.();
     } catch {
       setDone((d) => ({ ...d, [c.id]: false }));
       showToast("No se pudo marcar como hecho", () => void complete(c), "error");
@@ -93,31 +97,15 @@ export function TodayCard({ pet }: { pet: Pet | null }) {
         ) : pending.length === 0 ? null : (
           <>
             {/* El estado general (al día, progreso) vive en la tarjeta de la mascota; aquí solo lo pendiente */}
-            <div className="flex items-center justify-between gap-3 px-4">
-              <h2 id="home-today" className="text-title font-semibold text-text">
-                Para hoy
-              </h2>
-              <Link
-                href={`/salud?pet=${pet.id}`}
-                aria-label={`Ver todos los cuidados de ${pet.name}`}
-                className="pressable flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-elevated text-text-secondary"
-              >
-                <ChevronRight size={20} aria-hidden="true" />
-              </Link>
-            </div>
+            <HomeSectionHeader id="home-today" title="Para hoy" badge={pending.length} href={`/salud?pet=${pet.id}`} linkLabel={`Ver todos los cuidados de ${pet.name}`} />
 
-            {pending.length > 0 && (
-              <ul
-                className="no-scrollbar fade-edge enter-soft-list mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-1"
-                aria-label="Cuidados pendientes"
-              >
-                <AnimatePresence initial={false}>
-                  {pending.map((c) => (
-                    <CareTile key={c.id} cycle={c} onComplete={() => void complete(c)} />
-                  ))}
-                </AnimatePresence>
-              </ul>
-            )}
+            <ul className="enter-soft-list mx-4 mt-3 flex flex-col gap-2" aria-label="Cuidados pendientes">
+              <AnimatePresence initial={false}>
+                {pending.slice(0, MAX_ROWS).map((c) => (
+                  <CareRow key={c.id} cycle={c} onComplete={() => void complete(c)} />
+                ))}
+              </AnimatePresence>
+            </ul>
           </>
         )}
       </SkeletonSwap>
@@ -125,83 +113,97 @@ export function TodayCard({ pet }: { pet: Pet | null }) {
   );
 }
 
-/** Tarjeta cuadrada de un cuidado: ícono grande, nombre, fecha corta y check */
-function CareTile({ cycle, onComplete }: { cycle: CareCycle; onComplete: () => void }) {
+/**
+ * Cuidado como tarjeta flotante independiente (no fila de tabla): ícono de
+ * marca en círculo, nombre y fecha corta; solo la fecha lleva el color de la
+ * urgencia. Check fino al estilo de Recordatorios.
+ */
+function CareRow({ cycle, onComplete }: { cycle: CareCycle; onComplete: () => void }) {
   const reduce = useReducedMotion();
   const [checked, setChecked] = useState(false);
   const days = daysUntil(cycle.next_due_at);
   const tone = TONE[severityFromDays(days)];
   const Icon = CARE_KIND_ICON[cycle.kind];
+  // Detalle solo si aporta algo distinto al nombre (producto o tipo de cuidado)
+  const detail = [cycle.product, CARE_KIND_LABEL[cycle.kind]].find((t) => t && t.toLocaleLowerCase("es") !== cycle.name.toLocaleLowerCase("es")) ?? null;
 
   function check() {
     if (checked) return;
     setChecked(true);
-    // El check se dibuja y luego la tarjeta se va (y el anillo avanza)
+    // El check se dibuja y luego la fila se va
     setTimeout(onComplete, reduce ? 0 : 520);
   }
 
   return (
     <motion.li
       layout={!reduce}
-      exit={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.9 }}
+      exit={reduce ? { opacity: 0 } : { opacity: 0, x: 24 }}
       transition={{ duration: DURATION.base, ease: EASE_STANDARD }}
-      className="snap-start"
+      className={cn("invert-dark flex items-center gap-3 rounded-xl border border-border bg-surface py-3 pl-3 pr-1 shadow-1 transition-opacity duration-[var(--duration-base)]", checked && "opacity-60")}
     >
-      <div
+      <span
         className={cn(
-          "relative flex h-36 w-36 flex-col justify-between rounded-lg border border-border bg-surface p-3 shadow-1 transition-opacity duration-[var(--duration-base)]",
-          checked && "opacity-60"
+          "flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border transition-colors duration-[var(--duration-base)]",
+          checked ? "border-transparent bg-success-soft text-success-text" : "border-border bg-primary-soft text-primary-text"
         )}
       >
-        <div className="flex items-start justify-between">
-          <span className={cn("flex h-11 w-11 items-center justify-center rounded-md", checked ? "bg-success-soft text-success-text" : tone.box)}>
-            <Icon size={24} aria-hidden="true" />
+        <Icon size={22} aria-hidden="true" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-body font-semibold text-text">{cycle.name}</span>
+        <span className={cn("flex min-w-0 items-center gap-1.5 text-small", tone.text)}>
+          <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", days < 0 ? "bg-current" : "bg-accent")} aria-hidden="true" />
+          <span className="truncate">
+            {detail && `${detail} · `}
+            <span className="font-semibold">{shortDue(days)}</span>
           </span>
-          <button
-            type="button"
-            onClick={check}
-            aria-pressed={checked}
-            aria-label={checked ? `${cycle.name} hecho` : `Marcar ${cycle.name} como hecho`}
-            className="-mr-2 -mt-2 flex h-11 w-11 items-center justify-center rounded-full"
-          >
-            <motion.span
-              animate={checked && !reduce ? { scale: [1, 1.18, 1] } : { scale: 1 }}
-              transition={{ duration: DURATION.slow, ease: EASE_PLAYFUL }}
-              className={cn(
-                "flex h-7 w-7 items-center justify-center rounded-full border-2 transition-colors duration-[var(--duration-fast)]",
-                checked ? "border-success bg-success text-on-primary" : "border-border bg-surface"
-              )}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <motion.path
-                  d="M5 12.5l4.5 4.5L19 7.5"
-                  initial={false}
-                  animate={{ pathLength: checked ? 1 : 0, opacity: checked ? 1 : 0 }}
-                  transition={{ duration: reduce ? 0 : DURATION.slow, ease: EASE_PLAYFUL }}
-                />
-              </svg>
-            </motion.span>
-          </button>
-        </div>
-        <div className="min-w-0">
-          <div className="line-clamp-2 text-body font-semibold leading-tight text-text">{cycle.name}</div>
-          <div className={cn("mt-1 text-label font-semibold", tone.text)}>{shortDue(days)}</div>
-        </div>
-      </div>
+        </span>
+      </span>
+      <button
+        type="button"
+        onClick={check}
+        aria-pressed={checked}
+        aria-label={checked ? `${cycle.name} hecho` : `Marcar ${cycle.name} como hecho`}
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full"
+      >
+        <motion.span
+          animate={checked && !reduce ? { scale: [1, 1.18, 1] } : { scale: 1 }}
+          transition={{ duration: DURATION.slow, ease: EASE_PLAYFUL }}
+          className={cn(
+            "flex h-7 w-7 items-center justify-center rounded-full border-[1.5px] transition-colors duration-[var(--duration-fast)]",
+            checked ? "border-success bg-success text-on-primary" : "border-text-secondary"
+          )}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <motion.path
+              d="M5 12.5l4.5 4.5L19 7.5"
+              initial={false}
+              animate={{ pathLength: checked ? 1 : 0, opacity: checked ? 1 : 0 }}
+              transition={{ duration: reduce ? 0 : DURATION.slow, ease: EASE_PLAYFUL }}
+            />
+          </svg>
+        </motion.span>
+      </button>
     </motion.li>
   );
 }
 
-/** Misma geometría que el contenido: anillo + título y fila de tarjetas */
+/** Misma geometría que el contenido: título y filas */
 function TodaySkeletonBody() {
   return (
     <div aria-hidden="true">
       <div className="flex min-h-11 items-center px-4">
         <Skeleton className="h-5 w-24" />
       </div>
-      <div className="mt-3 flex gap-3 overflow-hidden px-4">
-        {[0, 1, 2].map((i) => (
-          <Skeleton key={i} className="h-36 w-36 shrink-0 rounded-lg" />
+      <div className="mx-4 mt-3 flex flex-col gap-2">
+        {[0, 1].map((i) => (
+          <div key={i} className="flex items-center gap-3 rounded-xl border border-border bg-surface p-3">
+            <Skeleton className="h-12 w-12 shrink-0 rounded-lg" />
+            <div className="flex flex-1 flex-col gap-2">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-3 w-12" />
+            </div>
+          </div>
         ))}
       </div>
     </div>

@@ -25,6 +25,20 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   return outputArray;
 }
 
+/**
+ * Registro del service worker de notificaciones, creándolo si no existe.
+ * `navigator.serviceWorker.ready` nunca resuelve si nadie lo registró, así que
+ * se registra aquí y se espera como máximo `ms`.
+ */
+async function swRegistration(ms = 8000): Promise<ServiceWorkerRegistration> {
+  const existing = await navigator.serviceWorker.getRegistration();
+  if (!existing) await navigator.serviceWorker.register("/sw.js");
+  return Promise.race([
+    navigator.serviceWorker.ready,
+    new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Service worker no disponible")), ms)),
+  ]);
+}
+
 export function usePushNotifications(): UsePushNotificationsReturn {
   // Se detecta después de montar: en el servidor no hay window, y si el
   // primer render difiere del HTML del servidor la hidratación falla.
@@ -43,10 +57,14 @@ export function usePushNotifications(): UsePushNotificationsReturn {
     if (!isSupported) return;
     setPermission(Notification.permission as NotificationPermission);
 
-    navigator.serviceWorker.ready.then(async (registration) => {
-      const sub = await registration.pushManager.getSubscription();
-      setIsSubscribed(!!sub);
-    });
+    // Sin registro previo no hay suscripción; no se espera a `ready`
+    navigator.serviceWorker
+      .getRegistration()
+      .then(async (registration) => {
+        const sub = await registration?.pushManager.getSubscription();
+        setIsSubscribed(!!sub);
+      })
+      .catch(() => {});
   }, [isSupported]);
 
   async function requestPermission(): Promise<boolean> {
@@ -58,7 +76,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
     if (result !== "granted") return false;
 
     try {
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await swRegistration();
       const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 
       if (!vapidKey) {
@@ -106,8 +124,8 @@ export function usePushNotifications(): UsePushNotificationsReturn {
   async function unsubscribe(): Promise<void> {
     if (!isSupported) return;
 
-    const registration = await navigator.serviceWorker.ready;
-    const sub = await registration.pushManager.getSubscription();
+    const registration = await navigator.serviceWorker.getRegistration();
+    const sub = await registration?.pushManager.getSubscription();
 
     if (!sub) return;
 

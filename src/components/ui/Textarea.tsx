@@ -35,9 +35,9 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           className={`${baseClasses} ${stateClasses} ${disabledClasses} ${className}`}
           {...props}
         />
-        {error && <p className="text-label text-overdue-text">{error}</p>}
+        {error && <p className="text-small text-overdue-text">{error}</p>}
         {!error && helperText && (
-          <p className="text-label text-text-secondary">{helperText}</p>
+          <p className="text-small text-text-secondary">{helperText}</p>
         )}
       </div>
     );

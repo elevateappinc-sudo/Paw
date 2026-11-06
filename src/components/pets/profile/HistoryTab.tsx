@@ -24,6 +24,22 @@ const VISIT_LABEL: Record<VisitType, string> = {
 type Visit = Pick<ClinicalRecord, "id" | "visit_date" | "visit_type" | "clinic_name" | "vet_name" | "diagnosis">;
 type Log = CareCycleLog & { care_cycles: Pick<CareCycle, "name" | "kind"> | null; business_name?: string | null };
 
+/** Agrupa por mes ("octubre de 2026"), conservando el orden recibido */
+function groupByMonth<T extends { date: string }>(items: T[]): { key: string; label: string; items: T[] }[] {
+  const groups: { key: string; label: string; items: T[] }[] = [];
+  for (const it of items) {
+    const key = it.date.slice(0, 7);
+    let g = groups.find((x) => x.key === key);
+    if (!g) {
+      const [y, m] = key.split("-").map(Number);
+      g = { key, label: new Date(y, m - 1, 1).toLocaleDateString("es-CO", { month: "long", year: "numeric" }), items: [] };
+      groups.push(g);
+    }
+    g.items.push(it);
+  }
+  return groups;
+}
+
 export function HistoryTab({ petId }: { petId: string }) {
   const [visits, setVisits] = useState<Visit[] | null>(null);
   const [logs, setLogs] = useState<Log[] | null>(null);
@@ -122,25 +138,33 @@ export function HistoryTab({ petId }: { petId: string }) {
         ) : items.length === 0 ? (
           <p className="px-4 pb-4 text-small text-text-secondary">Aún no hay visitas ni cuidados registrados.</p>
         ) : (
-          <ul className="enter-soft-list">
-            {items.map((it) => {
-              const Icon = it.icon;
-              return (
-                <li key={it.key} className="flex items-center gap-3 border-t border-border px-4 py-3">
-                  <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-md ${it.tone}`}>
-                    <Icon size={20} aria-hidden="true" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-body font-semibold text-text">{it.title}</span>
-                    <span className="block truncate text-small text-text-secondary">
-                      {formatDate(it.date.slice(0, 10))}
-                      {it.place ? ` · ${it.place}` : ""}
-                    </span>
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
+          // Agrupada por mes, lo más reciente primero
+          <div className="enter-soft-list">
+            {groupByMonth(items).map((g) => (
+              <section key={g.key} aria-label={g.label}>
+                <h4 className="border-t border-border bg-surface-elevated px-4 py-2 text-small font-semibold text-text-secondary first-letter:uppercase">{g.label}</h4>
+                <ul>
+                  {g.items.map((it) => {
+                    const Icon = it.icon;
+                    return (
+                      <li key={it.key} className="flex items-center gap-3 border-t border-border px-4 py-3">
+                        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-md ${it.tone}`}>
+                          <Icon size={20} aria-hidden="true" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-body font-semibold text-text">{it.title}</span>
+                          <span className="block truncate text-small text-text-secondary">
+                            <time dateTime={it.date.slice(0, 10)}>{formatDate(it.date.slice(0, 10))}</time>
+                            {it.place ? ` · ${it.place}` : ""}
+                          </span>
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            ))}
+          </div>
         )}
       </section>
       <ExpensesTab petId={petId} />

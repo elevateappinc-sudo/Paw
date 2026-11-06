@@ -7,9 +7,10 @@ import { SOSButton } from "@/components/layout/SOSButton";
 
 /**
  * Cabecera estándar: botón atrás, título (large title iOS), acciones.
- * SOS siempre arriba a la derecha salvo que se desactive.
+ * SOS solo donde aporta seguridad (salud, emergencia, mascota perdida):
+ * se activa con `sos`; el punto de entrada general es el Inicio.
  */
-export function PageHeader({ title, eyebrow, back, actions, sos = true, className, large = true, backHref }: {
+export function PageHeader({ title, eyebrow, back, actions, sos = false, className, large = true, backHref }: {
   title: React.ReactNode;
   eyebrow?: React.ReactNode;
   back?: boolean;

@@ -22,6 +22,7 @@ export interface Pet {
   breed?: string;
   birthDate?: string;
   weight?: number;
+  sex?: "male" | "female" | "unknown";
   emoji: string;
   color: string;
   photos: string[];   // base64 data URLs

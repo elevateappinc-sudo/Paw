@@ -90,11 +90,11 @@ export function BookingDetail({ id }: { id: string }) {
           <div className="relative h-36 bg-border">
             {photo ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={photo} alt="" className="h-full w-full object-cover" />
+              <img src={photo} alt="" className="h-full w-full object-cover" onError={(e) => (e.currentTarget.style.visibility = "hidden")} />
             ) : (
               <div className="h-full w-full bg-gradient-to-br from-surface-elevated to-primary-soft" aria-hidden="true" />
             )}
-            <Tag tone={STATUS_TONE[booking.status]} className="absolute left-3 top-3 shadow-1">
+            <Tag tone={STATUS_TONE[booking.status]} className="absolute left-3 top-3">
               {STATUS_LABEL[booking.status]}
             </Tag>
           </div>

@@ -139,7 +139,7 @@ export function LostAlertStatus({ alertId }: { alertId: string }) {
   if (loading) {
     return (
       <LostModeRoot>
-        <PageHeader title="Alerta" back />
+        <PageHeader title="Alerta" back sos />
         <div className="flex flex-col gap-4 px-4" aria-busy="true">
           <Skeleton className="h-36 rounded-md" />
           <Skeleton className="h-44 rounded-md" />
@@ -151,7 +151,7 @@ export function LostAlertStatus({ alertId }: { alertId: string }) {
   if (error || !alert) {
     return (
       <LostModeRoot>
-        <PageHeader title="Alerta" back />
+        <PageHeader title="Alerta" back sos />
         <EmptyState title="No encontramos la alerta" description={error ?? undefined} action={<Button full onClick={load}>Reintentar</Button>} secondary={<button type="button" className="min-h-11" onClick={() => router.push("/perdida")}>Ver alertas cerca</button>} />
       </LostModeRoot>
     );
@@ -244,7 +244,7 @@ export function LostAlertStatus({ alertId }: { alertId: string }) {
       <AnimatePresence>
         {celebrate && (
           <motion.div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} aria-live="polite">
-            <motion.div variants={reduce ? undefined : pop} initial="hidden" animate="show" className="flex flex-col items-center gap-3 rounded-xl bg-surface px-8 py-6 shadow-3">
+            <motion.div variants={reduce ? undefined : pop} initial="hidden" animate="show" className="flex flex-col items-center gap-3 rounded-xl bg-surface px-8 py-6">
               <span className="flex h-20 w-20 items-center justify-center rounded-full bg-primary text-on-primary">
                 <Check size={44} strokeWidth={3} aria-hidden="true" />
               </span>

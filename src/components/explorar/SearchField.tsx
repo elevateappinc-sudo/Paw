@@ -20,7 +20,7 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(functi
         e.preventDefault();
         onSubmit?.();
       }}
-      className={cn("flex h-12 items-center gap-2 rounded-full border border-border bg-surface pl-4 shadow-1", value ? "pr-1" : "pr-4", className)}
+      className={cn("flex h-12 items-center gap-2 rounded-full border border-border bg-surface pl-4", value ? "pr-1" : "pr-4", className)}
     >
       <Search size={18} className="shrink-0 text-text-secondary" aria-hidden="true" />
       <input
