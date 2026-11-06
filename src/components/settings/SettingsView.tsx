@@ -9,6 +9,7 @@ import { Button, Card, PageHeader, Row, SectionTitle, showToast } from "@/compon
 import { NotificationSettings } from "@/components/notifications/NotificationSettings";
 import { AccountSettings } from "./AccountSettings";
 import { ThemeSelector } from "./ThemeSelector";
+import { DeleteAccount } from "./DeleteAccount";
 
 export function SettingsView({ email, googleLinked }: { email: string | null; googleLinked: boolean }) {
   const router = useRouter();
@@ -67,10 +68,11 @@ export function SettingsView({ email, googleLinked }: { email: string | null; go
         </Card>
       </motion.section>
 
-      <motion.div className="px-4" variants={fadeUp}>
+      <motion.div className="flex flex-col gap-3 px-4" variants={fadeUp}>
         <Button variant="secondary" full size="lg" leading={<LogOut size={18} />} onClick={() => void handleSignOut()} loading={signingOut}>
           Cerrar sesión
         </Button>
+        <DeleteAccount />
       </motion.div>
     </motion.div>
   );
