@@ -5,6 +5,16 @@
 - Node.js 20+ (probado con 24)
 - Proyecto Supabase **PAW - Dev** `qomzldpywoapcusavxqw` (región ca-central-1). El proyecto anterior `rgcpbuhypcvttqanvnpq` queda como respaldo; sus valores están comentados en `.env.local`.
 
+## Ambientes
+
+| Ambiente | Rama | URL | Supabase |
+|---|---|---|---|
+| Producción | `production` | https://paw.elevateapp.co | **PAW - Prod** `xqjecrcpkngguokbywex` |
+| Dev y previews | `main` y PRs | https://paw-git-main-elevateappinc-8599s-projects.vercel.app | **PAW - Dev** `qomzldpywoapcusavxqw` |
+| Local | — | http://localhost:3004 | **PAW - Dev** |
+
+Las variables de cada ambiente viven en Vercel → Settings → Environment Variables. Cambiar una variable exige redesplegar. Toda migración se aplica primero en Dev y luego en Prod.
+
 ## Variables de entorno (`.env.local`)
 
 ```bash
