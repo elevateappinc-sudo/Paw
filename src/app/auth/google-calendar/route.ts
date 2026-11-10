@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import crypto from "crypto";
+import { FEATURES } from "@/lib/features";
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID!;
 const NEXT_PUBLIC_URL = process.env.NEXT_PUBLIC_URL ?? "http://localhost:3004";
@@ -17,6 +18,7 @@ const SCOPES = [
 ].join(" ");
 
 export async function GET(request: Request) {
+  if (!FEATURES.googleCalendar) return new NextResponse(null, { status: 404 });
   const cookieStore = await cookies();
 
   // Verify user is authenticated before starting OAuth

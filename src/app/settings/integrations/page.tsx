@@ -2,9 +2,12 @@
 // Paw · Ajustes > Integraciones
 
 import { CalendarIntegration } from "@/components/settings/CalendarIntegration";
+import { notFound } from "next/navigation";
 import { PageHeader, SectionTitle } from "@/components/ui";
+import { FEATURES } from "@/lib/features";
 
 export default function IntegrationsPage() {
+  if (!FEATURES.googleCalendar) notFound();
   return (
     <div className="flex flex-col gap-4 pb-8">
       <PageHeader title="Integraciones" back backHref="/settings" />
