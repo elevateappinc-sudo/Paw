@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Design tokens · Paw · Azul sereno (oscuro: grafito neutro con blanco)
+   Design tokens · Paw · Azul sereno (oscuro: grafito con blanco y acentos azules)
    Fuente de verdad de color, tipografía, espaciado, radios y movimiento.
    Reglas de uso: docs/design-system.md. Los componentes SOLO consumen estas
    variables, nunca hex directos. Pares de texto/fondo validados con WCAG AA
@@ -148,28 +148,28 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     /* Superficies y texto */
-    --color-bg: #0B0C0F;
-    --color-surface: #16171B;
-    --color-surface-elevated: #1E2025;
-    --color-border: #2A2C32;
-    --color-text: #F5F6F8;
-    --color-text-secondary: #A7ABB5;
+    --color-bg: #0B0D12;
+    --color-surface: #161920;
+    --color-surface-elevated: #1E222B;
+    --color-border: #2A2F3A;
+    --color-text: #F5F7FA;
+    --color-text-secondary: #A9B0BF;
 
     /* Marca: azul marino principal y celeste acento */
-    --color-primary: #F5F6F8;
-    --color-on-primary: #0B0C0F;
-    --color-primary-soft: #24262C;
-    --color-primary-text: #F0F2F6;
-    --color-accent: #B9C9E4;
-    --color-on-accent: #0B0C0F;
-    --color-accent-soft: #202329;
+    --color-primary: #F5F7FA;
+    --color-on-primary: #0B0D12;
+    --color-primary-soft: #1C2740;
+    --color-primary-text: #BCD3FF;
+    --color-accent: #6FA8FF;
+    --color-on-accent: #0B0D12;
+    --color-accent-soft: #1A2540;
 
     /* Tintes: superficies destacadas, todos en la familia azul (nunca texto pequeño) */
-    --color-pastel-lilac: #1C1E23;
-    --color-pastel-mint: #1B1E21;
-    --color-pastel-sky: #1C1F24;
-    --color-pastel-peach: #1D1E22;
-    --color-pastel-glass: rgba(255, 255, 255, 0.06);
+    --color-pastel-lilac: #1B2232;
+    --color-pastel-mint: #17252C;
+    --color-pastel-sky: #192338;
+    --color-pastel-peach: #1F2230;
+    --color-pastel-glass: rgba(140, 180, 255, 0.08);
 
     /* Estados (escala de severidad). Danger: solo SOS, perdida, urgencias y destructivo */
     --color-overdue: #FF7BA6;
@@ -181,28 +181,28 @@
     --color-success: #71D5A7;
     --color-success-soft: #173A2C;
     --color-success-text: #8BE0B8;
-    --color-info: #C9D3E4;
-    --color-info-soft: #24262C;
-    --color-info-text: #D5DDEB;
+    --color-info: #8DB8FF;
+    --color-info-soft: #1C2740;
+    --color-info-text: #BCD3FF;
     --color-danger: #FF7584;
     --color-on-danger: #0B0C0F;
     --color-danger-soft: #3D1A22;
     --color-danger-text: #FF8F9B;
     /* Capas, elevación y detalles: en oscuro las tarjetas se separan por capa, sin sombra */
-    --color-glass: rgba(22, 23, 27, 0.86);
+    --color-glass: rgba(22, 25, 32, 0.86);
     --color-scrim: rgba(0, 0, 0, 0.6);
     --color-scrim-strong: rgba(0, 0, 0, 0.92);
     --shadow-1: none;
     --shadow-2: none;
     --shadow-3: none;
     --shadow-nav: 0 10px 30px rgba(0, 0, 0, 0.45);
-    --nav-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    --hero-from: #24262C;
-    --hero-to: #17181C;
-    --hero-glow: none;
+    --nav-highlight: inset 0 1px 0 rgba(170, 200, 255, 0.10);
+    --hero-from: #22304D;
+    --hero-to: #161B27;
+    --hero-glow: 0 14px 34px -14px rgba(111, 168, 255, 0.35);
     --tag-hole: inset 0 2px 3px rgba(0, 0, 0, 0.7);
-    --color-map-road: #2A2C32;
-    --color-map-water: #1C2430;
+    --color-map-road: #2A2F3A;
+    --color-map-water: #1A2540;
 
     /* Color de identidad de cada mascota (lo elige el dueño) */
     --color-pet-lavanda: #A5A2FF;
@@ -213,8 +213,8 @@
     --color-pet-ciruela: #B48CEB;
 
     /* Skeleton */
-    --skeleton-base: #1C1E23;
-    --skeleton-highlight: #26282E;
+    --skeleton-base: #1B1F28;
+    --skeleton-highlight: #252A35;
 
     color-scheme: dark;
   }
@@ -223,28 +223,28 @@
 /* ---------- Modo oscuro (forzado) ---------- */
 :root[data-theme="dark"] {
   /* Superficies y texto */
-  --color-bg: #0B0C0F;
-  --color-surface: #16171B;
-  --color-surface-elevated: #1E2025;
-  --color-border: #2A2C32;
-  --color-text: #F5F6F8;
-  --color-text-secondary: #A7ABB5;
+  --color-bg: #0B0D12;
+  --color-surface: #161920;
+  --color-surface-elevated: #1E222B;
+  --color-border: #2A2F3A;
+  --color-text: #F5F7FA;
+  --color-text-secondary: #A9B0BF;
 
   /* Marca: azul marino principal y celeste acento */
-  --color-primary: #F5F6F8;
-  --color-on-primary: #0B0C0F;
-  --color-primary-soft: #24262C;
-  --color-primary-text: #F0F2F6;
-  --color-accent: #B9C9E4;
-  --color-on-accent: #0B0C0F;
-  --color-accent-soft: #202329;
+  --color-primary: #F5F7FA;
+  --color-on-primary: #0B0D12;
+  --color-primary-soft: #1C2740;
+  --color-primary-text: #BCD3FF;
+  --color-accent: #6FA8FF;
+  --color-on-accent: #0B0D12;
+  --color-accent-soft: #1A2540;
 
   /* Tintes: superficies destacadas, todos en la familia azul (nunca texto pequeño) */
-  --color-pastel-lilac: #1C1E23;
-  --color-pastel-mint: #1B1E21;
-  --color-pastel-sky: #1C1F24;
-  --color-pastel-peach: #1D1E22;
-  --color-pastel-glass: rgba(255, 255, 255, 0.06);
+  --color-pastel-lilac: #1B2232;
+  --color-pastel-mint: #17252C;
+  --color-pastel-sky: #192338;
+  --color-pastel-peach: #1F2230;
+  --color-pastel-glass: rgba(140, 180, 255, 0.08);
 
   /* Estados (escala de severidad). Danger: solo SOS, perdida, urgencias y destructivo */
   --color-overdue: #FF7BA6;
@@ -256,28 +256,28 @@
   --color-success: #71D5A7;
   --color-success-soft: #173A2C;
   --color-success-text: #8BE0B8;
-  --color-info: #C9D3E4;
-  --color-info-soft: #24262C;
-  --color-info-text: #D5DDEB;
+  --color-info: #8DB8FF;
+  --color-info-soft: #1C2740;
+  --color-info-text: #BCD3FF;
   --color-danger: #FF7584;
   --color-on-danger: #0B0C0F;
   --color-danger-soft: #3D1A22;
   --color-danger-text: #FF8F9B;
   /* Capas, elevación y detalles: en oscuro las tarjetas se separan por capa, sin sombra */
-  --color-glass: rgba(22, 23, 27, 0.86);
+  --color-glass: rgba(22, 25, 32, 0.86);
   --color-scrim: rgba(0, 0, 0, 0.6);
   --color-scrim-strong: rgba(0, 0, 0, 0.92);
   --shadow-1: none;
   --shadow-2: none;
   --shadow-3: none;
   --shadow-nav: 0 10px 30px rgba(0, 0, 0, 0.45);
-  --nav-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  --hero-from: #24262C;
-  --hero-to: #17181C;
-  --hero-glow: none;
+  --nav-highlight: inset 0 1px 0 rgba(170, 200, 255, 0.10);
+  --hero-from: #22304D;
+  --hero-to: #161B27;
+  --hero-glow: 0 14px 34px -14px rgba(111, 168, 255, 0.35);
   --tag-hole: inset 0 2px 3px rgba(0, 0, 0, 0.7);
-  --color-map-road: #2A2C32;
-  --color-map-water: #1C2430;
+  --color-map-road: #2A2F3A;
+  --color-map-water: #1A2540;
 
   /* Color de identidad de cada mascota (lo elige el dueño) */
   --color-pet-lavanda: #A5A2FF;
@@ -288,26 +288,27 @@
   --color-pet-ciruela: #B48CEB;
 
   /* Skeleton */
-  --skeleton-base: #1C1E23;
-  --skeleton-highlight: #26282E;
+  --skeleton-base: #1B1F28;
+  --skeleton-highlight: #252A35;
 
   color-scheme: dark;
 }
 
 /* Tarjeta invertida: en oscuro, las tarjetas que en claro son celestes pasan a
-   blancas con texto oscuro (los tokens se redefinen solo dentro de ellas).
-   En claro no cambia nada. */
+   blancas con el azul de marca en íconos y acentos, y un brillo azul debajo
+   (los tokens se redefinen solo dentro de ellas). En claro no cambia nada. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .invert-dark {
     --color-surface: #FFFFFF;
-    --color-border: #E3E5EA;
-    --color-text: #0E0F12;
-    --color-text-secondary: #5A5E68;
-    --color-primary: #16171B;
+    --color-border: #E1E7F0;
+    --color-text: #0E1A33;
+    --color-text-secondary: #55627C;
+    --color-primary: #1B3266;
     --color-on-primary: #FFFFFF;
-    --color-primary-soft: #EEF0F3;
-    --color-primary-text: #16171B;
-    --color-accent: #16171B;
+    --color-primary-soft: #E5EEFB;
+    --color-primary-text: #2455B5;
+    --color-accent: #2B74C4;
+    --color-info: #2455B5;
     --color-overdue-text: #A82B4C;
     --color-success: #217A55;
     --color-success-soft: #DDF3E8;
@@ -316,25 +317,26 @@
     --color-pastel-mint: #FFFFFF;
     --color-pastel-sky: #FFFFFF;
     --color-pastel-peach: #FFFFFF;
-    --color-pastel-glass: rgba(14, 15, 18, 0.06);
+    --color-pastel-glass: rgba(27, 50, 102, 0.06);
     --hero-from: #FFFFFF;
-    --hero-to: #ECEEF2;
-    --hero-glow: none;
-    --skeleton-base: #E7E9EE;
-    --skeleton-highlight: #F5F6F8;
+    --hero-to: #E3ECFA;
+    --hero-glow: 0 14px 34px -14px rgba(111, 168, 255, 0.45);
+    --skeleton-base: #E7ECF4;
+    --skeleton-highlight: #F6F8FC;
     color-scheme: light;
   }
 }
 :root[data-theme="dark"] .invert-dark {
   --color-surface: #FFFFFF;
-  --color-border: #E3E5EA;
-  --color-text: #0E0F12;
-  --color-text-secondary: #5A5E68;
-  --color-primary: #16171B;
+  --color-border: #E1E7F0;
+  --color-text: #0E1A33;
+  --color-text-secondary: #55627C;
+  --color-primary: #1B3266;
   --color-on-primary: #FFFFFF;
-  --color-primary-soft: #EEF0F3;
-  --color-primary-text: #16171B;
-  --color-accent: #16171B;
+  --color-primary-soft: #E5EEFB;
+  --color-primary-text: #2455B5;
+  --color-accent: #2B74C4;
+  --color-info: #2455B5;
   --color-overdue-text: #A82B4C;
   --color-success: #217A55;
   --color-success-soft: #DDF3E8;
@@ -343,12 +345,12 @@
   --color-pastel-mint: #FFFFFF;
   --color-pastel-sky: #FFFFFF;
   --color-pastel-peach: #FFFFFF;
-  --color-pastel-glass: rgba(14, 15, 18, 0.06);
+  --color-pastel-glass: rgba(27, 50, 102, 0.06);
   --hero-from: #FFFFFF;
-  --hero-to: #ECEEF2;
-  --hero-glow: none;
-  --skeleton-base: #E7E9EE;
-  --skeleton-highlight: #F5F6F8;
+  --hero-to: #E3ECFA;
+  --hero-glow: 0 14px 34px -14px rgba(111, 168, 255, 0.45);
+  --skeleton-base: #E7ECF4;
+  --skeleton-highlight: #F6F8FC;
   color-scheme: light;
 }
 

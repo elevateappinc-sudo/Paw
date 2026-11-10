@@ -1,14 +1,11 @@
 import { RouteFallback } from "@/components/ui/Skeleton";
-import { MedicationsSkeleton } from "@/components/medications/MedicationsModule";
+import { RouteLoader } from "@/components/ui";
 
-function LoadingContent() {
-  return <MedicationsSkeleton />;
-}
-
+/** Cambio de pantalla: rastro de huellas (solo si tarda más de --loader-delay) */
 export default function Loading() {
   return (
     <RouteFallback>
-      <LoadingContent />
+      <RouteLoader />
     </RouteFallback>
   );
 }

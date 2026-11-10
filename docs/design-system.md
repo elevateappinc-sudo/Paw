@@ -21,23 +21,23 @@ Guía de producto, interfaz y desarrollo de Paw. Toda pantalla, componente o cam
 
 | Rol | Token | Claro | Oscuro | Uso |
 | --- | --- | --- | --- | --- |
-| Fondo | `--color-bg` | #F2F5FA | #0B0C0F | Lienzo principal (gris azulado) |
-| Superficie | `--color-surface` | #FFFFFF | #16171B | Tarjetas, filas, menús |
-| Superficie elevada | `--color-surface-elevated` | #EBF0F8 | #1E2025 | Sheets, popovers, campos |
-| Borde | `--color-border` | #E1E7F0 | #2A2C32 | Divisores y contornos |
-| Texto | `--color-text` | #0E1A33 | #F5F6F8 | Texto principal |
-| Texto secundario | `--color-text-secondary` | #55627C | #A7ABB5 | Metadatos |
-| Primario | `--color-primary` / `--color-on-primary` | #1B3266 / #FFF | #8DB4FF / #0B0C0F | CTA, FAB, pestaña activa, selección y foco |
-| Primario suave | `--color-primary-soft` | #E5EEFB | #24262C | Fondos de ícono, contadores, chips, botón secondary |
-| Texto primario | `--color-primary-text` | #2455B5 | #F0F2F6 | Íconos, enlaces, nombre en el saludo, raza, fechas |
-| Acento | `--color-accent` | #2B74C4 | #B9C9E4 | Puntos indicadores, filtros seleccionados |
-| Acento suave | `--color-accent-soft` | #E1EFFC | #202329 | Estados vacíos, fondos decorativos |
-| Tintes (`pastel-lilac` / `mint` / `sky` / `peach`) | `--color-pastel-*` | #E4EBF8 / #E1EFF5 / #DDEBFB / #E8EDF5 | #1C1E23 / #1B1E21 / #1C1F24 / #1D1E22 | Variaciones de azul para superficies; nunca texto pequeño. Los nombres se conservan por compatibilidad |
-| Tarjeta destacada | `--hero-from` / `--hero-to` / `--hero-glow` (clase `.hero-surface`) | #EEF5FE → #DCE9FB | #24262C → #17181C | Solo la tarjeta de la mascota activa |
+| Fondo | `--color-bg` | #F2F5FA | #0B0D12 | Lienzo principal (gris azulado) |
+| Superficie | `--color-surface` | #FFFFFF | #161920 | Tarjetas, filas, menús |
+| Superficie elevada | `--color-surface-elevated` | #EBF0F8 | #1E222B | Sheets, popovers, campos |
+| Borde | `--color-border` | #E1E7F0 | #2A2F3A | Divisores y contornos |
+| Texto | `--color-text` | #0E1A33 | #F5F7FA | Texto principal |
+| Texto secundario | `--color-text-secondary` | #55627C | #A9B0BF | Metadatos |
+| Primario | `--color-primary` / `--color-on-primary` | #1B3266 / #FFF | #F5F7FA / #0B0D12 | CTA, FAB, pestaña activa, selección y foco |
+| Primario suave | `--color-primary-soft` | #E5EEFB | #1C2740 | Fondos de ícono, contadores, chips, botón secondary |
+| Texto primario | `--color-primary-text` | #2455B5 | #BCD3FF | Íconos, enlaces, nombre en el saludo, raza, fechas |
+| Acento | `--color-accent` | #2B74C4 | #6FA8FF | Puntos indicadores, filtros seleccionados |
+| Acento suave | `--color-accent-soft` | #E1EFFC | #1A2540 | Estados vacíos, fondos decorativos |
+| Tintes (`pastel-lilac` / `mint` / `sky` / `peach`) | `--color-pastel-*` | #E4EBF8 / #E1EFF5 / #DDEBFB / #E8EDF5 | #1B2232 / #17252C / #192338 / #1F2230 | Variaciones de azul para superficies; nunca texto pequeño. Los nombres se conservan por compatibilidad |
+| Tarjeta destacada | `--hero-from` / `--hero-to` / `--hero-glow` (clase `.hero-surface`) | #EEF5FE → #DCE9FB | #22304D → #161B27 + brillo azul | Solo la tarjeta de la mascota activa |
 | Peligro | `--color-danger` | #D93645 | #FF7584 | Punto del SOS, llamada de urgencia, mascota perdida, destructivo |
 | Éxito | `--color-success` | #217A55 | #71D5A7 | Completado, sin pendientes |
 | Advertencia | `--color-warning` | #956000 | #F2C66D | Vence pronto |
-| Información | `--color-info` | #2455B5 | #C9D3E4 | Datos neutrales y avisos |
+| Información | `--color-info` | #2455B5 | #8DB8FF | Datos neutrales y avisos |
 
 ### 2.1 Reglas de aplicación
 
@@ -45,9 +45,9 @@ Guía de producto, interfaz y desarrollo de Paw. Toda pantalla, componente o cam
 - **Monocromático:** íconos, fondos de ícono, servicios, tintes y anillos usan solo la familia azul. Lo pendiente o próximo va en `primary-text`; únicamente lo **vencido** (`overdue`) y lo urgente (`danger`) cambian de color. El verde (`success`) solo confirma una acción completada o "todo al día".
 - El celeste de acento identifica (puntos, filtro activo); no dirige ni se usa para párrafos.
 - Los estados combinan siempre color + ícono + texto.
-- **Oscuro neutro:** grafito casi sin matiz y el blanco como color de acción (FAB, pestaña activa, anillo, íconos); el azul queda solo como un leve tinte en el acento. Nunca superficies azul marino.
-- **Tarjetas invertidas (`.invert-dark`):** las que en claro son celestes (tarjeta de la mascota activa, tarjetas de "Para hoy", mosaicos de "Servicios y cuidados", mosaicos Sexo/Edad/Peso, portadas de "Cerca de ti", botón tonal "Reservar refuerzo") pasan a blancas con texto casi negro en oscuro. La clase redefine los tokens solo dentro del elemento (definida en `tokens.css`), así el texto sigue siendo texto real y nítido; en claro no cambia nada.
-- En claro las tarjetas blancas llevan `shadow-1`; en oscuro no hay sombras de tarjeta y los niveles se separan con `bg` → `surface` → `surface-elevated`.
+- **Oscuro vivo:** grafito con un leve tinte frío y el blanco como color de acción (FAB, pestaña activa, botones). El azul de marca da vida en los detalles: íconos y fondos de ícono (`primary-text` celeste sobre `primary-soft` azul tenue), acento, anillos e información. Nunca superficies grandes azul marino.
+- **Tarjetas invertidas (`.invert-dark`):** las que en claro son celestes (tarjeta de la mascota activa, tarjetas de "Para hoy", mosaicos de "Servicios y cuidados", mosaicos Sexo/Edad/Peso, portadas de "Cerca de ti", botón tonal "Reservar refuerzo") pasan a blancas en oscuro, con texto azul marino, íconos y acentos en el azul de marca, degradado blanco → celeste y un brillo azul debajo. La clase redefine los tokens solo dentro del elemento (definida en `tokens.css`), así el texto sigue siendo texto real y nítido; en claro no cambia nada.
+- En claro las tarjetas blancas llevan `shadow-1`; en oscuro no hay sombras de tarjeta (solo el brillo azul de las invertidas) y los niveles se separan con `bg` → `surface` → `surface-elevated`.
 - Colores de mascota (`--color-pet-*`): solo para datos personalizados (mapa, gráficos); la mascota se distingue por su foto, no por un fondo de color.
 
 ### 2.2 Severidad y estados
@@ -120,7 +120,7 @@ Múltiplos de 4 px; las excepciones (20 px) van por token y documentadas.
 | Tarjeta de mascota (Inicio) | `.hero-surface`: foto cuadrada 76 px con borde blanco, nombre + chip de sexo, raza en azul, edad, anillo "x/y al día" (cifra 14 px, total y "al día" 11 px regular); franja inferior con vacunas y peso | Encima, `.eyebrow` "Mascota activa" con avatares apilados para cambiar de mascota y "+" |
 | `PetTag` (ficha médica) | Filas etiqueta-valor | Solo datos existentes; alergias y condiciones primero |
 | Fila de tarea | Tarjeta blanca independiente (radio 24, `shadow-1`), ícono 48 px en cuadro `primary-soft` con borde, título, línea "• detalle · fecha" y check circular fino | Nunca como tabla con divisores. Urgente primero; animación breve con alternativa accesible |
-| Skeleton | Geometría real; avatar con silueta animal | No mostrar si la espera es < 300 ms |
+| Skeleton | Geometría real; avatar con silueta animal; respiración suave de opacidad, sin barrido de luz | Solo dentro de tarjetas y secciones. No mostrar si la espera es < 300 ms |
 | Toast | Mensaje corto + acción opcional | Nunca para información crítica |
 
 Estados de todos los componentes: default, pressed, focused, disabled, loading, selected y error, sin depender solo del color.
@@ -142,9 +142,9 @@ Avatares: primero la foto del usuario; si no hay, retrato realista por especie y
 | `--ease-playful` | cubic-bezier(0.2, 0.8, 0.2, 1) | Check de tarea, microanimación |
 | `--loader-delay` | 300 ms | Umbral para mostrar loader o skeleton |
 
-Loaders (`src/components/ui/Loaders.tsx`): `PawLoader` (espera sin forma), `PawDotsLoader` (dentro de botón), `PetSilhouetteLoader` (primera carga larga), `SpotsLoader` (bienvenida, decorativo), `TailRefresh` (pull-to-refresh), `LostPetRadar` (solo mascota perdida, con texto de estado).
+Loaders (`src/components/ui/Loaders.tsx`): `PawLoader` (rastro de 4 huellas que avanza de izquierda a derecha; espera sin forma), `RouteLoader` (`PawLoader` centrado: todos los `loading.tsx` de ruta, salvo onboarding y mascota perdida), `PawDotsLoader` (dentro de botón), `PetSilhouetteLoader` (primera carga larga), `SpotsLoader` (bienvenida, decorativo), `TailRefresh` (pull-to-refresh), `LostPetRadar` (solo mascota perdida, con texto de estado).
 
-Solo `transform` y `opacity`. Skeleton con un barrido sincronizado y fundido cruzado al contenido. Con `prefers-reduced-motion`: sin barrido, giro 3D ni rebote.
+Solo `transform` y `opacity`. Skeleton con una respiración de opacidad sincronizada (`SkeletonSync`) y fundido cruzado al contenido; nunca barridos de luz ni destellos, que se leen como parpadeo. Las cargas de pantalla completa usan huellas, no bloques grises. Con `prefers-reduced-motion`: giro 3D ni rebote; las huellas quedan como ícono estático.
 
 ## 9. Patrones de pantalla
 

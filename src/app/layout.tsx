@@ -26,8 +26,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   // La meta theme-color no acepta variables CSS: replica --color-bg de tokens.css
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#F6F5FC" },
-    { media: "(prefers-color-scheme: dark)", color: "#0A0914" },
+    { media: "(prefers-color-scheme: light)", color: "#F2F5FA" },
+    { media: "(prefers-color-scheme: dark)", color: "#0B0C0F" },
   ],
   width: "device-width",
   initialScale: 1,

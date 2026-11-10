@@ -1,14 +1,11 @@
 import { RouteFallback } from "@/components/ui/Skeleton";
-import { HomeSkeleton } from "@/components/home/HomeSkeleton";
+import { RouteLoader } from "@/components/ui";
 
-function HomeLoadingContent() {
-  return <HomeSkeleton />;
-}
-
-export default function HomeLoading() {
+/** Cambio de pantalla: rastro de huellas (solo si tarda más de --loader-delay) */
+export default function Loading() {
   return (
     <RouteFallback>
-      <HomeLoadingContent />
+      <RouteLoader />
     </RouteFallback>
   );
 }
