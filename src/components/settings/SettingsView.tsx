@@ -5,6 +5,7 @@ import { motion, useReducedMotion } from "motion/react";
 import { CalendarDays, ChevronRight, LogOut, Mail, Palette } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { fadeUp, stagger } from "@/lib/motion";
+import { FEATURES } from "@/lib/features";
 import { Button, Card, PageHeader, Row, SectionTitle, showToast } from "@/components/ui";
 import { NotificationSettings } from "@/components/notifications/NotificationSettings";
 import { AccountSettings } from "./AccountSettings";
@@ -54,19 +55,22 @@ export function SettingsView({ email, googleLinked }: { email: string | null; go
         <NotificationSettings />
       </motion.section>
 
-      <motion.section className="flex flex-col gap-3 px-4" variants={fadeUp} aria-label="Integraciones">
-        <SectionTitle>Integraciones</SectionTitle>
-        <Card padded={false} className="overflow-hidden">
-          <Row
-            href="/settings/integrations"
-            icon={<CalendarDays size={20} aria-hidden="true" />}
-            iconTone="info"
-            title="Google Calendar"
-            subtitle="Sincroniza comidas, salidas y citas"
-            trailing={<ChevronRight size={18} className="text-text-secondary" aria-hidden="true" />}
-          />
-        </Card>
-      </motion.section>
+      {/* Apagado para el lanzamiento: docs/pendientes.md */}
+      {FEATURES.googleCalendar && (
+        <motion.section className="flex flex-col gap-3 px-4" variants={fadeUp} aria-label="Integraciones">
+          <SectionTitle>Integraciones</SectionTitle>
+          <Card padded={false} className="overflow-hidden">
+            <Row
+              href="/settings/integrations"
+              icon={<CalendarDays size={20} aria-hidden="true" />}
+              iconTone="info"
+              title="Google Calendar"
+              subtitle="Sincroniza comidas, salidas y citas"
+              trailing={<ChevronRight size={18} className="text-text-secondary" aria-hidden="true" />}
+            />
+          </Card>
+        </motion.section>
+      )}
 
       <motion.div className="flex flex-col gap-3 px-4" variants={fadeUp}>
         <Button variant="secondary" full size="lg" leading={<LogOut size={18} />} onClick={() => void handleSignOut()} loading={signingOut}>

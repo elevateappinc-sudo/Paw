@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { FEATURES } from "@/lib/features";
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
 import { isMissingSchema } from "@/lib/api/schemaErrors";
@@ -145,6 +146,7 @@ function parseActions(raw: string, cycles: CareCycle[]): { text: string; actions
 }
 
 export async function POST(req: Request) {
+  if (!FEATURES.assistant) return NextResponse.json({ error: "No disponible" }, { status: 404 });
   let body: Body;
   try {
     body = (await req.json()) as Body;
