@@ -6,7 +6,7 @@ export { Skeleton, SkeletonRow, SkeletonBiz, SkeletonPets, SkeletonPetAvatar, Sk
 export { SkeletonSwap } from "./SkeletonSwap";
 export { SkeletonSync } from "./SkeletonSync";
 export { PullToRefresh } from "./PullToRefresh";
-export { PawLoader, PawDotsLoader, PetSilhouetteLoader, SpotsLoader, TailRefresh, LostPetRadar, useLoaderVisibility } from "./Loaders";
+export { PawLoader, RouteLoader, PawDotsLoader, PetSilhouetteLoader, SpotsLoader, TailRefresh, LostPetRadar, useLoaderVisibility } from "./Loaders";
 export { EmptyState } from "./EmptyState";
 export { PawIllustration } from "./PawIllustration";
 export { ProgressRing, ProgressBar } from "./ProgressRing";

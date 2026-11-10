@@ -120,7 +120,7 @@ Múltiplos de 4 px; las excepciones (20 px) van por token y documentadas.
 | Tarjeta de mascota (Inicio) | `.hero-surface`: foto cuadrada 76 px con borde blanco, nombre + chip de sexo, raza en azul, edad, anillo "x/y al día" (cifra 14 px, total y "al día" 11 px regular); franja inferior con vacunas y peso | Encima, `.eyebrow` "Mascota activa" con avatares apilados para cambiar de mascota y "+" |
 | `PetTag` (ficha médica) | Filas etiqueta-valor | Solo datos existentes; alergias y condiciones primero |
 | Fila de tarea | Tarjeta blanca independiente (radio 24, `shadow-1`), ícono 48 px en cuadro `primary-soft` con borde, título, línea "• detalle · fecha" y check circular fino | Nunca como tabla con divisores. Urgente primero; animación breve con alternativa accesible |
-| Skeleton | Geometría real; avatar con silueta animal | No mostrar si la espera es < 300 ms |
+| Skeleton | Geometría real; avatar con silueta animal; respiración suave de opacidad, sin barrido de luz | Solo dentro de tarjetas y secciones. No mostrar si la espera es < 300 ms |
 | Toast | Mensaje corto + acción opcional | Nunca para información crítica |
 
 Estados de todos los componentes: default, pressed, focused, disabled, loading, selected y error, sin depender solo del color.
@@ -142,9 +142,9 @@ Avatares: primero la foto del usuario; si no hay, retrato realista por especie y
 | `--ease-playful` | cubic-bezier(0.2, 0.8, 0.2, 1) | Check de tarea, microanimación |
 | `--loader-delay` | 300 ms | Umbral para mostrar loader o skeleton |
 
-Loaders (`src/components/ui/Loaders.tsx`): `PawLoader` (espera sin forma), `PawDotsLoader` (dentro de botón), `PetSilhouetteLoader` (primera carga larga), `SpotsLoader` (bienvenida, decorativo), `TailRefresh` (pull-to-refresh), `LostPetRadar` (solo mascota perdida, con texto de estado).
+Loaders (`src/components/ui/Loaders.tsx`): `PawLoader` (rastro de 4 huellas que avanza de izquierda a derecha; espera sin forma), `RouteLoader` (`PawLoader` centrado: todos los `loading.tsx` de ruta, salvo onboarding y mascota perdida), `PawDotsLoader` (dentro de botón), `PetSilhouetteLoader` (primera carga larga), `SpotsLoader` (bienvenida, decorativo), `TailRefresh` (pull-to-refresh), `LostPetRadar` (solo mascota perdida, con texto de estado).
 
-Solo `transform` y `opacity`. Skeleton con un barrido sincronizado y fundido cruzado al contenido. Con `prefers-reduced-motion`: sin barrido, giro 3D ni rebote.
+Solo `transform` y `opacity`. Skeleton con una respiración de opacidad sincronizada (`SkeletonSync`) y fundido cruzado al contenido; nunca barridos de luz ni destellos, que se leen como parpadeo. Las cargas de pantalla completa usan huellas, no bloques grises. Con `prefers-reduced-motion`: giro 3D ni rebote; las huellas quedan como ícono estático.
 
 ## 9. Patrones de pantalla
 
