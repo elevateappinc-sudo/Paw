@@ -102,8 +102,8 @@
     <div class="eyebrow">Paw · reestructuración</div>
     <h1>Plan de cierre por prioridades</h1>
     <div class="meta">
-      <span>Actualizado <strong id="updated">9 oct 2026</strong></span>
-      <span>Rama <code>feat/prd-redesign</code></span>
+      <span>Actualizado <strong id="updated">9 nov 2026</strong></span>
+      <span>Producción <a href="https://paw.elevateapp.co">paw.elevateapp.co</a></span>
       <a href="https://claude.ai/code/artifact/29c8128c-4fd4-48f7-a23a-03545bba4f70">PRD</a>
       <a href="https://claude.ai/code/artifact/6e13fdb8-cd3a-42da-b788-b1abaa49448a">Sistema de diseño</a>
       <a href="https://claude.ai/artifact/MyZsV9Zxv7nt56Ykq7ARy3">Mockups</a>
@@ -115,6 +115,36 @@
     <div class="tile"><div class="n" id="n-curso">0</div><div class="l">En curso</div></div>
     <div class="tile"><div class="n" id="n-pendiente">0</div><div class="l">Pendientes</div></div>
     <div class="tile"><div class="n" id="n-espera">0</div><div class="l">En espera</div></div>
+  </section>
+
+  <section class="block" aria-labelledby="h-prod">
+    <div class="block-head">
+      <div><h2 id="h-prod">Producción en su propia base</h2><div class="sub"><code>paw.elevateapp.co</code> → <code>PAW - Prod · xqjecrcpkngguokbywex</code>, desde el 9 nov</div></div>
+      <span class="st hecho">En vivo</span>
+    </div>
+    <p>Producción dejó de usar la base de Dev. La rama <code>production</code> se publica en <strong>paw.elevateapp.co</strong> y lee y escribe en <strong>PAW - Prod</strong>. La rama <code>main</code> y los previews siguen en <strong>PAW - Dev</strong>.</p>
+    <div class="tables">
+      <div>
+        <h3>Hecho</h3>
+        <ul>
+          <li>Vercel Production: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY y SUPABASE_SERVICE_ROLE_KEY de Prod</li>
+          <li>NEXT_PUBLIC_URL = https://paw.elevateapp.co</li>
+          <li>Auth: Site URL paw.elevateapp.co y redirects con el dominio y paw-three-xi.vercel.app</li>
+          <li>Migración delete_triggers_security_definer aplicada</li>
+          <li>Redespliegue verificado: el código publicado apunta a PAW - Prod</li>
+          <li>Prueba de punta a punta: crear cuenta con mascota, peso y foto, y eliminarla desde la app sin que quede nada</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Falta</h3>
+        <ul>
+          <li>Google: publicar la pantalla de consentimiento (paso D), activar Google en PAW - Prod. Branding con paw.elevateapp.co y dominio elevateapp.co</li>
+          <li>Vercel Production: NEXT_PUBLIC_VAPID_PUBLIC_KEY, ANTHROPIC_API_KEY y variables de Google Calendar</li>
+          <li>RLS en 6 tablas internas (igual en Dev)</li>
+          <li>Revisar los secrets de las edge functions en Prod</li>
+        </ul>
+      </div>
+    </div>
   </section>
 
   <section class="block" aria-labelledby="h-supabase">
@@ -230,6 +260,9 @@
   ];
 
   const LOG = [
+    ["9 nov", "Producción pasa a su propia base: paw.elevateapp.co usa PAW - Prod. Variables de Vercel Production cambiadas, migración de triggers aplicada, URLs de Auth configuradas y redespliegue hecho. Prueba de crear y eliminar cuenta en Prod sin residuos. Ingreso con Google pendiente desde el paso D."],
+    ["6 nov", "Eliminar cuenta en Perfil: borra mascotas, historial, archivos, eventos, perfil y acceso. Página de políticas de privacidad publicada."],
+    ["5 nov", "Design system Azul sereno: home minimalista, modo oscuro grafito, tarjetas invertidas en oscuro, calendario, hora y listas propias en toda la app."],
     ["9 oct", "Plan de cuidados parametrizable: cada ciclo tiene frecuencia editable con unidad, se puede dejar de seguir y el usuario añade cuidados propios. Migración 004 aplicada en PAW - Dev."],
     ["9 oct", "Primera mascota real registrada (Jagger). Añadido el historial previo para cargar vacunas y antiparasitarios ya aplicados."],
     ["9 oct", "Back end movido al proyecto nuevo PAW - Dev: 22 migraciones, Storage, 9 edge functions, push, auth, semilla y tipos. Verificado el flujo completo con usuarios de prueba. La app local ya apunta al proyecto nuevo."],
