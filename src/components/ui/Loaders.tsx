@@ -66,27 +66,41 @@ function StillPaw({ size, color = "var(--color-primary)" }: { size: number; colo
   );
 }
 
-/** Huellitas caminando: loader general por defecto */
-export function PawLoader({ size = 56, label = "Cargando", showLabel, className }: LoaderProps) {
-  // 4 huellas en diagonal: izquierda, derecha, izquierda, derecha
+/**
+ * Huellitas caminando: loader general por defecto. Un rastro de 4 huellas
+ * avanza de izquierda a derecha alternando pata izquierda y derecha; cada
+ * huella aparece delante con un fundido y se borra por detrás, como pisadas.
+ * `size` es el ancho; el alto es la mitad.
+ */
+export function PawLoader({ size = 88, label = "Cargando", showLabel, className }: LoaderProps) {
   const steps = [
-    { x: 2, y: 34, r: -20 },
-    { x: 18, y: 24, r: 20 },
-    { x: 20, y: 10, r: -20 },
-    { x: 36, y: 0, r: 20 },
+    { x: 2, y: 22 },
+    { x: 24, y: 4 },
+    { x: 46, y: 22 },
+    { x: 68, y: 4 },
   ];
   return (
-    <Status label={label} showLabel={showLabel} className={className} still={<StillPaw size={size * 0.6} />}>
-      <svg width={size} height={size} viewBox="0 0 60 60" className="loader-paw text-primary" aria-hidden="true">
+    <Status label={label} showLabel={showLabel} className={className} still={<StillPaw size={size * 0.36} />}>
+      <svg width={size} height={size / 2} viewBox="0 0 96 48" className="loader-paw text-primary" aria-hidden="true">
         {steps.map((s, i) => (
-          <g key={i} transform={`translate(${s.x} ${s.y}) rotate(${s.r} 12 12)`}>
-            <g className="loader-paw__step" style={{ animationDelay: `calc(var(--duration-loader) / 4 * ${i})` }} fill="currentColor">
+          // Huella apuntando hacia donde camina (derecha)
+          <g key={i} transform={`translate(${s.x} ${s.y}) rotate(90 12 12)`}>
+            <g className="loader-paw__step" style={{ animationDelay: `calc(var(--duration-loader) * 1.6 / 6 * ${i})` }} fill="currentColor">
               <PawShape />
             </g>
           </g>
         ))}
       </svg>
     </Status>
+  );
+}
+
+/** Carga de ruta (loading.tsx): rastro de huellas centrado en la pantalla */
+export function RouteLoader({ label = "Cargando" }: { label?: string }) {
+  return (
+    <div className="flex min-h-[70dvh] items-center justify-center px-8">
+      <PawLoader size={104} label={label} />
+    </div>
   );
 }
 

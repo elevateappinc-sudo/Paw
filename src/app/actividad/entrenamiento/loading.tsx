@@ -1,14 +1,11 @@
 import { RouteFallback } from "@/components/ui/Skeleton";
-import { EntrenamientoSkeleton } from "@/components/entrenamiento/EntrenamientoSkeleton";
+import { RouteLoader } from "@/components/ui";
 
-function LoadingContent() {
-  return <EntrenamientoSkeleton />;
-}
-
+/** Cambio de pantalla: rastro de huellas (solo si tarda más de --loader-delay) */
 export default function Loading() {
   return (
     <RouteFallback>
-      <LoadingContent />
+      <RouteLoader />
     </RouteFallback>
   );
 }

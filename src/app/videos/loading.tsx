@@ -1,14 +1,11 @@
 import { RouteFallback } from "@/components/ui/Skeleton";
-import { GallerySkeleton } from "@/components/gallery/GallerySkeleton";
+import { RouteLoader } from "@/components/ui";
 
-function LoadingContent() {
-  return <GallerySkeleton />;
-}
-
+/** Cambio de pantalla: rastro de huellas (solo si tarda más de --loader-delay) */
 export default function Loading() {
   return (
     <RouteFallback>
-      <LoadingContent />
+      <RouteLoader />
     </RouteFallback>
   );
 }

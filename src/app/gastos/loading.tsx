@@ -1,14 +1,11 @@
 import { RouteFallback } from "@/components/ui/Skeleton";
-import { GastosSkeleton } from "@/components/gastos/GastosSkeleton";
+import { RouteLoader } from "@/components/ui";
 
-function GastosLoadingContent() {
-  return <GastosSkeleton />;
-}
-
-export default function GastosLoading() {
+/** Cambio de pantalla: rastro de huellas (solo si tarda más de --loader-delay) */
+export default function Loading() {
   return (
     <RouteFallback>
-      <GastosLoadingContent />
+      <RouteLoader />
     </RouteFallback>
   );
 }

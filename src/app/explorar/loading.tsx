@@ -1,14 +1,11 @@
 import { RouteFallback } from "@/components/ui/Skeleton";
-import { ExplorarSkeleton } from "@/components/explorar/ExplorarSkeleton";
+import { RouteLoader } from "@/components/ui";
 
-function LoadingContent() {
-  return <ExplorarSkeleton />;
-}
-
+/** Cambio de pantalla: rastro de huellas (solo si tarda más de --loader-delay) */
 export default function Loading() {
   return (
     <RouteFallback>
-      <LoadingContent />
+      <RouteLoader />
     </RouteFallback>
   );
 }

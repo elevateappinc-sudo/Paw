@@ -1,14 +1,11 @@
 import { RouteFallback } from "@/components/ui/Skeleton";
-import { CitasSkeleton } from "@/components/citas/CitasSkeleton";
+import { RouteLoader } from "@/components/ui";
 
-function LoadingContent() {
-  return <CitasSkeleton />;
-}
-
+/** Cambio de pantalla: rastro de huellas (solo si tarda más de --loader-delay) */
 export default function Loading() {
   return (
     <RouteFallback>
-      <LoadingContent />
+      <RouteLoader />
     </RouteFallback>
   );
 }
