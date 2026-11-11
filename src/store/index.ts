@@ -24,6 +24,27 @@ function toastErr(modulo: string, retry: () => void) {
   showToast(`Error al guardar ${modulo}. Reintentar`, retry);
 }
 
+/** Fila de `pets` → modelo del store */
+export function petFromRow(r: Record<string, unknown>): Pet {
+  return {
+    id: r.id as string,
+    ownerId: r.user_id as string,
+    name: r.name as string,
+    species: r.species as Pet["species"],
+    breed: (r.breed as string) ?? "",
+    birthDate: (r.birth_date as string) ?? "",
+    weight: r.weight != null ? Number(r.weight) : undefined,
+    sex: (r.sex as Pet["sex"]) ?? "unknown",
+    emoji: (r.emoji as string) ?? "🐾",
+    color: (r.color as string) ?? "var(--color-pet-lavanda)",
+    avatar_config: (r.avatar_config as Pet["avatar_config"]) ?? null,
+    photoUrl: (r.photo_url as string) ?? null,
+    sharedWith: [],
+    photos: [],
+    createdAt: r.created_at as string,
+  };
+}
+
 // ─── Store interface ────────────────────────────────────────────────────────
 interface PawStore {
   // Pets (kept in Zustand — managed by auth + server actions from F1a)
@@ -32,6 +53,8 @@ interface PawStore {
   fetchPets: () => Promise<void>;
   addPet: (p: Omit<Pet, "id" | "ownerId" | "sharedWith" | "photos" | "createdAt">, ownerId?: string) => Promise<void>;
   updatePet: (id: string, p: Partial<Pet>) => Promise<void>;
+  /** Refleja en el store una fila ya guardada (foto, sexo, peso…) sin volver a escribir */
+  syncPetRow: (row: Record<string, unknown>) => void;
   addPetPhoto: (petId: string, dataUrl: string) => void;
   deletePetPhoto: (petId: string, index: number) => void;
   deletePet: (id: string) => void;
@@ -109,29 +132,16 @@ export const useStore = create<PawStore>()((set, get) => ({
     try {
       const { createClient } = await import("@/lib/supabase/client");
       const supabase = createClient();
+      // Sin filtrar por user_id: la RLS (can_access_pet) devuelve las propias y las compartidas
       const { data } = await supabase
         .from("pets")
         .select("*")
-        .eq("user_id", currentUserId)
         .order("created_at", { ascending: true });
       if (data) {
-        const mapped = data.map((r: Record<string, unknown>) => ({
-          id: r.id as string,
-          ownerId: r.user_id as string,
-          name: r.name as string,
-          species: r.species as Pet["species"],
-          breed: (r.breed as string) ?? "",
-          birthDate: (r.birth_date as string) ?? "",
-          weight: r.weight as number ?? undefined,
-          emoji: (r.emoji as string) ?? "🐾",
-          color: (r.color as string) ?? "var(--color-pet-lavanda)",
-          avatar_config: (r.avatar_config as Pet["avatar_config"]) ?? null,
-          photoUrl: (r.photo_url as string) ?? null,
-          sharedWith: (r.shared_with as string[]) ?? [],
-          photos: [],
-          createdAt: r.created_at as string,
-        }));
-        set({ pets: mapped, selectedPetId: mapped[0]?.id ?? null });
+        const mapped: Pet[] = data.map((r: Record<string, unknown>) => petFromRow(r));
+        // Conserva la mascota elegida si sigue existiendo (al refrescar no salta a la primera)
+        const keep = get().selectedPetId;
+        set({ pets: mapped, selectedPetId: keep && mapped.some((p) => p.id === keep) ? keep : mapped[0]?.id ?? null });
       }
     } catch (e) {
       console.error("[fetchPets]", e);
@@ -186,6 +196,12 @@ export const useStore = create<PawStore>()((set, get) => ({
       toastErr("mascota", () => get().updatePet(id, p));
     }
   },
+  syncPetRow: (row) =>
+    set((s) => {
+      const next = petFromRow(row);
+      const exists = s.pets.some((x) => x.id === next.id);
+      return { pets: exists ? s.pets.map((x) => (x.id === next.id ? { ...x, ...next, photos: x.photos } : x)) : [...s.pets, next] };
+    }),
   deletePet: (id) =>
     set((s) => ({
       pets: s.pets.filter((x) => x.id !== id),

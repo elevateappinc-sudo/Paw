@@ -1,8 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
-import { Sheet, Button, Input } from "@/components/ui";
-import type { PetFood, PetMeal } from "@/types/db";
+import { Check, Plus, Trash2 } from "lucide-react";
+import { Sheet, Button, Input, Select } from "@/components/ui";
+import type { DietDetail, DietType, PetFood, PetMeal } from "@/types/db";
+import { cn } from "@/lib/utils";
+import { DIET_META, DIET_TYPES, PRESENTATION_LABEL, dietTypesOf } from "./diet";
+
+type OtherDiet = Exclude<DietType, "concentrado">;
 import { errorMessage, todayStr } from "@/components/salud/shared";
 
 const DEFAULT_MEALS: PetMeal[] = [
@@ -26,6 +30,9 @@ export function FoodEditSheet({ open, onClose, food, suggestedGrams, onSave }: {
   suggestedGrams: number | null;
   onSave: (food: PetFood) => Promise<void>;
 }) {
+  const [types, setTypes] = useState<DietType[]>([]);
+  const [details, setDetails] = useState<Partial<Record<OtherDiet, DietDetail>>>({});
+  const [presentation, setPresentation] = useState("");
   const [brand, setBrand] = useState("");
   const [product, setProduct] = useState("");
   const [bagKg, setBagKg] = useState("");
@@ -39,6 +46,9 @@ export function FoodEditSheet({ open, onClose, food, suggestedGrams, onSave }: {
   useEffect(() => {
     if (!open) return;
     const g = food?.grams_per_day ?? suggestedGrams ?? 0;
+    setTypes(dietTypesOf(food));
+    setDetails(food?.diet_details ?? {});
+    setPresentation(food?.presentation ?? "");
     setBrand(food?.brand ?? "");
     setProduct(food?.product ?? "");
     setBagKg(food?.bag_kg ? String(food.bag_kg) : "");
@@ -49,6 +59,14 @@ export function FoodEditSheet({ open, onClose, food, suggestedGrams, onSave }: {
     setSnacks(food?.snacks_per_day != null ? String(food.snacks_per_day) : "");
     setError(null);
   }, [open, food, suggestedGrams]);
+
+  function toggleType(t: DietType) {
+    setTypes((ts) => (ts.includes(t) ? ts.filter((x) => x !== t) : DIET_TYPES.filter((x) => x === t || ts.includes(x))));
+  }
+
+  function setDetail(t: OtherDiet, patch: DietDetail) {
+    setDetails((d) => ({ ...d, [t]: { ...d[t], ...patch } }));
+  }
 
   function updateMeal(i: number, patch: Partial<PetMeal>) {
     setMeals((ms) => ms.map((m, idx) => (idx === i ? { ...m, ...patch } : m)));
@@ -64,6 +82,7 @@ export function FoodEditSheet({ open, onClose, food, suggestedGrams, onSave }: {
     const gramsNum = grams ? Number(grams) : undefined;
     const bagNum = bagKg ? Number(bagKg) : undefined;
     const snacksNum = snacks ? Number(snacks) : undefined;
+    if (types.length === 0) return setError("Elige al menos un tipo de comida.");
     if (gramsNum !== undefined && (Number.isNaN(gramsNum) || gramsNum <= 0)) return setError("Revisa los gramos por día.");
     if (bagNum !== undefined && (Number.isNaN(bagNum) || bagNum <= 0)) return setError("Revisa el tamaño de la bolsa.");
     if (snacksNum !== undefined && (Number.isNaN(snacksNum) || snacksNum < 0)) return setError("Revisa los snacks por día.");
@@ -71,12 +90,25 @@ export function FoodEditSheet({ open, onClose, food, suggestedGrams, onSave }: {
     setSaving(true);
     setError(null);
     try {
+      const kibble = types.includes("concentrado");
+      const cleanDetails: Partial<Record<OtherDiet, DietDetail>> = {};
+      for (const t of types) {
+        if (t === "concentrado") continue;
+        const d = details[t];
+        const detail = d?.detail?.trim();
+        const supplier = d?.supplier?.trim();
+        if (detail || supplier) cleanDetails[t] = { ...(detail ? { detail } : {}), ...(supplier ? { supplier } : {}) };
+      }
       await onSave({
         ...(food ?? {}),
-        brand: brand.trim() || undefined,
-        product: product.trim() || undefined,
-        bag_kg: bagNum,
-        opened_at: openedAt || undefined,
+        diet_types: types,
+        diet_details: cleanDetails,
+        // La marca, la bolsa y la recompra solo aplican al concentrado
+        presentation: kibble ? ((presentation || undefined) as PetFood["presentation"]) : undefined,
+        brand: kibble ? brand.trim() || undefined : undefined,
+        product: kibble ? product.trim() || undefined : undefined,
+        bag_kg: kibble ? bagNum : undefined,
+        opened_at: kibble ? openedAt || undefined : undefined,
         grams_per_day: gramsNum,
         meals: cleanMeals,
         snacks_per_day: snacksNum,
@@ -94,7 +126,7 @@ export function FoodEditSheet({ open, onClose, food, suggestedGrams, onSave }: {
       open={open}
       onClose={onClose}
       title="Qué come"
-      subtitle="Marca, bolsa y ración diaria"
+      subtitle="Elige uno o varios tipos"
       footer={
         <div className="flex gap-2">
           <Button variant="secondary" onClick={onClose} className="flex-1">Cancelar</Button>
@@ -103,12 +135,67 @@ export function FoodEditSheet({ open, onClose, food, suggestedGrams, onSave }: {
       }
     >
       <div className="flex flex-col gap-3 pb-2">
-        <Input label="Marca" placeholder="Ej. Royal Canin, Hill's" value={brand} onChange={(e) => setBrand(e.target.value)} />
-        <Input label="Producto" placeholder="Ej. Adult Medium, Indoor" value={product} onChange={(e) => setProduct(e.target.value)} />
-        <div className="grid grid-cols-2 gap-2">
-          <Input label="Bolsa" type="number" inputMode="decimal" min={0} step={0.5} placeholder="0" value={bagKg} onChange={(e) => setBagKg(e.target.value)} trailing={<span className="text-small">kg</span>} />
-          <Input label="Abierta el" type="date" max={todayStr()} value={openedAt} onChange={(e) => setOpenedAt(e.target.value)} />
+        {/* Tipología: selección múltiple */}
+        <div className="grid grid-cols-2 gap-2" role="group" aria-label="Tipo de comida">
+          {DIET_TYPES.map((t) => {
+            const on = types.includes(t);
+            const Icon = DIET_META[t].icon;
+            return (
+              <button
+                key={t}
+                type="button"
+                aria-pressed={on}
+                onClick={() => toggleType(t)}
+                className={cn(
+                  "pressable relative flex min-h-14 items-center gap-2 rounded-lg border px-3 text-left text-body font-semibold transition-colors duration-[var(--duration-fast)]",
+                  on ? "border-primary bg-primary-soft text-primary-text" : "border-border bg-surface text-text"
+                )}
+              >
+                <Icon size={20} aria-hidden="true" />
+                <span className="flex-1">{DIET_META[t].label}</span>
+                {on && <Check size={16} aria-hidden="true" />}
+              </button>
+            );
+          })}
         </div>
+
+        {/* Detalle de cada tipo elegido */}
+        {types.map((t) => {
+          const meta = DIET_META[t];
+          const Icon = meta.icon;
+          return (
+            <section key={t} className="flex flex-col gap-3 rounded-lg border border-border bg-surface p-3" aria-label={meta.label}>
+              <span className="flex items-center gap-2 text-small font-semibold text-text-secondary">
+                <Icon size={16} className="text-primary-text" aria-hidden="true" />
+                {meta.label}
+              </span>
+              {t === "concentrado" ? (
+                <>
+                  <Input label="Marca" placeholder="Ej. Royal Canin, Hill's" value={brand} onChange={(e) => setBrand(e.target.value)} />
+                  <Input label="Producto" placeholder="Ej. Adult Medium, Indoor" value={product} onChange={(e) => setProduct(e.target.value)} />
+                  <div className="grid grid-cols-2 gap-2">
+                    <Select
+                      label="Presentación"
+                      placeholder="Elegir"
+                      value={presentation}
+                      onChange={(e) => setPresentation(e.target.value)}
+                      options={Object.entries(PRESENTATION_LABEL).map(([value, label]) => ({ value, label }))}
+                    />
+                    <Input label="Bolsa" type="number" inputMode="decimal" min={0} step={0.5} placeholder="0" value={bagKg} onChange={(e) => setBagKg(e.target.value)} trailing={<span className="text-small">kg</span>} />
+                  </div>
+                  <Input label="Abierta el" type="date" max={todayStr()} value={openedAt} onChange={(e) => setOpenedAt(e.target.value)} />
+                </>
+              ) : (
+                <>
+                  <Input label={meta.detailLabel} placeholder={meta.detailPlaceholder} value={details[t]?.detail ?? ""} onChange={(e) => setDetail(t, { detail: e.target.value })} />
+                  {meta.supplierLabel && (
+                    <Input label={meta.supplierLabel} placeholder={meta.supplierPlaceholder} value={details[t]?.supplier ?? ""} onChange={(e) => setDetail(t, { supplier: e.target.value })} />
+                  )}
+                </>
+              )}
+            </section>
+          );
+        })}
         <Input
           label="Gramos por día"
           type="number"

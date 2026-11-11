@@ -11,18 +11,19 @@ import { fetchPet, fetchWeightLogs, updatePetFood, dailyGrams, lifeStage, restoc
 import type { PetFood, PetRow } from "@/types/db";
 import { cn } from "@/lib/utils";
 import { fadeUp, stagger } from "@/lib/motion";
-import { isMissingRelation, longDate, shortDate, toastOnce } from "@/components/salud/shared";
+import { isMissingRelation, longDate, toastOnce } from "@/components/salud/shared";
 import { AlimentacionSkeleton } from "./AlimentacionSkeleton";
 import { MealsCard, useMealDay } from "./MealsCard";
 import { FoodEditSheet } from "./FoodEditSheet";
 import { DietChangeSheet, type DietChange } from "./DietChangeSheet";
 import { ToxicSheet } from "./ToxicSheet";
+import { DIET_META, dietSummary, dietTypesOf } from "./diet";
 
 const STAGE_LABEL = { puppy: "cachorro", adult: "adulto", senior: "sénior" } as const;
 const ACTIVITY_LABEL = { low: "actividad baja", medium: "actividad media", high: "actividad alta" } as const;
 
 function hasFoodData(food: PetFood | null): boolean {
-  return !!food && !!(food.brand || food.product || food.grams_per_day || food.bag_kg);
+  return !!food && !!(food.diet_types?.length || food.brand || food.product || food.grams_per_day || food.bag_kg);
 }
 
 export function AlimentacionView() {
@@ -115,7 +116,11 @@ export function AlimentacionView() {
 
   if (loading) return <AlimentacionSkeleton />;
 
-  const currentFoodLabel = [food?.brand, food?.product].filter(Boolean).join(" ");
+  const dietTypes = dietTypesOf(food);
+  const kibble = dietTypes.includes("concentrado");
+  const currentFoodLabel = kibble
+    ? [food?.brand, food?.product].filter(Boolean).join(" ")
+    : dietTypes.map((t) => DIET_META[t].label).join(" + ");
 
   return (
     <div className="pb-8">
@@ -144,30 +149,46 @@ export function AlimentacionView() {
             {hasFoodData(food) ? (
               <Card className="bg-gradient-to-br from-surface to-surface-elevated">
                 <CardHeader
-                  title="Alimento actual"
-                  subtitle={currentFoodLabel || "Sin marca"}
+                  title="Qué come"
                   action={<button type="button" onClick={() => setShowEdit(true)} className="min-h-11">Editar</button>}
                 />
-                <p className="text-small text-text-secondary">
-                  {food?.bag_kg ? `Bolsa de ${food.bag_kg} kg` : "Tamaño de bolsa sin registrar"}
-                  {food?.opened_at ? ` · abierta el ${shortDate(food.opened_at)}` : ""}
-                </p>
-                {restock ? (
-                  <div className="mt-3">
-                    <div className="mb-2 flex items-center justify-between text-small">
-                      <span className="font-semibold text-text">Queda {Math.round(restock.pctLeft * 100)} %</span>
-                      <span className={cn("font-semibold", restock.daysLeft <= 3 ? "text-warning-text" : "text-text-secondary")}>
-                        Recompra estimada: {longDate(restock.date)}
-                      </span>
-                    </div>
-                    <ProgressBar value={restock.pctLeft} tone={restock.daysLeft <= 3 ? "warn" : "primary"} />
-                  </div>
-                ) : (
-                  <p className="mt-3 text-small text-text-secondary">Añade bolsa, fecha de apertura y gramos por día para estimar la recompra.</p>
+                <ul className="flex flex-col gap-2">
+                  {dietTypes.map((t) => {
+                    const Icon = DIET_META[t].icon;
+                    const summary = food ? dietSummary(food, t) : "";
+                    return (
+                      <li key={t} className="flex items-center gap-3">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary-text">
+                          <Icon size={20} aria-hidden="true" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-body font-semibold text-text">{DIET_META[t].label}</span>
+                          {summary && <span className="block text-small text-text-secondary">{summary}</span>}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+                {kibble && (
+                  <>
+                    {restock ? (
+                      <div className="mt-4">
+                        <div className="mb-2 flex items-center justify-between text-small">
+                          <span className="font-semibold text-text">Queda {Math.round(restock.pctLeft * 100)} %</span>
+                          <span className={cn("font-semibold", restock.daysLeft <= 3 ? "text-warning-text" : "text-text-secondary")}>
+                            Recompra: {longDate(restock.date)}
+                          </span>
+                        </div>
+                        <ProgressBar value={restock.pctLeft} tone={restock.daysLeft <= 3 ? "warn" : "primary"} />
+                      </div>
+                    ) : (
+                      <p className="mt-3 text-small text-text-secondary">Añade bolsa, fecha de apertura y gramos por día para estimar la recompra.</p>
+                    )}
+                    <Button full className="mt-4" leading={<PetShop size={18} />} onClick={() => router.push("/explorar?cat=tienda")}>
+                      Pedir en tienda cercana
+                    </Button>
+                  </>
                 )}
-                <Button full className="mt-4" leading={<PetShop size={18} />} onClick={() => router.push("/explorar?cat=tienda")}>
-                  Pedir en tienda cercana
-                </Button>
               </Card>
             ) : (
               <Card tone="container" elevation={0}>
@@ -175,7 +196,7 @@ export function AlimentacionView() {
                   compact
                   icon={<PetFoodIcon size={24} />}
                   title="Cuéntanos qué come"
-                  description={`Con la marca, la bolsa y la ración te avisamos cuándo comprar más para ${pet.name}.`}
+                  description={`Concentrado, casera, BARF o al vapor: anota la dieta de ${pet.name}.`}
                   action={<Button full onClick={() => setShowEdit(true)}>Añadir alimento</Button>}
                 />
               </Card>

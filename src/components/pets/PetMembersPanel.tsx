@@ -1,67 +1,96 @@
 "use client";
-import { useEffect, useState, useCallback } from "react";
-import { Settings2, UserMinus, UserCheck, Clock } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { useCallback, useEffect, useState } from "react";
+import { Copy, MessageCircle, MessageSquareText, PawPrint, Settings2, Share2, UserMinus, Link2 } from "lucide-react";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { Button, Card, Divider, Row, SkeletonRow, Tag, showToast } from "@/components/ui";
+import { useStore } from "@/store";
+import { createClient } from "@/lib/supabase/client";
+import { Button, Card, SkeletonRow, showToast } from "@/components/ui";
+import { createShareLink, fetchMemberProfiles, type MemberProfile } from "@/lib/api/sharing";
 import PermissionsEditor from "./PermissionsEditor";
-
-interface PetMember {
-  id: string;
-  pet_id: string;
-  member_id: string;
-  role?: string | null;
-  service_type?: string | null;
-  status: "pending" | "active" | "revoked";
-  business_id: string | null;
-  created_at: string;
-}
-
-const ROLE_LABEL: Record<string, string> = { co_owner: "Co-dueño", service_provider: "Proveedor", viewer: "Solo lectura" };
-const SERVICE_LABEL: Record<string, string> = { vet: "Veterinaria", groomer: "Peluquería", walker: "Paseador", trainer: "Entrenador", daycare: "Guardería" };
 
 interface Props {
   petId: string;
+  petName: string;
+  /** Solo quien registró la mascota invita y quita accesos */
+  isOwner: boolean;
 }
 
-/** Personas con acceso a la mascota: aprobar, revocar y editar permisos. */
-export default function PetMembersPanel({ petId }: Props) {
+/**
+ * Compartir la mascota con un enlace de un solo uso (WhatsApp, mensaje de
+ * texto, copiar). Quien lo abre llega al inicio de sesión y, al entrar o
+ * registrarse, ve y edita lo mismo que el dueño. Debajo, quién tiene acceso.
+ */
+export default function PetMembersPanel({ petId, petName, isOwner }: Props) {
   const { user } = useAuthContext();
-  const [members, setMembers] = useState<PetMember[]>([]);
+  const { fetchPets } = useStore();
+  const [members, setMembers] = useState<MemberProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [editingPermsMemberId, setEditingPermsMemberId] = useState<string | null>(null);
+  const [creatingLink, setCreatingLink] = useState(false);
+  const [link, setLink] = useState<string | null>(null);
 
-  const fetchMembers = useCallback(async () => {
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from("pet_members")
-      .select("id, pet_id, user_id, role, service_type, status, business_id, created_at")
-      .eq("pet_id", petId)
-      .neq("status", "revoked")
-      .order("created_at", { ascending: false });
-    setLoadError(!!error);
-    // La columna en la base es user_id; aquí se usa como member_id
-    setMembers(((data ?? []) as (Omit<PetMember, "member_id"> & { user_id: string })[]).map((m) => ({ ...m, member_id: m.user_id })));
-    setLoading(false);
+  const load = useCallback(async () => {
+    try {
+      setMembers(await fetchMemberProfiles(petId));
+      setLoadError(false);
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
   }, [petId]);
 
   useEffect(() => {
-    void fetchMembers();
-  }, [fetchMembers]);
+    void load();
+  }, [load]);
 
-  async function handleApprove(id: string) {
-    const supabase = createClient();
-    const { error } = await supabase.from("pet_members").update({ status: "active" }).eq("id", id);
-    if (error) showToast("No se pudo aprobar el acceso", () => void handleApprove(id), "error");
-    void fetchMembers();
+  const message = (url: string) => `Te comparto a ${petName} en Paw para que veas su salud y cuidados: ${url}`;
+
+  async function createLink() {
+    setCreatingLink(true);
+    try {
+      setLink(await createShareLink(petId));
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "No pudimos crear el enlace", () => void createLink(), "error");
+    } finally {
+      setCreatingLink(false);
+    }
   }
 
-  async function handleRevoke(id: string) {
-    const supabase = createClient();
-    const { error } = await supabase.from("pet_members").update({ status: "revoked" }).eq("id", id);
-    if (error) showToast("No se pudo quitar el acceso", () => void handleRevoke(id), "error");
-    void fetchMembers();
+  async function copyLink(url: string) {
+    try {
+      await navigator.clipboard.writeText(message(url));
+      showToast("Enlace copiado", undefined, "success");
+    } catch {
+      showToast("No pudimos copiar el enlace", undefined, "error");
+    }
+  }
+
+  async function nativeShare(url: string) {
+    try {
+      await navigator.share({ title: `${petName} en Paw`, text: message(url) });
+    } catch {
+      /* cancelado */
+    }
+  }
+
+  async function removeMember(m: MemberProfile) {
+    if (!m.member_id) return;
+    const self = m.user_id === user?.id;
+    const ok = window.confirm(self ? `¿Dejar de ver a ${petName}?` : `¿Quitar el acceso de ${m.display_name || m.email || "esta persona"}?`);
+    if (!ok) return;
+    const { error } = await createClient().from("pet_members").update({ status: "revoked" }).eq("id", m.member_id);
+    if (error) {
+      showToast("No se pudo quitar el acceso", () => void removeMember(m), "error");
+      return;
+    }
+    if (self) {
+      await fetchPets();
+      window.location.assign("/home");
+      return;
+    }
+    void load();
   }
 
   if (editingPermsMemberId) {
@@ -70,80 +99,102 @@ export default function PetMembersPanel({ petId }: Props) {
         petMemberId={editingPermsMemberId}
         onClose={() => {
           setEditingPermsMemberId(null);
-          void fetchMembers();
+          void load();
         }}
       />
     );
   }
 
+  const canNativeShare = typeof navigator !== "undefined" && typeof navigator.share === "function";
+
   return (
-    <section className="flex flex-col gap-3" aria-label="Personas con acceso">
-      {loading ? (
-        <Card padded={false} className="overflow-hidden" aria-busy="true">
-          <SkeletonRow />
-        </Card>
-      ) : loadError ? (
-        <Card tone="container" elevation={0} className="flex items-center justify-between gap-3">
-          <p className="text-body text-text-secondary">No pudimos cargar quién tiene acceso.</p>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => {
-              setLoading(true);
-              void fetchMembers();
-            }}
-          >
-            Reintentar
-          </Button>
-        </Card>
-      ) : members.length === 0 ? (
-        <Card tone="container" elevation={0}>
-          <p className="text-body text-text-secondary">Nadie más tiene acceso a esta mascota.</p>
-        </Card>
-      ) : (
-        <Card padded={false} className="overflow-hidden">
-          {members.map((m, i) => {
-            const isCurrentUser = m.member_id === user?.id;
-            const pending = m.status === "pending";
-            return (
-              <div key={m.id}>
-                {i > 0 && <Divider className="ml-18 mr-0" />}
-                <Row
-                  icon={pending ? <Clock size={18} aria-hidden="true" /> : <UserCheck size={18} aria-hidden="true" />}
-                  iconTone={pending ? "warn" : "primary"}
-                  title={
-                    <span>
-                      {ROLE_LABEL[m.role ?? ""] ?? "Miembro"}
-                      {m.role === "service_provider" && m.service_type ? ` · ${SERVICE_LABEL[m.service_type] ?? m.service_type}` : ""}
-                      {isCurrentUser && <span className="ml-2 text-small font-normal text-text-secondary">(tú)</span>}
-                    </span>
-                  }
-                  subtitle={pending ? <Tag tone="warn" size="xs">Pendiente de aprobación</Tag> : "Acceso activo"}
-                  trailing={
-                    <span className="flex gap-2">
-                      {pending && !isCurrentUser && (
-                        <Button variant="secondary" size="icon" aria-label="Aprobar acceso" onClick={() => void handleApprove(m.id)}>
-                          <UserCheck size={16} />
-                        </Button>
-                      )}
-                      {m.status === "active" && (
-                        <Button variant="secondary" size="icon" aria-label="Editar permisos" onClick={() => setEditingPermsMemberId(m.id)}>
-                          <Settings2 size={16} />
-                        </Button>
-                      )}
-                      {!isCurrentUser && (
-                        <Button variant="dangerTonal" size="icon" aria-label="Quitar acceso" onClick={() => void handleRevoke(m.id)} className="border-transparent">
-                          <UserMinus size={16} />
-                        </Button>
-                      )}
-                    </span>
-                  }
-                />
+    <div className="flex flex-col gap-5 pb-2">
+      {isOwner && (
+        <section className="flex flex-col gap-3" aria-label="Invitar">
+          {link ? (
+            <Card tone="container" elevation={0} className="flex flex-col gap-3">
+              <span className="flex items-center gap-2 text-small font-semibold text-text-secondary">
+                <Link2 size={16} className="text-primary-text" aria-hidden="true" />
+                Enlace para una persona · vence en 30 días
+              </span>
+              <div className="grid grid-cols-2 gap-2">
+                <a href={`https://wa.me/?text=${encodeURIComponent(message(link))}`} target="_blank" rel="noopener noreferrer" className="block">
+                  <Button full variant="secondary" leading={<MessageCircle size={18} />}>WhatsApp</Button>
+                </a>
+                <a href={`sms:?&body=${encodeURIComponent(message(link))}`} className="block">
+                  <Button full variant="secondary" leading={<MessageSquareText size={18} />}>Mensaje</Button>
+                </a>
+                <Button full variant="secondary" leading={<Copy size={18} />} onClick={() => void copyLink(link)}>Copiar</Button>
+                {canNativeShare && (
+                  <Button full variant="secondary" leading={<Share2 size={18} />} onClick={() => void nativeShare(link)}>Más</Button>
+                )}
               </div>
-            );
-          })}
-        </Card>
+              <button type="button" onClick={() => void createLink()} className="min-h-11 self-start text-small font-semibold text-primary-text">
+                Crear otro enlace
+              </button>
+            </Card>
+          ) : (
+            <Button full variant="outline" loading={creatingLink} loadingLabel="Creando" leading={<Share2 size={18} />} onClick={() => void createLink()}>
+              Crear enlace para compartir
+            </Button>
+          )}
+        </section>
       )}
-    </section>
+
+      <section className="flex flex-col gap-2" aria-label="Personas con acceso">
+        <h3 className="eyebrow">Con acceso</h3>
+        {loading ? (
+          <Card padded={false} className="overflow-hidden" aria-busy="true">
+            <SkeletonRow />
+          </Card>
+        ) : loadError ? (
+          <Card tone="container" elevation={0} className="flex items-center justify-between gap-3">
+            <p className="text-body text-text-secondary">No pudimos cargar quién tiene acceso.</p>
+            <Button variant="secondary" size="sm" onClick={() => { setLoading(true); void load(); }}>
+              Reintentar
+            </Button>
+          </Card>
+        ) : (
+          <>
+            {members.map((m) => {
+              const self = m.user_id === user?.id;
+              const name = m.display_name || m.email || "Sin nombre";
+              return (
+                <div key={m.member_id ?? m.user_id} className="flex min-h-16 items-center gap-3 rounded-lg border border-border bg-surface px-3 py-2 shadow-1">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-soft text-primary-text">
+                    {m.avatar_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={m.avatar_url} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <PawPrint size={18} aria-hidden="true" />
+                    )}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-body font-semibold text-text">
+                      {name}
+                      {self && <span className="ml-1 font-normal text-text-secondary">(tú)</span>}
+                    </span>
+                    <span className="block truncate text-small text-text-secondary">{m.is_owner ? "Dueño" : m.status === "pending" ? "Pendiente" : "Ve lo mismo que tú"}</span>
+                  </span>
+                  {!m.is_owner && isOwner && m.status === "active" && (
+                    <Button variant="secondary" size="icon" aria-label={`Permisos de ${name}`} onClick={() => setEditingPermsMemberId(m.member_id)}>
+                      <Settings2 size={16} />
+                    </Button>
+                  )}
+                  {!m.is_owner && (isOwner || self) && (
+                    <Button variant="dangerTonal" size="icon" aria-label={self ? "Dejar de ver" : `Quitar a ${name}`} onClick={() => void removeMember(m)} className="border-transparent">
+                      <UserMinus size={16} />
+                    </Button>
+                  )}
+                </div>
+              );
+            })}
+            {members.length <= 1 && (
+              <p className="text-small text-text-secondary">Solo tú ves a {petName}.</p>
+            )}
+          </>
+        )}
+      </section>
+    </div>
   );
 }
