@@ -224,7 +224,7 @@ export function PetProfileScreen({ petId, userId }: { petId: string; userId: str
         className="pressable mx-4 mt-3 flex min-h-12 w-[calc(100%-32px)] items-center gap-3 rounded-full border border-border bg-surface px-4 text-left"
       >
         <Users size={18} className="shrink-0 text-text-secondary" aria-hidden="true" />
-        <span className="flex-1 text-small font-semibold text-text">Personas con acceso</span>
+        <span className="flex-1 text-small font-semibold text-text">{pet.user_id === userId ? "Compartir" : "Personas con acceso"}</span>
         <ChevronRight size={18} className="shrink-0 text-text-secondary" aria-hidden="true" />
       </button>
 
@@ -247,8 +247,8 @@ export function PetProfileScreen({ petId, userId }: { petId: string; userId: str
         {tab === "historial" && <HistoryTab petId={pet.id} />}
       </div>
 
-      <Sheet open={membersOpen} onClose={() => setMembersOpen(false)} title="Personas con acceso">
-        <PetMembersPanel petId={pet.id} />
+      <Sheet open={membersOpen} onClose={() => setMembersOpen(false)} title={pet.user_id === userId ? `Compartir a ${pet.name}` : "Personas con acceso"} subtitle={pet.user_id === userId ? "Verán lo mismo que tú" : undefined}>
+        <PetMembersPanel petId={pet.id} petName={pet.name} isOwner={pet.user_id === userId} />
       </Sheet>
       <EditPetSheet open={editing} onClose={() => setEditing(false)} pet={pet} userId={userId} onSaved={setPet} />
       <WeightSheet

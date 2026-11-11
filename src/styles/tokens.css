@@ -295,17 +295,17 @@
 }
 
 /* Tarjeta invertida: en oscuro, las tarjetas que en claro son celestes pasan a
-   blancas con el azul de marca en íconos y acentos, y un brillo azul debajo
+   gris claro (no blanco puro) con el azul de marca en íconos y acentos, y un brillo azul debajo
    (los tokens se redefinen solo dentro de ellas). En claro no cambia nada. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .invert-dark {
-    --color-surface: #FFFFFF;
-    --color-border: #E1E7F0;
+    --color-surface: #E3E7EE;
+    --color-border: #CDD4DF;
     --color-text: #0E1A33;
-    --color-text-secondary: #55627C;
+    --color-text-secondary: #4C586F;
     --color-primary: #1B3266;
     --color-on-primary: #FFFFFF;
-    --color-primary-soft: #E5EEFB;
+    --color-primary-soft: #D3DEEF;
     --color-primary-text: #2455B5;
     --color-accent: #2B74C4;
     --color-info: #2455B5;
@@ -313,27 +313,27 @@
     --color-success: #217A55;
     --color-success-soft: #DDF3E8;
     --color-success-text: #1B6A49;
-    --color-pastel-lilac: #FFFFFF;
-    --color-pastel-mint: #FFFFFF;
-    --color-pastel-sky: #FFFFFF;
-    --color-pastel-peach: #FFFFFF;
+    --color-pastel-lilac: #DCE2EB;
+    --color-pastel-mint: #DCE2EB;
+    --color-pastel-sky: #DCE2EB;
+    --color-pastel-peach: #DCE2EB;
     --color-pastel-glass: rgba(27, 50, 102, 0.06);
-    --hero-from: #FFFFFF;
-    --hero-to: #E3ECFA;
+    --hero-from: #E9EDF3;
+    --hero-to: #CCD6E5;
     --hero-glow: 0 14px 34px -14px rgba(111, 168, 255, 0.45);
-    --skeleton-base: #E7ECF4;
-    --skeleton-highlight: #F6F8FC;
+    --skeleton-base: #D3D9E2;
+    --skeleton-highlight: #E3E7EE;
     color-scheme: light;
   }
 }
 :root[data-theme="dark"] .invert-dark {
-  --color-surface: #FFFFFF;
-  --color-border: #E1E7F0;
+  --color-surface: #E3E7EE;
+  --color-border: #CDD4DF;
   --color-text: #0E1A33;
-  --color-text-secondary: #55627C;
+  --color-text-secondary: #4C586F;
   --color-primary: #1B3266;
   --color-on-primary: #FFFFFF;
-  --color-primary-soft: #E5EEFB;
+  --color-primary-soft: #D3DEEF;
   --color-primary-text: #2455B5;
   --color-accent: #2B74C4;
   --color-info: #2455B5;
@@ -341,17 +341,180 @@
   --color-success: #217A55;
   --color-success-soft: #DDF3E8;
   --color-success-text: #1B6A49;
-  --color-pastel-lilac: #FFFFFF;
-  --color-pastel-mint: #FFFFFF;
-  --color-pastel-sky: #FFFFFF;
-  --color-pastel-peach: #FFFFFF;
+  --color-pastel-lilac: #DCE2EB;
+  --color-pastel-mint: #DCE2EB;
+  --color-pastel-sky: #DCE2EB;
+  --color-pastel-peach: #DCE2EB;
   --color-pastel-glass: rgba(27, 50, 102, 0.06);
-  --hero-from: #FFFFFF;
-  --hero-to: #E3ECFA;
+  --hero-from: #E9EDF3;
+  --hero-to: #CCD6E5;
   --hero-glow: 0 14px 34px -14px rgba(111, 168, 255, 0.45);
-  --skeleton-base: #E7ECF4;
-  --skeleton-highlight: #F6F8FC;
+  --skeleton-base: #D3D9E2;
+  --skeleton-highlight: #E3E7EE;
   color-scheme: light;
+}
+
+/* ==========================================================================
+   Tono rosa: la mascota activa es hembra (PetsLoader pone data-pet-tone="rosa"
+   en <html>). Rosado pastel muy tenue en claro; en oscuro, grafito ciruela con
+   rosado claro de acento. Mismos roles que Azul sereno, validados AA.
+   ========================================================================== */
+:root[data-pet-tone="rosa"] {
+  --color-bg: #FBF5F8;
+  --color-surface: #FFFFFF;
+  --color-surface-elevated: #F8EDF2;
+  --color-border: #F1E2EA;
+  --color-text: #2B1622;
+  --color-text-secondary: #6E5262;
+  --color-primary: #8A3462;
+  --color-on-primary: #FFFFFF;
+  --color-primary-soft: #FBE8F1;
+  --color-primary-text: #A13A6D;
+  --color-accent: #B0457C;
+  --color-on-accent: #FFFFFF;
+  --color-accent-soft: #FCEAF3;
+  --color-pastel-lilac: #FBEAF2;
+  --color-pastel-mint: #F9EDF3;
+  --color-pastel-sky: #FCE7F0;
+  --color-pastel-peach: #F6EDF2;
+  --color-info: #A13A6D;
+  --color-info-soft: #FBE8F1;
+  --color-info-text: #96356A;
+  --shadow-1: 0 1px 2px rgba(43, 22, 34, 0.04), 0 4px 14px rgba(138, 52, 98, 0.06);
+  --shadow-2: 0 6px 20px rgba(138, 52, 98, 0.10);
+  --shadow-3: 0 14px 36px rgba(138, 52, 98, 0.16);
+  --shadow-nav: 0 10px 30px rgba(138, 52, 98, 0.14), 0 1px 3px rgba(43, 22, 34, 0.06);
+  --hero-from: #FFF5FA;
+  --hero-to: #FBE2EE;
+  --hero-glow: 0 12px 32px -12px rgba(176, 69, 124, 0.30);
+  --color-scrim: rgba(43, 22, 34, 0.45);
+  --skeleton-base: #F5E9EF;
+  --skeleton-highlight: #FBF4F7;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-pet-tone="rosa"]:not([data-theme="light"]) {
+    --color-bg: #110C10;
+    --color-surface: #1C151A;
+    --color-surface-elevated: #261C23;
+    --color-border: #352831;
+    --color-text: #FAF3F7;
+    --color-text-secondary: #BDAAB5;
+    --color-primary: #FAF3F7;
+    --color-on-primary: #110C10;
+    --color-primary-soft: #3A2232;
+    --color-primary-text: #F6C3DC;
+    --color-accent: #F2A6CB;
+    --color-on-accent: #110C10;
+    --color-accent-soft: #352030;
+    --color-pastel-lilac: #2A1D26;
+    --color-pastel-mint: #2B1C25;
+    --color-pastel-sky: #301F2B;
+    --color-pastel-peach: #261D23;
+    --color-pastel-glass: rgba(255, 170, 215, 0.08);
+    --color-info: #F2A6CB;
+    --color-info-soft: #3A2232;
+    --color-info-text: #F6C3DC;
+    --color-glass: rgba(28, 21, 26, 0.86);
+    --shadow-1: none;
+    --shadow-2: none;
+    --shadow-3: none;
+    --shadow-nav: 0 10px 30px rgba(0, 0, 0, 0.45);
+    --nav-highlight: inset 0 1px 0 rgba(255, 190, 225, 0.10);
+    --hero-from: #44263A;
+    --hero-to: #1C151A;
+    --hero-glow: 0 14px 34px -14px rgba(242, 166, 203, 0.30);
+    --skeleton-base: #21181E;
+    --skeleton-highlight: #2C2128;
+  }
+  /* Tarjetas invertidas en hembra: oscuras con rosado claro (no gris claro) */
+  :root[data-pet-tone="rosa"]:not([data-theme="light"]) .invert-dark {
+    --color-surface: #2A1E26;
+    --color-border: #3D2C37;
+    --color-text: #FAF3F7;
+    --color-text-secondary: #C9B5C1;
+    --color-primary: #FAF3F7;
+    --color-on-primary: #110C10;
+    --color-primary-soft: #45283A;
+    --color-primary-text: #F7C6DE;
+    --color-accent: #F2A6CB;
+    --color-info: #F2A6CB;
+    --color-overdue-text: #FF93B6;
+    --color-success: #71D5A7;
+    --color-success-soft: #173A2C;
+    --color-success-text: #8BE0B8;
+    --color-pastel-lilac: #3A2633;
+    --color-pastel-mint: #3A2633;
+    --color-pastel-sky: #3A2633;
+    --color-pastel-peach: #3A2633;
+    --color-pastel-glass: rgba(255, 190, 225, 0.10);
+    --hero-from: #4A2A3F;
+    --hero-to: #2A1E26;
+    --hero-glow: 0 14px 34px -14px rgba(242, 166, 203, 0.35);
+    --skeleton-base: #3A2633;
+    --skeleton-highlight: #45283A;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"][data-pet-tone="rosa"] {
+  --color-bg: #110C10;
+  --color-surface: #1C151A;
+  --color-surface-elevated: #261C23;
+  --color-border: #352831;
+  --color-text: #FAF3F7;
+  --color-text-secondary: #BDAAB5;
+  --color-primary: #FAF3F7;
+  --color-on-primary: #110C10;
+  --color-primary-soft: #3A2232;
+  --color-primary-text: #F6C3DC;
+  --color-accent: #F2A6CB;
+  --color-on-accent: #110C10;
+  --color-accent-soft: #352030;
+  --color-pastel-lilac: #2A1D26;
+  --color-pastel-mint: #2B1C25;
+  --color-pastel-sky: #301F2B;
+  --color-pastel-peach: #261D23;
+  --color-pastel-glass: rgba(255, 170, 215, 0.08);
+  --color-info: #F2A6CB;
+  --color-info-soft: #3A2232;
+  --color-info-text: #F6C3DC;
+  --color-glass: rgba(28, 21, 26, 0.86);
+  --shadow-1: none;
+  --shadow-2: none;
+  --shadow-3: none;
+  --shadow-nav: 0 10px 30px rgba(0, 0, 0, 0.45);
+  --nav-highlight: inset 0 1px 0 rgba(255, 190, 225, 0.10);
+  --hero-from: #44263A;
+  --hero-to: #1C151A;
+  --hero-glow: 0 14px 34px -14px rgba(242, 166, 203, 0.30);
+  --skeleton-base: #21181E;
+  --skeleton-highlight: #2C2128;
+}
+:root[data-theme="dark"][data-pet-tone="rosa"] .invert-dark {
+  --color-surface: #2A1E26;
+  --color-border: #3D2C37;
+  --color-text: #FAF3F7;
+  --color-text-secondary: #C9B5C1;
+  --color-primary: #FAF3F7;
+  --color-on-primary: #110C10;
+  --color-primary-soft: #45283A;
+  --color-primary-text: #F7C6DE;
+  --color-accent: #F2A6CB;
+  --color-info: #F2A6CB;
+  --color-overdue-text: #FF93B6;
+  --color-success: #71D5A7;
+  --color-success-soft: #173A2C;
+  --color-success-text: #8BE0B8;
+  --color-pastel-lilac: #3A2633;
+  --color-pastel-mint: #3A2633;
+  --color-pastel-sky: #3A2633;
+  --color-pastel-peach: #3A2633;
+  --color-pastel-glass: rgba(255, 190, 225, 0.10);
+  --hero-from: #4A2A3F;
+  --hero-to: #2A1E26;
+  --hero-glow: 0 14px 34px -14px rgba(242, 166, 203, 0.35);
+  --skeleton-base: #3A2633;
+  --skeleton-highlight: #45283A;
+  color-scheme: dark;
 }
 
 /* ---------- Movimiento reducido ---------- */

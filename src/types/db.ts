@@ -48,7 +48,22 @@ export interface PetMeal {
   grams: number;
 }
 
+/** Tipología de la dieta; puede combinarse (p. ej. concentrado + casera) */
+export type DietType = "concentrado" | "casa" | "barf" | "vapor";
+
+export interface DietDetail {
+  /** Qué le preparas / proteínas / ingredientes */
+  detail?: string;
+  /** Proveedor o marca (BARF y al vapor) */
+  supplier?: string;
+}
+
 export interface PetFood {
+  diet_types?: DietType[];
+  /** Detalle de cada tipo distinto al concentrado (el concentrado usa brand/product/presentation/bag_kg) */
+  diet_details?: Partial<Record<Exclude<DietType, "concentrado">, DietDetail>>;
+  /** Presentación del concentrado: seco, húmedo o mixto */
+  presentation?: "seco" | "humedo" | "mixto";
   brand?: string;
   product?: string;
   bag_kg?: number;
