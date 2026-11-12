@@ -12,6 +12,9 @@ import { fetchInvite, pendingInvite } from "@/lib/api/sharing";
 
 type Tab = "login" | "register";
 
+// Producción = el dominio público de PROD. La demo solo se ofrece fuera de PROD.
+const IS_PROD = (process.env.NEXT_PUBLIC_URL ?? "").includes("paw.elevateapp.co");
+
 export function AuthPage() {
   // Tras eliminar la cuenta, Ajustes redirige aquí con ?cuenta=eliminada
   useEffect(() => {
@@ -217,12 +220,15 @@ export function AuthPage() {
           </Button>
         </motion.form>
 
-        <motion.div variants={fadeUp} className="flex flex-col items-center gap-1 pt-2 text-center">
-          <a href="/demo" className="inline-flex min-h-11 items-center justify-center rounded-full px-4 text-body font-semibold text-primary-text">
-            Ver la demo con datos de ejemplo
-          </a>
-          <span className="text-small text-text-secondary">Sin cuenta. Mascotas, negocios y citas ficticios.</span>
-        </motion.div>
+        {/* La demo solo se ofrece fuera de producción (dev/local). En PROD no se muestra. */}
+        {!IS_PROD && (
+          <motion.div variants={fadeUp} className="flex flex-col items-center gap-1 pt-2 text-center">
+            <a href="/demo" className="inline-flex min-h-11 items-center justify-center rounded-full px-4 text-body font-semibold text-primary-text">
+              Ver la demo con datos de ejemplo
+            </a>
+            <span className="text-small text-text-secondary">Sin cuenta. Mascotas, negocios y citas ficticios.</span>
+          </motion.div>
+        )}
       </motion.div>
     </main>
   );
