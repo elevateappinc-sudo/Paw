@@ -22,6 +22,9 @@ build/
 *.tsbuildinfo
 next-env.d.ts
 .env*
+# excepcion: los .example son plantillas sin secretos, SI se versionan
+!.env.capacitor.example
+!*.env.example
 
 # secrets / credenciales (NUNCA versionar)
 # OAuth clients de Google, service accounts, llaves, etc. Guardar en la boveda local
@@ -36,3 +39,11 @@ GoogleService-Info.plist
 
 # supabase CLI temp
 supabase/.temp/
+
+# Capacitor / nativo (artefactos de build; android/ e ios/ SÍ se versionan, su basura no)
+.env.capacitor.local
+ios/App/Pods/
+ios/App/App/public/
+ios/App/build/
+ios/DerivedData/
+*.ipa
