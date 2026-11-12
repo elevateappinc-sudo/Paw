@@ -22,5 +22,9 @@ export function createClient() {
     throw new Error(`Missing Supabase env vars. URL: ${url ? "ok" : "missing"}, KEY: ${key ? "ok" : "missing"}`);
   }
 
-  return createBrowserClient(url, key);
+  // flowType PKCE: necesario para el OAuth nativo (Capacitor). El code_verifier se guarda en
+  // este cliente y lo usa exchangeCodeForSession tras volver del navegador por App Link.
+  return createBrowserClient(url, key, {
+    auth: { flowType: "pkce" },
+  });
 }
