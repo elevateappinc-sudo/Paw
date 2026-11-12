@@ -36,3 +36,11 @@ GoogleService-Info.plist
 
 # supabase CLI temp
 supabase/.temp/
+
+# Capacitor / nativo (artefactos de build; android/ e ios/ SÍ se versionan, su basura no)
+.env.capacitor.local
+ios/App/Pods/
+ios/App/App/public/
+ios/App/build/
+ios/DerivedData/
+*.ipa
