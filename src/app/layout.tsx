@@ -6,6 +6,8 @@ import { ToastProvider } from "@/components/ui/ToastProvider";
 import { PetsLoader } from "@/components/auth/PetsLoader";
 import { AppShell } from "@/components/layout/AppShell";
 import { ThemeInit } from "@/components/settings/ThemeInit";
+import { NativePushInit } from "@/components/notifications/NativePushInit";
+import { DeepLinkHandler } from "@/components/auth/DeepLinkHandler";
 
 // Familia de --font-sans (src/styles/tokens.css). Solo dos pesos: 400 y 600.
 const jakarta = Plus_Jakarta_Sans({
@@ -41,6 +43,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           <ToastProvider>
             <ThemeInit />
+            <NativePushInit />
+            <DeepLinkHandler />
             <PetsLoader />
             <AppShell>{children}</AppShell>
           </ToastProvider>
