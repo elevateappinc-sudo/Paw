@@ -305,7 +305,13 @@ class Query implements PromiseLike<{ data: any; error: any; count?: number }> {
   private applyFilters(rows: Row[]): Row[] {
     // filtros sobre embeds (p. ej. "marketplace_listings.business_id") se resuelven tras embed
     const plain = this.filters.filter((f) => !f.col.includes("."));
-    return rows.filter((r) => plain.every((f) => matchOne(r, f)));
+    let visible = rows;
+    // Simula la RLS de pets (can_access_pet): propias o compartidas con acceso activo
+    if (this.table === "pets") {
+      const members = load().pet_members ?? [];
+      visible = rows.filter((r) => r.user_id === DEMO_USER_ID || members.some((m) => m.pet_id === r.id && m.user_id === DEMO_USER_ID && m.status === "active"));
+    }
+    return visible.filter((r) => plain.every((f) => matchOne(r, f)));
   }
 
   private embed(row: Row, embeds: Embed[]): Row | null {

@@ -8,12 +8,15 @@ import { useAuth } from "@/hooks/useAuth";
 import { fadeUp, stagger } from "@/lib/motion";
 import { Button, Card, Input, SegmentedControl, SpotsLoader, showToast } from "@/components/ui";
 import { GoogleLogo } from "@/components/settings/GoogleLogo";
+import { fetchInvite, pendingInvite } from "@/lib/api/sharing";
 
 type Tab = "login" | "register";
 
 export function AuthPage() {
   // Tras eliminar la cuenta, Ajustes redirige aquí con ?cuenta=eliminada
   useEffect(() => {
+    // Desde una invitación: /login?modo=registro abre directo "Crear cuenta"
+    if (new URLSearchParams(window.location.search).get("modo") === "registro") setTab("register");
     if (new URLSearchParams(window.location.search).get("cuenta") === "eliminada") {
       showToast("Tu cuenta y toda su información fueron eliminadas", undefined, "success");
       window.history.replaceState(null, "", window.location.pathname);
@@ -33,6 +36,16 @@ export function AuthPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  // Llegó desde un enlace compartido: "Andrea te compartió a Luna"
+  const [invite, setInvite] = useState<{ pet: string; from: string | null } | null>(null);
+
+  useEffect(() => {
+    const token = pendingInvite();
+    if (!token) return;
+    fetchInvite(token)
+      .then((inv) => inv && inv.status === "pending" && !inv.expired && setInvite({ pet: inv.pet_name, from: inv.inviter_name }))
+      .catch(() => {});
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -130,7 +143,14 @@ export function AuthPage() {
           <SpotsLoader decorative size={240} className="pointer-events-none absolute -top-16 left-1/2 -translate-x-1/2" />
           <Image src="/icon.svg" alt="" width={80} height={80} priority className="relative mb-4 h-20 w-20 rounded-md shadow-2" />
           <h1 className="relative font-semibold text-display leading-none text-text">Paw</h1>
-          <p className="relative mt-2 text-body text-text-secondary">Todo lo que tu mascota necesita, cerca de ti.</p>
+          {invite ? (
+            <p className="relative mt-2 text-body text-text-secondary">
+              <span className="font-semibold text-primary-text">{invite.from || "Alguien"}</span> te compartió a{" "}
+              <span className="font-semibold text-primary-text">{invite.pet}</span>. Entra o crea tu cuenta para verla.
+            </p>
+          ) : (
+            <p className="relative mt-2 text-body text-text-secondary">Todo lo que tu mascota necesita, cerca de ti.</p>
+          )}
         </motion.div>
 
         <motion.div className="flex flex-col gap-4" variants={fadeUp}>

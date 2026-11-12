@@ -44,7 +44,7 @@ function fromRow(p: PetRow): Form {
 }
 
 export function EditPetSheet({ open, onClose, pet, userId, onSaved }: { open: boolean; onClose: () => void; pet: PetRow; userId: string; onSaved: (row: PetRow) => void }) {
-  const updatePet = useStore((s) => s.updatePet);
+  const syncPetRow = useStore((s) => s.syncPetRow);
   const [form, setForm] = useState<Form>(() => fromRow(pet));
   const [saving, setSaving] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
@@ -99,7 +99,8 @@ export function EditPetSheet({ open, onClose, pet, userId, onSaved }: { open: bo
         activity_level: form.activity_level,
         ...(photo_url ? { photo_url } : {}),
       });
-      void updatePet(pet.id, { name: row.name, breed: row.breed ?? "", birthDate: row.birth_date ?? "", species: row.species });
+      // Home y demás vistas leen del store: foto, sexo y datos se ven al instante
+      syncPetRow(row as unknown as Record<string, unknown>);
       onSaved(row);
       showToast("Perfil actualizado", undefined, "success");
       onClose();

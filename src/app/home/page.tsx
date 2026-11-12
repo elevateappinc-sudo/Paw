@@ -12,7 +12,8 @@ export default async function HomePage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { count } = await supabase.from("pets").select("id", { count: "exact", head: true }).eq("user_id", user.id);
+  // Sin filtrar por user_id: la RLS cuenta las propias y las compartidas contigo
+  const { count } = await supabase.from("pets").select("id", { count: "exact", head: true });
   // Suspense: HomeScreen y HomeEmpty leen ?registrar=1 (FAB "Registrar") con useSearchParams
   if (!count) {
     return (
