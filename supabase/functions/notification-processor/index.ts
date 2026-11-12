@@ -9,6 +9,9 @@ const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY");
 const VAPID_PUBLIC_KEY = Deno.env.get("VAPID_PUBLIC_KEY");
 const VAPID_SUBJECT = Deno.env.get("VAPID_SUBJECT") ?? "mailto:hello@paw.app";
+// FCM (push nativo Android/iOS). Secrets del proyecto Firebase de Paw.
+const FCM_PROJECT_ID = Deno.env.get("FCM_PROJECT_ID");
+const FCM_SERVICE_ACCOUNT_JSON = Deno.env.get("FCM_SERVICE_ACCOUNT_JSON");
 
 const RATE_LIMIT_PER_HOUR = 10;
 const MAX_ATTEMPTS = 3;
@@ -30,11 +33,15 @@ interface NotificationRow {
 
 interface SubscriptionRow {
   id: string;
-  endpoint: string;
-  p256dh: string;
-  auth: string;
+  endpoint: string | null;
+  p256dh: string | null;
+  auth: string | null;
+  fcm_token: string | null;
+  platform: string | null;
   active: boolean;
 }
+
+const SUB_COLS = "id, endpoint, p256dh, auth, fcm_token, platform, active";
 
 async function checkRateLimit(userId: string): Promise<boolean> {
   const hourBucket = new Date();
@@ -131,6 +138,117 @@ async function sendWebPush(
   }
 }
 
+// --- FCM (push nativo) ---
+// Cachea el access token OAuth del service account (vale ~1h) para no re-firmar en cada envío.
+let fcmAccessToken: { token: string; exp: number } | null = null;
+
+function b64url(bytes: Uint8Array): string {
+  let s = "";
+  for (const b of bytes) s += String.fromCharCode(b);
+  return btoa(s).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+}
+
+async function getFcmAccessToken(): Promise<string | null> {
+  if (!FCM_SERVICE_ACCOUNT_JSON) return null;
+  const now = Math.floor(Date.now() / 1000);
+  if (fcmAccessToken && fcmAccessToken.exp > now + 60) return fcmAccessToken.token;
+
+  try {
+    const sa = JSON.parse(FCM_SERVICE_ACCOUNT_JSON) as { client_email: string; private_key: string };
+    const header = b64url(new TextEncoder().encode(JSON.stringify({ alg: "RS256", typ: "JWT" })));
+    const claim = b64url(new TextEncoder().encode(JSON.stringify({
+      iss: sa.client_email,
+      scope: "https://www.googleapis.com/auth/firebase.messaging",
+      aud: "https://oauth2.googleapis.com/token",
+      iat: now,
+      exp: now + 3600,
+    })));
+    const unsigned = `${header}.${claim}`;
+
+    // Importar la private key PEM (PKCS8) y firmar RS256.
+    const pem = sa.private_key.replace(/-----BEGIN PRIVATE KEY-----/, "").replace(/-----END PRIVATE KEY-----/, "").replace(/\s+/g, "");
+    const der = Uint8Array.from(atob(pem), (c) => c.charCodeAt(0));
+    const key = await crypto.subtle.importKey("pkcs8", der.buffer, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
+    const sig = new Uint8Array(await crypto.subtle.sign("RSASSA-PKCS1-v1_5", key, new TextEncoder().encode(unsigned)));
+    const jwt = `${unsigned}.${b64url(sig)}`;
+
+    const res = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwt}`,
+    });
+    if (!res.ok) {
+      console.error("[fcm] token OAuth falló:", res.status, await res.text());
+      return null;
+    }
+    const body = await res.json() as { access_token: string; expires_in: number };
+    fcmAccessToken = { token: body.access_token, exp: now + body.expires_in };
+    return body.access_token;
+  } catch (err) {
+    console.error("[fcm] no se pudo obtener access token:", err);
+    return null;
+  }
+}
+
+async function sendFcm(
+  subscription: SubscriptionRow,
+  payload: { title: string; body?: string; url?: string; data?: Record<string, unknown> }
+): Promise<boolean> {
+  if (!FCM_PROJECT_ID || !subscription.fcm_token) {
+    if (!FCM_PROJECT_ID) console.warn("[fcm] FCM_PROJECT_ID no configurado — skip");
+    return !FCM_PROJECT_ID; // soft-pass si FCM no está configurado (dev)
+  }
+  const accessToken = await getFcmAccessToken();
+  if (!accessToken) return false;
+
+  // Todos los valores de data en FCM deben ser string.
+  const data: Record<string, string> = { url: payload.url ?? "/" };
+  for (const [k, v] of Object.entries(payload.data ?? {})) data[k] = typeof v === "string" ? v : JSON.stringify(v);
+
+  const message = {
+    message: {
+      token: subscription.fcm_token,
+      notification: { title: payload.title, body: payload.body ?? "" },
+      data,
+      android: { priority: "HIGH" },
+      apns: { payload: { aps: { sound: "default" } } },
+    },
+  };
+
+  try {
+    const res = await fetch(`https://fcm.googleapis.com/v1/projects/${FCM_PROJECT_ID}/messages:send`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+      body: JSON.stringify(message),
+    });
+    if (res.ok) return true;
+    // Token inválido/no registrado → desactivar la suscripción.
+    if (res.status === 404 || res.status === 400) {
+      const txt = await res.text();
+      if (/UNREGISTERED|NOT_FOUND|INVALID_ARGUMENT/i.test(txt)) {
+        await supabase.from("push_subscriptions").update({ active: false }).eq("id", subscription.id);
+      }
+      console.error("[fcm] envío falló:", res.status, txt.slice(0, 200));
+      return false;
+    }
+    console.error("[fcm] envío falló:", res.status, (await res.text()).slice(0, 200));
+    return false;
+  } catch (err) {
+    console.error("[fcm] send error:", err);
+    return false;
+  }
+}
+
+// Enruta por tipo de suscripción: nativa (fcm_token) → FCM; web (endpoint) → Web Push/VAPID.
+async function sendToSubscription(
+  subscription: SubscriptionRow,
+  payload: { title: string; body?: string; url?: string; data?: Record<string, unknown> }
+): Promise<boolean> {
+  if (subscription.fcm_token) return sendFcm(subscription, payload);
+  if (subscription.endpoint) return sendWebPush(subscription, payload);
+  return false;
+}
+
 async function processQueue(): Promise<void> {
   const now = new Date().toISOString();
 
@@ -176,30 +294,28 @@ async function processQueue(): Promise<void> {
       continue;
     }
 
-    // Get subscription
-    let subscription: SubscriptionRow | null = null;
+    // Cargar las suscripciones activas: una concreta, o TODAS las del usuario
+    // (web + nativas), para entregar por todos sus dispositivos.
+    let subscriptions: SubscriptionRow[] = [];
 
     if (notif.subscription_id) {
       const { data } = await supabase
         .from("push_subscriptions")
-        .select("id, endpoint, p256dh, auth, active")
+        .select(SUB_COLS)
         .eq("id", notif.subscription_id)
         .eq("active", true)
         .maybeSingle();
-      subscription = data;
+      if (data) subscriptions = [data as SubscriptionRow];
     } else {
-      // Use any active subscription for user
       const { data } = await supabase
         .from("push_subscriptions")
-        .select("id, endpoint, p256dh, auth, active")
+        .select(SUB_COLS)
         .eq("user_id", notif.user_id)
-        .eq("active", true)
-        .limit(1)
-        .maybeSingle();
-      subscription = data;
+        .eq("active", true);
+      subscriptions = (data ?? []) as SubscriptionRow[];
     }
 
-    if (!subscription) {
+    if (subscriptions.length === 0) {
       // No active subscription — mark failed
       await supabase
         .from("notification_queue")
@@ -208,11 +324,17 @@ async function processQueue(): Promise<void> {
       continue;
     }
 
-    const success = await sendWebPush(subscription, {
-      title: notif.title,
-      body: notif.body ?? undefined,
-      data: notif.data ?? undefined,
-    });
+    // Enviar a cada dispositivo por su canal (FCM nativo / Web Push). Éxito = al menos uno entregó.
+    const results = await Promise.all(
+      subscriptions.map((sub) =>
+        sendToSubscription(sub, {
+          title: notif.title,
+          body: notif.body ?? undefined,
+          data: notif.data ?? undefined,
+        }).then((ok) => ({ sub, ok }))
+      )
+    );
+    const success = results.some((r) => r.ok);
 
     if (success) {
       await supabase
@@ -223,11 +345,14 @@ async function processQueue(): Promise<void> {
         })
         .eq("id", notif.id);
 
-      // Update last_used_at on subscription
-      await supabase
-        .from("push_subscriptions")
-        .update({ last_used_at: new Date().toISOString() })
-        .eq("id", subscription.id);
+      // Update last_used_at en las suscripciones que entregaron
+      const deliveredIds = results.filter((r) => r.ok).map((r) => r.sub.id);
+      if (deliveredIds.length > 0) {
+        await supabase
+          .from("push_subscriptions")
+          .update({ last_used_at: new Date().toISOString() })
+          .in("id", deliveredIds);
+      }
 
       await incrementRateCounter(notif.user_id);
     } else {
