@@ -22,3 +22,17 @@ build/
 *.tsbuildinfo
 next-env.d.ts
 .env*
+
+# secrets / credenciales (NUNCA versionar)
+# OAuth clients de Google, service accounts, llaves, etc. Guardar en la boveda local
+# D:\3_ELEVATE\.credentials\ (fuera de los repos), nunca aqui.
+*client_secret*.json
+*.apps.googleusercontent.com.json
+google-services.json
+GoogleService-Info.plist
+*.p12
+*.keystore
+.secrets-local/
+
+# supabase CLI temp
+supabase/.temp/
