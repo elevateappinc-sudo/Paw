@@ -104,7 +104,10 @@ export function useAuth() {
 
   async function signInWithGoogle(): Promise<AuthResult> {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { Capacitor } = await import("@capacitor/core");
+      const isNative = Capacitor.isNativePlatform();
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
@@ -112,10 +115,18 @@ export function useAuth() {
             access_type: 'offline',
             prompt: 'consent',
           },
+          // En nativo NO redirigimos el WebView (Google lo bloquea): abrimos el navegador
+          // del sistema con la URL y el callback vuelve a la app por App Link (ver appUrlOpen).
+          skipBrowserRedirect: isNative,
         },
       });
       if (error) return { ok: false, error: mapAuthError(error) };
-      return { ok: true }; // el browser redirige, esto rara vez llega
+
+      if (isNative && data?.url) {
+        const { Browser } = await import("@capacitor/browser");
+        await Browser.open({ url: data.url, presentationStyle: "popover" });
+      }
+      return { ok: true }; // en web el browser redirige; en nativo vuelve por App Link
     } catch {
       return { ok: false, error: 'Sin conexión. Verifica tu internet e intenta de nuevo.' };
     }
