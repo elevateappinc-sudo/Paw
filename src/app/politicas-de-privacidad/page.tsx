@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "Cómo Paw recopila, usa y protege tu información y la de tus mascotas.",
 };
 
-const UPDATED = "5 de noviembre de 2026";
+const UPDATED = "17 de noviembre de 2026";
 const CONTACT = "info@elevateapp.co";
 
 type Section = { title: string; intro?: string; items?: React.ReactNode[]; body?: React.ReactNode[] };
@@ -57,11 +57,39 @@ const SECTIONS: Section[] = [
   {
     title: "5. Conservación de datos",
     body: [
-      "Conservamos tus datos mientras tengas una cuenta activa o mientras sea necesario para prestarte el servicio. Puedes eliminar tu cuenta en cualquier momento desde Ajustes; al hacerlo se eliminan tu perfil, tus mascotas y los archivos asociados, salvo lo que debamos conservar por obligación legal.",
+      "Conservamos tus datos mientras tengas una cuenta activa o mientras sea necesario para prestarte el servicio. Puedes eliminar tu cuenta en cualquier momento desde Ajustes; al hacerlo se eliminan tu perfil, tus mascotas y los archivos asociados, salvo lo que debamos conservar por obligación legal. Encontrarás los pasos exactos en la sección siguiente.",
     ],
   },
   {
-    title: "6. Derechos del usuario",
+    // Google Play exige una URL de eliminación de datos que indique los pasos exactos,
+    // qué se elimina y qué se conserva. Esta sección cumple ese requisito.
+    title: "6. Cómo eliminar tu cuenta y tus datos",
+    intro: "Puedes eliminar tu cuenta de Paw y toda tu información directamente desde la aplicación:",
+    items: [
+      <>Abre <strong>Paw</strong> e inicia sesión con tu cuenta.</>,
+      <>Entra en <strong>Ajustes</strong>.</>,
+      <>Pulsa <strong>Eliminar cuenta</strong> y confirma en <strong>Eliminar cuenta definitivamente</strong>.</>,
+    ],
+    body: [
+      <>
+        <strong>Qué se elimina de inmediato:</strong> tu perfil (nombre, correo, teléfono y foto), todas tus mascotas con su
+        historial clínico, vacunas, medicamentos, alimentación, higiene y actividad, tus fotos y videos, tus citas, reservas,
+        gastos, eventos que hayas creado y tus conversaciones con el asistente. La eliminación es permanente y no se puede deshacer.
+      </>,
+      <>
+        <strong>Qué se conserva y por cuánto tiempo:</strong> las copias de seguridad cifradas se purgan en un plazo máximo de{" "}
+        <strong>30 días</strong>. Si la ley colombiana nos obliga a conservar algún registro (por ejemplo, soportes contables de
+        una transacción), lo guardamos solo durante el periodo exigido y sin usarlo para ninguna otra finalidad.
+      </>,
+      <>
+        <strong>¿No puedes acceder a la aplicación?</strong> Escríbenos a{" "}
+        <a className="text-primary-text underline" href={`mailto:${CONTACT}`}>{CONTACT}</a> desde el correo de tu cuenta y
+        eliminaremos tu cuenta y tus datos en un plazo máximo de <strong>30 días</strong>.
+      </>,
+    ],
+  },
+  {
+    title: "7. Derechos del usuario",
     intro: "Tienes derecho a:",
     items: [
       "Acceder, corregir o eliminar tus datos personales.",
@@ -73,15 +101,15 @@ const SECTIONS: Section[] = [
     ],
   },
   {
-    title: "7. Menores de edad",
+    title: "8. Menores de edad",
     body: ["La aplicación no está dirigida a menores de 13 años y no recopilamos a sabiendas información de ellos. Si crees que un menor nos ha proporcionado datos, contáctanos para eliminarlos."],
   },
   {
-    title: "8. Cambios a esta política",
+    title: "9. Cambios a esta política",
     body: ["Podemos modificar esta política en cualquier momento. Las actualizaciones se publicarán en esta página e indicarán la fecha de la última revisión."],
   },
   {
-    title: "9. Contacto",
+    title: "10. Contacto",
     body: [
       <>Si tienes preguntas o comentarios sobre esta política, escríbenos a <a className="text-primary-text underline" href={`mailto:${CONTACT}`}>{CONTACT}</a>.</>,
     ],
